@@ -608,18 +608,21 @@ class CatalogManager {
             btn.textContent = 'Додається...';
             btn.disabled = true;
             
-            const response = await fetch('/cart/add/', {
+            const form = new FormData();
+            form.append('quantity', '1');
+            
+            const response = await fetch(`/cart/add/${productId}/`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRFToken': this.getCookie('csrftoken')
                 },
-                body: `product_id=${productId}&quantity=1`
+                body: form
             });
             
             const data = await response.json();
             
-            if (data.success) {
+            if (data && data.success) {
                 btn.classList.add('product-card__add-cart--added');
                 btn.textContent = '✓ Додано';
                 
@@ -629,7 +632,8 @@ class CatalogManager {
                     btn.disabled = false;
                 }, 2000);
                 
-                this.updateCartCount(data.cart_count);
+                const count = data.cart?.item_count ?? 0;
+                this.updateCartCount(count);
                 this.showToast('Товар додано до кошика');
             }
         } catch (error) {
