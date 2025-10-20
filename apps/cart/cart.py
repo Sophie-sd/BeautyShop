@@ -24,7 +24,7 @@ class Cart:
         if product_id not in self.cart:
             self.cart[product_id] = {
                 'quantity': 0,
-                'price': str(product.get_price_for_user(self.user))
+                'price': float(product.get_price_for_user(self.user))
             }
         if override_quantity:
             self.cart[product_id]['quantity'] = quantity
@@ -32,7 +32,7 @@ class Cart:
             self.cart[product_id]['quantity'] += quantity
         
         # Оновлюємо ціну (може змінитися залежно від кількості)
-        self.cart[product_id]['price'] = str(
+        self.cart[product_id]['price'] = float(
             product.get_price_for_user(self.user, self.cart[product_id]['quantity'])
         )
         self.save()
@@ -58,8 +58,9 @@ class Cart:
             cart[str(product.id)]['product'] = product
         
         for item in cart.values():
-            item['price'] = Decimal(item['price'])
-            item['total_price'] = item['price'] * item['quantity']
+            price = Decimal(str(item['price']))
+            item['price'] = price
+            item['total_price'] = price * item['quantity']
             yield item
     
     def __len__(self):
@@ -69,7 +70,7 @@ class Cart:
     def get_total_price(self):
         """Загальна вартість кошика"""
         return sum(
-            Decimal(item['price']) * item['quantity'] 
+            Decimal(str(item['price'])) * item['quantity'] 
             for item in self.cart.values()
         )
     

@@ -21,7 +21,6 @@ class CatalogManager {
         this.loadInitialData();
         this.initMobileFilters();
         this.initWishlist();
-        this.initCartActions();
         this.initPagination();
     }
     
@@ -584,66 +583,8 @@ class CatalogManager {
         }
     }
     
-    // Дії кошика
     initCartActions() {
-        const addToCartBtns = document.querySelectorAll('.product-card__add-cart');
-        
-        addToCartBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                
-                if (btn.disabled) return;
-                
-                const productId = btn.dataset.productId;
-                this.addToCart(btn, productId);
-            });
-        });
-    }
-    
-    async addToCart(btn, productId) {
-        const originalText = btn.textContent;
-        
-        try {
-            btn.classList.add('product-card__add-cart--loading');
-            btn.textContent = 'Додається...';
-            btn.disabled = true;
-            
-            const form = new FormData();
-            form.append('quantity', '1');
-            
-            const response = await fetch(`/cart/add/${productId}/`, {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRFToken': this.getCookie('csrftoken')
-                },
-                body: form
-            });
-            
-            const data = await response.json();
-            
-            if (data && data.success) {
-                btn.classList.add('product-card__add-cart--added');
-                btn.textContent = '✓ Додано';
-                
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                    btn.classList.remove('product-card__add-cart--added');
-                    btn.disabled = false;
-                }, 2000);
-                
-                const count = data.cart?.item_count ?? 0;
-                this.updateCartCount(count);
-                this.showToast('Товар додано до кошика');
-            }
-        } catch (error) {
-            console.error('Cart error:', error);
-            btn.textContent = originalText;
-            btn.disabled = false;
-            this.showToast('Помилка додавання до кошика', 'error');
-        } finally {
-            btn.classList.remove('product-card__add-cart--loading');
-        }
+        // Видалено - використовуємо глобальний cart.js обробник
     }
     
     // Пагінація
