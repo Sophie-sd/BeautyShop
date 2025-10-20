@@ -86,3 +86,9 @@ def cart_clear(request):
         })
     
     return redirect('cart:detail')
+
+
+def cart_count(request):
+    """Повертає кількість товарів у кошику (для badge)"""
+    cart = Cart(request)
+    return JsonResponse({'count': len(cart)})
