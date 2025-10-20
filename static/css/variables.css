@@ -22,6 +22,11 @@
   --color-danger: #DC3545;
   --color-info: #17A2B8;
   
+  /* Warning Color Variants */
+  --warning-bg: #FFF3CD;
+  --warning-border: #FFE69C;
+  --warning-text: #856404;
+  
   /* Neutral Colors */
   --color-neutral-dark: #2C3E50;
   --color-neutral-dark-light: #34495E;
@@ -60,6 +65,13 @@
   --warning: var(--color-warning);
   --danger: var(--color-danger);
   --info: var(--color-info);
+  --primary: var(--color-primary);
+  --gray-100: var(--color-gray-100);
+  --gray-200: var(--color-gray-200);
+  --gray-300: var(--color-gray-300);
+  --text-primary: var(--color-neutral-dark);
+  --text-secondary: var(--color-gray-600);
+  --border-radius: var(--border-radius-md);
   
   /* ========== ТИПОГРАФІЯ ========== */
   

@@ -25,7 +25,13 @@
             <path d="M9 2L6 6H3L3 22H21L21 6H18L15 2H9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M9 11V6M15 11V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span class="nav-badge nav-badge-hidden" id="mobileCartBadge"></span>
+        {% with cart_count=cart|length %}
+            {% if cart_count > 0 %}
+                <span class="nav-badge cart-count">{{ cart_count }}</span>
+            {% else %}
+                <span class="nav-badge nav-badge-hidden cart-count"></span>
+            {% endif %}
+        {% endwith %}
         <span class="nav-label">Кошик</span>
     </a>
     
