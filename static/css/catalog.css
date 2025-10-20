@@ -1460,7 +1460,7 @@
   
   /* Показуємо мобільні контроли */
   .mobile-controls {
-    display: flex !important; /* Форсуємо показ на мобільному */
+    display: flex;
     gap: 12px;
     padding: 12px;
   }

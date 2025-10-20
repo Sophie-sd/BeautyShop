@@ -111,7 +111,20 @@ class WishlistManager {
                 e.preventDefault();
                 this.addToCartFromWishlist(addToCartBtn);
             }
+
+            // Очищення списку бажань
+            const clearBtn = e.target.closest('.btn-clear-wishlist');
+            if (clearBtn) {
+                e.preventDefault();
+                this.confirmClearWishlist(clearBtn);
+            }
         });
+    }
+
+    confirmClearWishlist(button) {
+        if (confirm('Ви впевнені, що хочете очистити список бажань?')) {
+            window.location.href = button.href;
+        }
     }
 
     async toggleWishlist(button) {
