@@ -10,7 +10,7 @@ class ShoppingCart {
 
     bindEvents() {
         document.addEventListener('click', (e) => {
-            const addBtn = e.target.closest('.add-to-cart, .add-to-cart-btn');
+            const addBtn = e.target.closest('.add-to-cart, .add-to-cart-btn, .product-card__add-cart, .btn-add-cart');
             if (addBtn) {
                 e.preventDefault();
                 this.handleAddToCart(addBtn);
@@ -210,6 +210,15 @@ class ShoppingCart {
             const quantityInput = form.querySelector('input[name="quantity"]');
             return quantityInput ? parseInt(quantityInput.value) : 1;
         }
+        
+        const productDetail = button.closest('.product-detail, .product-info');
+        if (productDetail) {
+            const quantityInput = productDetail.querySelector('#productQuantity, .quantity-input');
+            if (quantityInput) {
+                return parseInt(quantityInput.value) || 1;
+            }
+        }
+        
         return 1;
     }
 

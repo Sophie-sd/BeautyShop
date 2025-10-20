@@ -121,7 +121,7 @@
                         <input type="number" class="quantity-input" value="1" min="1" max="{{ product.stock }}" id="productQuantity">
                         <button class="quantity-btn" data-action="increase">+</button>
                     </div>
-                    <button class="btn-primary btn-add-cart" data-product-id="{{ product.id }}">
+                    <button class="btn-primary btn-add-cart" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}">
                         Додати в кошик
                     </button>
                     <button class="btn-wishlist" data-product-id="{{ product.id }}" title="Додати в список бажань">
@@ -184,7 +184,7 @@
                     </a>
                     
                     <div class="product-actions">
-                        <button class="btn-add-cart" data-product-id="{{ item.id }}">
+                        <button class="btn-add-cart" data-product-id="{{ item.id }}" data-product-name="{{ item.name }}">
                             До кошика
                         </button>
                     </div>
