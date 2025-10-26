@@ -168,7 +168,7 @@ class Command(BaseCommand):
     def import_product(self, product_url, skip_images=False):
         """Імпортує один товар"""
         try:
-            response = self.session.get(product_url, timeout=15)
+            response = self.session.get(product_url, timeout=30)
             response.raise_for_status()
             soup = BeautifulSoup(response.text, 'html.parser')
             
@@ -182,7 +182,13 @@ class Command(BaseCommand):
             base_slug = slugify(data['name'])
             slug = base_slug
             counter = 1
+            
+            # Перевіряємо чи товар вже існує
             while Product.objects.filter(slug=slug).exists():
+                # Якщо існує точна назва - пропускаємо (вже імпортовано)
+                if counter == 1 and Product.objects.filter(name=data['name'][:200]).exists():
+                    self.stats['skipped'] += 1
+                    return None
                 slug = f"{base_slug}-{counter}"
                 counter += 1
             
@@ -259,7 +265,7 @@ class Command(BaseCommand):
         """Завантажує зображення"""
         for idx, img_url in enumerate(image_urls[:3]):
             try:
-                response = self.session.get(img_url, timeout=10)
+                response = self.session.get(img_url, timeout=20)
                 response.raise_for_status()
                 
                 ext = 'jpg'
