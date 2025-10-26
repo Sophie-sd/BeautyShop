@@ -142,7 +142,7 @@ class Command(BaseCommand):
                 
                 # Звільняємо пам'ять після кожного батчу
                 gc.collect()
-                time.sleep(2)  # Збільшили паузу для Render
+                time.sleep(3)  # Збільшили паузу для стабільності
             
             # Фінальна очистка
             gc.collect()
@@ -220,8 +220,17 @@ class Command(BaseCommand):
     def import_product(self, product_url, skip_images=False):
         """Імпортує один товар"""
         try:
-            response = self.session.get(product_url, timeout=25, stream=True)
-            response.raise_for_status()
+            # Збільшили timeout + додали retries
+            for attempt in range(2):
+                try:
+                    response = self.session.get(product_url, timeout=35, stream=True)
+                    response.raise_for_status()
+                    break
+                except Exception as e:
+                    if attempt == 0:
+                        time.sleep(1)
+                        continue
+                    raise
             
             # Обмежуємо розмір відповіді для економії пам'яті
             content = b''
