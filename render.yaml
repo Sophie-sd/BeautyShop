@@ -12,10 +12,16 @@ services:
       python create_superuser.py
       python reset_admin_password.py
       python manage.py reset_admin
-    startCommand: gunicorn beautyshop.wsgi:application --bind 0.0.0.0:$PORT
+    startCommand: gunicorn beautyshop.wsgi:application --bind 0.0.0.0:$PORT --workers=1 --threads=4 --timeout=120 --max-requests=1000 --max-requests-jitter=50
     envVars:
       - key: PYTHON_VERSION
         value: 3.9.18
+      - key: PYTHONUNBUFFERED
+        value: 1
+      - key: PYTHONHASHSEED
+        value: random
+      - key: MALLOC_ARENA_MAX
+        value: 2
       - key: DATABASE_URL
         fromDatabase:
           name: beautyshop-db

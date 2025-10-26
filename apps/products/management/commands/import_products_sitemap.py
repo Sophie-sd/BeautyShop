@@ -1,5 +1,6 @@
 """
 Швидкий імпорт товарів через sitemap.xml
+Оптимізовано для роботи з обмеженою пам'яттю (512MB на Render)
 Використання: python manage.py import_products_sitemap
 """
 import requests
@@ -11,6 +12,7 @@ from apps.products.models import Category, Product, ProductImage, ProductAttribu
 from decimal import Decimal
 import time
 import re
+import gc
 from urllib.parse import urljoin
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -76,16 +78,17 @@ class Command(BaseCommand):
         parser.add_argument(
             '--workers',
             type=int,
-            default=5,
-            help='Кількість паралельних потоків (default: 5)'
+            default=2,
+            help='Кількість паралельних потоків (default: 2 для обмеженої пам\'яті)'
         )
 
     def handle(self, *args, **options):
         limit = options.get('limit')
         skip_images = options.get('skip_images', False)
-        workers = options.get('workers', 5)
+        workers = min(options.get('workers', 2), 3)  # Максимум 3 workers для економії пам'яті
         
         self.stdout.write(self.style.SUCCESS('🚀 Імпорт товарів через Sitemap'))
+        self.stdout.write('⚙️  Режим: оптимізовано для обмеженої пам\'яті (512MB)\n')
         
         # Створюємо категорію за замовчуванням
         self.default_category, _ = Category.objects.get_or_create(
@@ -104,27 +107,43 @@ class Command(BaseCommand):
             if limit:
                 product_urls = product_urls[:limit]
             
-            self.stdout.write(f'📦 Знайдено товарів: {len(product_urls)}')
+            total_products = len(product_urls)
+            self.stdout.write(f'📦 Знайдено товарів: {total_products}')
             self.stdout.write(f'⚙️  Потоків: {workers}\n')
             
-            # Імпортуємо товари паралельно
-            with ThreadPoolExecutor(max_workers=workers) as executor:
-                futures = {
-                    executor.submit(self.import_product, url, skip_images): url 
-                    for url in product_urls
-                }
+            # Обробляємо товари батчами для економії пам'яті
+            batch_size = 100
+            for batch_start in range(0, total_products, batch_size):
+                batch_end = min(batch_start + batch_size, total_products)
+                batch_urls = product_urls[batch_start:batch_end]
                 
-                for future in as_completed(futures):
-                    url = futures[future]
-                    try:
-                        result = future.result()
-                        if result:
-                            self.stats['products'] += 1
-                            if self.stats['products'] % 50 == 0:
-                                self.stdout.write(f'  ✓ Імпортовано: {self.stats["products"]}')
-                    except Exception as e:
-                        self.stats['errors'] += 1
-                        self.stdout.write(self.style.WARNING(f'  ⚠ Помилка {url}: {str(e)[:50]}'))
+                self.stdout.write(f'\n📦 Обробка батчу {batch_start+1}-{batch_end} з {total_products}')
+                
+                # Імпортуємо товари паралельно
+                with ThreadPoolExecutor(max_workers=workers) as executor:
+                    futures = {
+                        executor.submit(self.import_product, url, skip_images): url 
+                        for url in batch_urls
+                    }
+                    
+                    for future in as_completed(futures):
+                        url = futures[future]
+                        try:
+                            result = future.result(timeout=60)  # Таймаут 60 сек на товар
+                            if result:
+                                self.stats['products'] += 1
+                                if self.stats['products'] % 20 == 0:
+                                    self.stdout.write(f'  ✓ Імпортовано: {self.stats["products"]}/{total_products}')
+                        except Exception as e:
+                            self.stats['errors'] += 1
+                            self.stdout.write(self.style.WARNING(f'  ⚠ Помилка {url[:50]}: {str(e)[:50]}'))
+                
+                # Звільняємо пам'ять після кожного батчу
+                gc.collect()
+                time.sleep(1)  # Даємо час системі
+            
+            # Фінальна очистка
+            gc.collect()
             
             # Статистика
             self.stdout.write(self.style.SUCCESS(f'\n✅ Імпорт завершено!'))
@@ -138,6 +157,9 @@ class Command(BaseCommand):
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'❌ Критична помилка: {str(e)}'))
             raise
+        finally:
+            # Фінальна очистка
+            gc.collect()
 
     def get_product_urls_from_sitemap(self):
         """Отримує всі URL товарів з sitemap.xml"""
@@ -293,11 +315,15 @@ class Command(BaseCommand):
         return data
 
     def download_images(self, product, image_urls):
-        """Завантажує зображення"""
-        for idx, img_url in enumerate(image_urls[:3]):
+        """Завантажує зображення (обмежено 2 на товар для економії пам'яті)"""
+        for idx, img_url in enumerate(image_urls[:2]):  # Тільки 2 зображення замість 3
             try:
-                response = self.session.get(img_url, timeout=20)
+                response = self.session.get(img_url, timeout=15)  # Зменшили таймаут
                 response.raise_for_status()
+                
+                # Перевірка розміру (пропускаємо якщо > 2MB)
+                if len(response.content) > 2 * 1024 * 1024:
+                    continue
                 
                 ext = 'jpg'
                 if 'content-type' in response.headers:
@@ -312,6 +338,9 @@ class Command(BaseCommand):
                 )
                 product_image.image.save(filename, ContentFile(response.content), save=True)
                 self.stats['images'] += 1
+                
+                # Очищуємо response з пам'яті
+                del response
                 
             except Exception as e:
                 pass

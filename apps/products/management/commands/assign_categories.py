@@ -1,9 +1,12 @@
 """
 Розподіл товарів по категоріях на основі ключових слів
+Оптимізовано для роботи з обмеженою пам'яттю (512MB на Render)
 """
 from django.core.management.base import BaseCommand
+from django.db import transaction
 from apps.products.models import Product, Category
 import re
+import gc
 
 
 class Command(BaseCommand):
@@ -49,30 +52,55 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR('❌ Категорія "Імпорт з Webosova" не знайдена'))
             return
         
-        products = Product.objects.filter(category=import_category)
-        total = products.count()
+        # Підраховуємо кількість без завантаження в пам'ять
+        total = Product.objects.filter(category=import_category).count()
         self.stdout.write(f'📦 Знайдено товарів для розподілу: {total}\n')
         
         if total == 0:
             self.stdout.write(self.style.SUCCESS('✅ Всі товари вже розподілені!'))
             return
         
+        # Завантажуємо категорії в словник (одноразово, економить запити до БД)
+        categories_cache = {cat.slug: cat for cat in Category.objects.all()}
+        
         stats = {}
         unassigned = 0
+        processed = 0
+        batch_size = 100
+        products_to_update = []
         
-        for product in products:
+        # Використовуємо iterator() для економії пам'яті
+        # Завантажуємо тільки потрібні поля
+        products_queryset = Product.objects.filter(
+            category=import_category
+        ).only('id', 'name', 'description', 'category').iterator(chunk_size=batch_size)
+        
+        for product in products_queryset:
             category_slug = self.detect_category(product)
             
-            if category_slug:
-                category = Category.objects.filter(slug=category_slug).first()
-                if category:
-                    product.category = category
-                    product.save(update_fields=['category'])
-                    stats[category.name] = stats.get(category.name, 0) + 1
-                else:
-                    unassigned += 1
+            if category_slug and category_slug in categories_cache:
+                category = categories_cache[category_slug]
+                product.category = category
+                products_to_update.append(product)
+                stats[category.name] = stats.get(category.name, 0) + 1
             else:
                 unassigned += 1
+            
+            processed += 1
+            
+            # Batch update кожні 100 товарів
+            if len(products_to_update) >= batch_size:
+                with transaction.atomic():
+                    Product.objects.bulk_update(products_to_update, ['category'], batch_size=batch_size)
+                self.stdout.write(f'  ✓ Оброблено: {processed}/{total}')
+                products_to_update.clear()
+                gc.collect()  # Звільняємо пам'ять
+        
+        # Оновлюємо залишок
+        if products_to_update:
+            with transaction.atomic():
+                Product.objects.bulk_update(products_to_update, ['category'], batch_size=batch_size)
+            products_to_update.clear()
         
         self.stdout.write(self.style.SUCCESS('\n✅ Розподіл завершено!\n'))
         self.stdout.write('📊 Статистика:\n')
@@ -83,6 +111,9 @@ class Command(BaseCommand):
         if unassigned > 0:
             self.stdout.write(self.style.WARNING(f'\n  ⚠ Не розподілено: {unassigned} товарів'))
             self.stdout.write('    (залишились в "Імпорт з Webosova")')
+        
+        # Фінальна очистка пам'яті
+        gc.collect()
 
     def detect_category(self, product):
         """Визначає категорію товару за ключовими словами"""

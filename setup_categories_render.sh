@@ -9,8 +9,8 @@ echo "📊 1. Поточний стан:"
 python manage.py check_import_status
 echo ""
 
-echo "📦 2. Імпорт товарів (займе ~10 хвилин)..."
-python manage.py import_products_sitemap --workers 3
+echo "📦 2. Імпорт товарів (займе ~15-20 хвилин, оптимізовано для 512MB)..."
+python manage.py import_products_sitemap --workers 2
 echo ""
 
 echo "🔄 3. Розподіл товарів по категоріях..."

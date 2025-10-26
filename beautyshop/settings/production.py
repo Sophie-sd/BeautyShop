@@ -16,16 +16,23 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 # CSRF trusted origins для Render
 CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'https://localhost').split(',')
 
-# Database для продакшну
+# Database для продакшну (оптимізовано для обмеженої пам'яті)
 if os.getenv('DATABASE_URL'):
     # Production database (PostgreSQL on Render)
     DATABASES = {
         'default': dj_database_url.config(
             default=os.getenv('DATABASE_URL'),
-            conn_max_age=600,
+            conn_max_age=60,  # Зменшено з 600 до 60 сек для економії пам'яті
             conn_health_checks=True,
+            options={
+                'connect_timeout': 10,
+                'options': '-c statement_timeout=30000',  # 30 секунд таймаут для запитів
+            }
         )
     }
+    # Додаткові налаштування для оптимізації
+    DATABASES['default']['ATOMIC_REQUESTS'] = False  # Вимикаємо автоматичні транзакції
+    DATABASES['default']['AUTOCOMMIT'] = True
 else:
     # Development database (SQLite)
     DATABASES = {
@@ -166,13 +173,28 @@ LOGGING = {
     },
 }
 
-# Кешування
+# Кешування (обмежено для економії пам'яті)
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': 'unique-snowflake',
+        'OPTIONS': {
+            'MAX_ENTRIES': 500,  # Обмежуємо кількість кешованих записів
+        }
     }
 }
+
+# Оптимізація пам'яті для Django
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB замість 2.5MB за замовчуванням
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
+
+# Обмеження для QuerySet
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
+
+# Session налаштування (економія пам'яті)
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Зберігаємо в БД, а не в пам'яті
+SESSION_COOKIE_AGE = 1209600  # 2 тижні
+SESSION_SAVE_EVERY_REQUEST = False  # Не зберігаємо сесію на кожен запит
 
 # Додаткові налаштування для Render
 SECURE_REFERRER_POLICY = 'same-origin'
