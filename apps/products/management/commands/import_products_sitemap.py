@@ -112,12 +112,12 @@ class Command(BaseCommand):
             self.stdout.write(f'⚙️  Потоків: {workers}\n')
             
             # Обробляємо товари батчами для економії пам'яті
-            batch_size = 100
+            batch_size = 50  # Зменшено до 50 для Render
             for batch_start in range(0, total_products, batch_size):
                 batch_end = min(batch_start + batch_size, total_products)
                 batch_urls = product_urls[batch_start:batch_end]
                 
-                self.stdout.write(f'\n📦 Обробка батчу {batch_start+1}-{batch_end} з {total_products}')
+                self.stdout.write(f'\n📦 Батч {batch_start+1}-{batch_end}/{total_products}')
                 
                 # Імпортуємо товари паралельно
                 with ThreadPoolExecutor(max_workers=workers) as executor:
@@ -129,18 +129,20 @@ class Command(BaseCommand):
                     for future in as_completed(futures):
                         url = futures[future]
                         try:
-                            result = future.result(timeout=60)  # Таймаут 60 сек на товар
+                            result = future.result(timeout=45)  # Зменшили до 45 сек
                             if result:
                                 self.stats['products'] += 1
-                                if self.stats['products'] % 20 == 0:
-                                    self.stdout.write(f'  ✓ Імпортовано: {self.stats["products"]}/{total_products}')
+                                if self.stats['products'] % 10 == 0:
+                                    self.stdout.write(f'  ✓ {self.stats["products"]}/{total_products}')
+                        except TimeoutError:
+                            self.stats['errors'] += 1
                         except Exception as e:
                             self.stats['errors'] += 1
-                            self.stdout.write(self.style.WARNING(f'  ⚠ Помилка {url[:50]}: {str(e)[:50]}'))
+                            # Не виводимо помилки для економії пам'яті
                 
                 # Звільняємо пам'ять після кожного батчу
                 gc.collect()
-                time.sleep(1)  # Даємо час системі
+                time.sleep(2)  # Збільшили паузу для Render
             
             # Фінальна очистка
             gc.collect()
@@ -218,9 +220,17 @@ class Command(BaseCommand):
     def import_product(self, product_url, skip_images=False):
         """Імпортує один товар"""
         try:
-            response = self.session.get(product_url, timeout=30)
+            response = self.session.get(product_url, timeout=25, stream=True)
             response.raise_for_status()
-            soup = BeautifulSoup(response.text, 'html.parser')
+            
+            # Обмежуємо розмір відповіді для економії пам'яті
+            content = b''
+            for chunk in response.iter_content(chunk_size=8192):
+                content += chunk
+                if len(content) > 1024 * 1024:  # Максимум 1MB
+                    break
+            
+            soup = BeautifulSoup(content, 'html.parser')
             
             # Парсимо дані
             data = self.parse_product_page(soup, product_url)
