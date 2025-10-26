@@ -32,6 +32,34 @@ class Command(BaseCommand):
             'skipped': 0
         }
         self.default_category = None
+        self.category_cache = {}
+        
+        self.URL_CATEGORY_MAP = {
+            'nigti': 'nigti',
+            'nogti': 'nigti',
+            'nails': 'nigti',
+            'gel-laki': 'nigti',
+            'volosya': 'volossia',
+            'volossya': 'volossia',
+            'hair': 'volossia',
+            'brovi': 'brovy-ta-vii',
+            'brows': 'brovy-ta-vii',
+            'vii': 'brovy-ta-vii',
+            'depilyaciya': 'depilyatsiya',
+            'depilacia': 'depilyatsiya',
+            'shugaring': 'depilyatsiya',
+            'vosk': 'depilyatsiya',
+            'kosmetika': 'kosmetyka',
+            'kosmetyka': 'kosmetyka',
+            'makiyazh': 'makiyazh',
+            'makeup': 'makiyazh',
+            'odnorazova': 'odnorazova-produktsia',
+            'disposable': 'odnorazova-produktsia',
+            'dezinfekciya': 'dezinfektsiya-ta-sterylizatsiya',
+            'sterilizaciya': 'dezinfektsiya-ta-sterylizatsiya',
+            'mebli': 'mebli-dlya-saloniv',
+            'furniture': 'mebli-dlya-saloniv',
+        }
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -178,6 +206,9 @@ class Command(BaseCommand):
             if not data.get('name'):
                 return None
             
+            # Визначаємо категорію з URL
+            category = self.detect_category_from_url(product_url)
+            
             # Генеруємо унікальний slug
             base_slug = slugify(data['name'])
             slug = base_slug
@@ -194,9 +225,9 @@ class Command(BaseCommand):
             
             # Створюємо товар
             product = Product.objects.create(
-                name=data['name'][:200],  # Обмежуємо довжину
+                name=data['name'][:200],
                 slug=slug,
-                category=self.default_category,
+                category=category,
                 description=data.get('description', '')[:2000],
                 retail_price=data['price'],
                 is_active=True,
@@ -285,6 +316,19 @@ class Command(BaseCommand):
             except Exception as e:
                 pass
 
+    def detect_category_from_url(self, url):
+        """Визначає категорію з URL товару"""
+        url_lower = url.lower()
+        
+        for url_part, category_slug in self.URL_CATEGORY_MAP.items():
+            if f'/{url_part}/' in url_lower or f'/{url_part}-' in url_lower:
+                if category_slug not in self.category_cache:
+                    cat = Category.objects.filter(slug=category_slug).first()
+                    self.category_cache[category_slug] = cat if cat else self.default_category
+                return self.category_cache[category_slug]
+        
+        return self.default_category
+    
     def create_attributes(self, product, attributes):
         """Створює характеристики"""
         for idx, attr in enumerate(attributes[:20]):
