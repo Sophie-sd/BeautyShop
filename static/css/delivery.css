@@ -265,82 +265,6 @@
     box-shadow: 0 6px 20px rgba(111, 66, 193, 0.6);
 }
 
-/* Additional Info Section */
-.additional-info-section {
-    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-}
-
-/* Grid для блоків на десктопі */
-.info-blocks-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 30px;
-}
-
-/* Окремі блоки */
-.info-block {
-    background: white;
-    border-radius: 20px;
-    padding: 35px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-    border: 2px solid rgba(233, 30, 99, 0.1);
-    transition: all 0.3s ease;
-}
-
-.info-block:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 40px rgba(233, 30, 99, 0.15);
-    border-color: rgba(233, 30, 99, 0.2);
-}
-
-.info-title {
-    font-size: 1.3em;
-    font-weight: 700;
-    color: #e91e63;
-    margin: 0 0 25px 0;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.info-icon {
-    font-size: 1.4em;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-style: normal;
-}
-
-.info-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.info-list li {
-    padding: 12px 0;
-    padding-left: 30px;
-    position: relative;
-    color: #2c3e50;
-    line-height: 1.7;
-    font-size: 15px;
-}
-
-.info-list li::before {
-    content: '✓';
-    position: absolute;
-    left: 0;
-    top: 12px;
-    color: #e91e63;
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-.info-list li strong {
-    color: #e91e63;
-    font-weight: 600;
-}
-
 /* Contact Delivery Section */
 .contact-delivery-section {
     background: linear-gradient(135deg, #e91e63 0%, #ff4081 100%);
@@ -448,48 +372,6 @@
         font-size: 1.2em;
     }
     
-    /* Адаптивність для блоків - один під одним на мобільній */
-    .info-blocks-grid {
-        grid-template-columns: 1fr;
-        gap: 0;
-    }
-    
-    .info-block {
-        background: transparent;
-        border: none;
-        box-shadow: none;
-        padding: 0 20px;
-        margin-bottom: 35px;
-        text-align: center;
-    }
-    
-    .info-block:hover {
-        transform: none;
-        box-shadow: none;
-    }
-    
-    .info-title {
-        font-size: 1.2em;
-        margin-bottom: 20px;
-        justify-content: center;
-    }
-    
-    .info-list {
-        text-align: left;
-        display: inline-block;
-        max-width: 100%;
-    }
-    
-    .info-list li {
-        padding: 10px 0;
-        padding-left: 0;
-        font-size: 14px;
-    }
-    
-    .info-list li::before {
-        content: none;
-    }
-    
     /* Відділяємо блок "Маєте питання" від footer */
     .contact-delivery-section {
         padding: 40px 20px;
@@ -534,35 +416,6 @@
     .delivery-features li::before,
     .payment-features li::before {
         left: 3px;
-    }
-    
-    .info-list li {
-        font-size: 0.85em;
-        padding: 8px 0;
-        padding-left: 25px;
-        position: relative;
-    }
-    
-    /* Стилі для блоків на маленьких екранах */
-    .info-block {
-        padding: 0 15px;
-        margin-bottom: 30px;
-    }
-    
-    .info-title {
-        font-size: 1.1em;
-        margin-bottom: 18px;
-        gap: 10px;
-    }
-    
-    .info-list li {
-        font-size: 13px;
-        padding: 8px 0;
-        padding-left: 0;
-    }
-    
-    .info-list li::before {
-        content: none;
     }
     
     /* Відділяємо блок "Маєте питання" від footer на маленьких екранах */

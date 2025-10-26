@@ -79,6 +79,14 @@
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
         transition: all 0.3s ease;
     }
+    
+    .main-nav {
+        position: sticky;
+        top: 148px;
+        z-index: 997;
+        background: var(--white);
+        transition: all 0.3s ease;
+    }
 }
 
 .header-content {
