@@ -9,9 +9,7 @@ html, body {
     background: linear-gradient(135deg, #e91e63 0%, #f50057 100%);
     height: 40px;
     overflow: hidden;
-    position: relative;
     box-shadow: 0 2px 8px rgba(233, 30, 99, 0.3);
-    z-index: 100;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     width: 100%;
     max-width: 100vw;
@@ -73,6 +71,9 @@ html, body {
         display: block;
         visibility: visible;
         opacity: 1;
+        position: sticky;
+        top: 0;
+        z-index: 999;
     }
     
     .marquee-container.mobile-marquee {

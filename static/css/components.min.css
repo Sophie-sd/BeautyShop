@@ -1,10 +1,6 @@
 /* Header Styles */
 .header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
     background: var(--white);
-    box-shadow: var(--shadow-sm);
 }
 
 .top-bar {
@@ -64,13 +60,6 @@
 
 /* Sticky Header для Desktop */
 @media (min-width: 992px) {
-    .marquee-container.desktop-marquee {
-        position: sticky;
-        top: 0;
-        z-index: 999;
-        background: var(--white);
-    }
-    
     .main-header {
         position: sticky;
         top: 40px;
@@ -82,9 +71,10 @@
     
     .main-nav {
         position: sticky;
-        top: 148px;
+        top: 168px;
         z-index: 997;
         background: var(--white);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
         transition: all 0.3s ease;
     }
 }

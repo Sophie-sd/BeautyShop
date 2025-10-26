@@ -138,6 +138,64 @@
         {% include 'includes/header.html' %}
     </header>
     
+    <!-- Navigation -->
+    <nav class="main-nav desktop-nav" role="navigation" aria-label="Головне меню">
+        <div class="container">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="{% url 'core:home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                        Головна
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a href="{% url 'core:catalog' %}" class="nav-link {% if request.resolver_match.url_name == 'catalog' %}active{% endif %}">
+                        Каталог
+                        <i class="icon-chevron-down" aria-hidden="true"></i>
+                    </a>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-content">
+                            {% for category in main_categories %}
+                                <a href="{{ category.get_absolute_url }}" class="dropdown-link">
+                                    {{ category.name }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'products:sale' %}" class="nav-link {% if request.resolver_match.url_name == 'sale' %}active{% endif %}">
+                        Акції
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'core:delivery' %}" class="nav-link {% if request.resolver_match.url_name == 'delivery' %}active{% endif %}">
+                        Доставка та оплата
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'core:returns' %}" class="nav-link {% if request.resolver_match.url_name == 'returns' %}active{% endif %}">
+                        Повернення та обмін
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'blog:list' %}" class="nav-link {% if request.resolver_match.url_name == 'list' %}active{% endif %}">
+                        Блог
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'core:about' %}" class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
+                        Про нас
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'core:contacts' %}" class="nav-link {% if request.resolver_match.url_name == 'contacts' %}active{% endif %}">
+                        Контакти
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
     <!-- Mobile Menu -->
     <div class="mobile-menu" id="mobile-menu" role="navigation" aria-label="Мобільне меню">
         {% include 'includes/mobile-menu.html' %}
