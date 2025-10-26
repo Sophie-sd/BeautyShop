@@ -24,15 +24,15 @@ if os.getenv('DATABASE_URL'):
             default=os.getenv('DATABASE_URL'),
             conn_max_age=60,  # Зменшено з 600 до 60 сек для економії пам'яті
             conn_health_checks=True,
-            options={
-                'connect_timeout': 10,
-                'options': '-c statement_timeout=30000',  # 30 секунд таймаут для запитів
-            }
         )
     }
-    # Додаткові налаштування для оптимізації
+    # Додаткові налаштування для оптимізації PostgreSQL
     DATABASES['default']['ATOMIC_REQUESTS'] = False  # Вимикаємо автоматичні транзакції
     DATABASES['default']['AUTOCOMMIT'] = True
+    DATABASES['default']['OPTIONS'] = {
+        'connect_timeout': 10,
+        'options': '-c statement_timeout=30000'  # 30 секунд таймаут для запитів
+    }
 else:
     # Development database (SQLite)
     DATABASES = {
