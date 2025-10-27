@@ -76,6 +76,9 @@ if [ "$AUTO_IMPORT_PRODUCTS" = "true" ]; then
             # Запускаємо повний реімпорт (очищення + імпорт в одній команді)
             python manage.py reimport_products --input products_data
             
+            # Виправляємо шляхи зображень (видаляємо зайвий media/ префікс)
+            python manage.py fix_image_paths
+            
             echo ""
             echo "✅ Реімпорт товарів завершено успішно!"
             
