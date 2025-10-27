@@ -56,7 +56,7 @@ CLOUDINARY_STORAGE = {
 }
 
 # Media files через Cloudinary для production
-MEDIA_URL = '/media/'  # Cloudinary автоматично перевизначить
+MEDIA_URL = ''
 
 # Django 4.2+ STORAGES система
 STORAGES = {
