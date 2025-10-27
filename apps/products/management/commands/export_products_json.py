@@ -50,7 +50,6 @@ class Command(BaseCommand):
                 'images': [
                     {
                         'path': img.image.name,  # Шлях в storage (Cloudinary)
-                        'url': img.image.url,  # Повний URL
                         'is_main': img.is_main,
                         'sort_order': img.sort_order,
                         'alt_text': img.alt_text

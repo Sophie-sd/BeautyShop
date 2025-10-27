@@ -93,16 +93,18 @@ class Command(BaseCommand):
                         if path:
                             try:
                                 # Створюємо запис зображення з path до Cloudinary
+                                # Cloudinary storage автоматично генерує правильний URL з path
                                 img = ProductImage.objects.create(
                                     product=product,
                                     image=path,  # Django використає Cloudinary storage
                                     is_main=img_data.get('is_main', False),
                                     sort_order=img_data.get('sort_order', 0),
-                                    alt_text=product.name
+                                    alt_text=img_data.get('alt_text', '') or product.name
                                 )
                                 total_images += 1
                             except Exception as e:
-                                self.stdout.write(self.style.WARNING(f'    ⚠ Помилка зображення: {str(e)}'))
+                                # Якщо path некоректний, пропускаємо це зображення
+                                self.stdout.write(self.style.WARNING(f'    ⚠ Помилка зображення {path}: {str(e)}'))
                     
                     # Додаємо характеристики
                     for attr_data in product_data.get('attributes', []):

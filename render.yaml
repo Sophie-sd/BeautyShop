@@ -3,15 +3,7 @@ services:
     name: beautyshop-django
     env: python
     plan: free
-    buildCommand: |
-      pip install -r requirements.txt
-      mkdir -p media
-      chmod 755 media
-      python manage.py collectstatic --noinput
-      python manage.py migrate
-      python create_superuser.py
-      python reset_admin_password.py
-      python manage.py reset_admin
+    buildCommand: bash build.sh
     startCommand: gunicorn beautyshop.wsgi:application --bind 0.0.0.0:$PORT --workers=1 --threads=4 --timeout=120 --max-requests=1000 --max-requests-jitter=50
     envVars:
       - key: PYTHON_VERSION
@@ -48,6 +40,8 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
+      - key: AUTO_IMPORT_PRODUCTS
+        value: true
 
 databases:
   - name: beautyshop-db
