@@ -368,44 +368,41 @@ class Command(BaseCommand):
         return data
 
     def download_images_to_cloudinary(self, product, image_urls):
-        """
-        Завантажує зображення через Django ImageField
-        На production автоматично йдуть на Cloudinary через STORAGES
-        """
-        for idx, img_url in enumerate(image_urls[:3]):  # Максимум 3 зображення
+        """Завантажує зображення на Cloudinary"""
+        images_to_create = []
+        
+        for idx, img_url in enumerate(image_urls[:3]):
             try:
                 response = self.session.get(img_url, timeout=20)
                 response.raise_for_status()
                 
-                # Перевірка розміру
-                if len(response.content) > 5 * 1024 * 1024:  # Максимум 5MB
+                if len(response.content) > 5 * 1024 * 1024:
                     continue
                 
-                # Визначаємо розширення
                 ext = 'jpg'
-                if 'content-type' in response.headers:
-                    if 'png' in response.headers['content-type']:
-                        ext = 'png'
+                if 'content-type' in response.headers and 'png' in response.headers['content-type']:
+                    ext = 'png'
                 
                 filename = f"{product.slug}_{idx+1}.{ext}"
                 
-                # Створюємо ProductImage - зображення автоматично піде на Cloudinary
                 product_image = ProductImage(
                     product=product,
                     is_main=(idx == 0),
                     sort_order=idx,
                     alt_text=product.name
                 )
-                # Django автоматично використає Cloudinary Storage в production
-                product_image.image.save(filename, ContentFile(response.content), save=True)
+                product_image.image.save(filename, ContentFile(response.content), save=False)
+                images_to_create.append(product_image)
                 
                 self.stats['images'] += 1
-                
-                # Очищуємо пам'ять
                 del response
                 
             except Exception:
-                pass  # Пропускаємо помилки завантаження окремих зображень
+                pass
+        
+        if images_to_create:
+            for img in images_to_create:
+                img.save()
 
     def detect_category_from_url(self, url):
         """Визначає категорію на основі URL товару"""
