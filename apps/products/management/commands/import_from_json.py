@@ -93,8 +93,8 @@ class Command(BaseCommand):
                                 sort_order=img_data.get('sort_order', 0),
                                 alt_text=img_data.get('alt_text', '')
                             )
-                            # Зберігаємо path - Cloudinary storage автоматично згенерує URL
-                            img.image = path
+                            # Встановлюємо path напряму в image.name, без завантаження файлу
+                            img.image.name = path
                             img.save()
                     
                     # Додаємо характеристики

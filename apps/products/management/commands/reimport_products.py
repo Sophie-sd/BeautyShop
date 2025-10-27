@@ -87,23 +87,25 @@ class Command(BaseCommand):
                         sku=product_data.get('sku', '')
                     )
                     
-                    # Додаємо зображення через Django ImageField з Cloudinary path
+                    # Додаємо зображення - просто зберігаємо path, без завантаження файлу
                     for img_data in product_data.get('images', []):
                         path = img_data.get('path', '')
                         if path:
                             try:
-                                # Створюємо запис зображення з path до Cloudinary
-                                # Cloudinary storage автоматично генерує правильний URL з path
-                                img = ProductImage.objects.create(
+                                # Створюємо запис зображення БЕЗ валідації файлу
+                                # Просто зберігаємо path - Cloudinary згенерує URL автоматично
+                                img = ProductImage(
                                     product=product,
-                                    image=path,  # Django використає Cloudinary storage
                                     is_main=img_data.get('is_main', False),
                                     sort_order=img_data.get('sort_order', 0),
                                     alt_text=img_data.get('alt_text', '') or product.name
                                 )
+                                # Встановлюємо path напряму в поле image.name, без save файлу
+                                img.image.name = path
+                                img.save()
                                 total_images += 1
                             except Exception as e:
-                                # Якщо path некоректний, пропускаємо це зображення
+                                # Якщо щось не так, пропускаємо це зображення
                                 self.stdout.write(self.style.WARNING(f'    ⚠ Помилка зображення {path}: {str(e)}'))
                     
                     # Додаємо характеристики
