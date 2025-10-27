@@ -82,18 +82,29 @@ class Command(BaseCommand):
                 with open(json_file, 'r', encoding='utf-8') as f:
                     products_data = json.load(f)
                 
-                for product_data in products_data:
+                # Підраховуємо загальну кількість товарів
+                total_in_file = len(products_data)
+                
+                for idx, product_data in enumerate(products_data, 1):
                     if limit and total_products >= limit:
                         break
                     
                     self.import_product(product_data)
                     total_products += 1
                     
-                    if total_products % 100 == 0:
+                    # Показуємо прогрес кожні 10 товарів
+                    if idx % 10 == 0 or idx == total_in_file:
+                        progress = round(idx / total_in_file * 100)
                         self.stdout.write(
-                            f'  ✓ {total_products} товарів, '
-                            f'{self.stats["images"]} зображень на Cloudinary'
+                            f'\r  📊 Прогрес: {progress}% ({idx}/{total_in_file}) | '
+                            f'Товарів: {self.stats["products"]} | '
+                            f'Зображень: {self.stats["images"]}',
+                            ending=''
                         )
+                        self.stdout.flush()
+                
+                # Перенесення рядка після завершення файлу
+                self.stdout.write('\n')
                 
                 if limit and total_products >= limit:
                     break
@@ -157,21 +168,18 @@ class Command(BaseCommand):
             
         except Exception as e:
             self.stats['errors'] += 1
-            self.stdout.write(self.style.WARNING(f'⚠️  Помилка товару {product_data.get("name", "")[:50]}: {e}'))
     
     def upload_image_to_cloudinary(self, product, img_data):
         """Завантажує локальне зображення на Cloudinary"""
         try:
             path = img_data.get('path', '')
             if not path:
-                self.stdout.write(f'    ⚠️  Немає path для зображення')
                 return False
             
             # Повний шлях до локального файлу
             local_path = os.path.join(settings.MEDIA_ROOT, path)
             
             if not os.path.exists(local_path):
-                self.stdout.write(f'    ⚠️  Файл не знайдено: {local_path}')
                 return False
             
             # Створюємо ProductImage і зберігаємо на Cloudinary
@@ -192,12 +200,8 @@ class Command(BaseCommand):
                 )
                 product_image.save(skip_optimization=True)
             
-            self.stdout.write(f'    ✓ Завантажено: {os.path.basename(path)}')
             return True
             
         except Exception as e:
-            self.stdout.write(f'    ❌ Помилка завантаження: {e}')
-            import traceback
-            traceback.print_exc()
             return False
 
