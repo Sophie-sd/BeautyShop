@@ -87,26 +87,25 @@ class Command(BaseCommand):
                         sku=product_data.get('sku', '')
                     )
                     
-                    # Додаємо зображення - просто зберігаємо path, без завантаження файлу
+                    # Додаємо зображення через bulk_create щоб обійти save() з оптимізацією
+                    images_to_create = []
                     for img_data in product_data.get('images', []):
                         path = img_data.get('path', '')
                         if path:
-                            try:
-                                # Створюємо запис зображення БЕЗ валідації файлу
-                                # Просто зберігаємо path - Cloudinary згенерує URL автоматично
-                                img = ProductImage(
-                                    product=product,
-                                    is_main=img_data.get('is_main', False),
-                                    sort_order=img_data.get('sort_order', 0),
-                                    alt_text=img_data.get('alt_text', '') or product.name
-                                )
-                                # Встановлюємо path напряму в поле image.name, без save файлу
-                                img.image.name = path
-                                img.save()
-                                total_images += 1
-                            except Exception as e:
-                                # Якщо щось не так, пропускаємо це зображення
-                                self.stdout.write(self.style.WARNING(f'    ⚠ Помилка зображення {path}: {str(e)}'))
+                            img = ProductImage(
+                                product=product,
+                                is_main=img_data.get('is_main', False),
+                                sort_order=img_data.get('sort_order', 0),
+                                alt_text=img_data.get('alt_text', '') or product.name
+                            )
+                            # Встановлюємо path напряму - bulk_create НЕ викликає save()
+                            img.image.name = path
+                            images_to_create.append(img)
+                    
+                    # Зберігаємо всі зображення одним запитом БЕЗ виклику save()
+                    if images_to_create:
+                        ProductImage.objects.bulk_create(images_to_create)
+                        total_images += len(images_to_create)
                     
                     # Додаємо характеристики
                     for attr_data in product_data.get('attributes', []):

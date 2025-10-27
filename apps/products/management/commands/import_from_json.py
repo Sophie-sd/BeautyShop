@@ -82,9 +82,9 @@ class Command(BaseCommand):
                         sku=product_data.get('sku', '')
                     )
                     
-                    # Додаємо зображення (вже на Cloudinary, просто посилання)
+                    # Додаємо зображення через bulk_create щоб обійти save() з оптимізацією
+                    images_to_create = []
                     for img_data in product_data.get('images', []):
-                        # Створюємо ProductImage та зберігаємо path з Cloudinary
                         path = img_data.get('path', '')
                         if path:
                             img = ProductImage(
@@ -93,9 +93,13 @@ class Command(BaseCommand):
                                 sort_order=img_data.get('sort_order', 0),
                                 alt_text=img_data.get('alt_text', '')
                             )
-                            # Встановлюємо path напряму в image.name, без завантаження файлу
+                            # Встановлюємо path напряму - bulk_create НЕ викликає save()
                             img.image.name = path
-                            img.save()
+                            images_to_create.append(img)
+                    
+                    # Зберігаємо всі зображення БЕЗ виклику save()
+                    if images_to_create:
+                        ProductImage.objects.bulk_create(images_to_create)
                     
                     # Додаємо характеристики
                     for attr_data in product_data.get('attributes', []):
