@@ -35,11 +35,11 @@ services:
       - key: ADMIN_PHONE
         value: +380681752654
       - key: CLOUDINARY_CLOUD_NAME
-        sync: false
+        value: dahkrj6ye
       - key: CLOUDINARY_API_KEY
-        sync: false
+        value: 232638167956413
       - key: CLOUDINARY_API_SECRET
-        sync: false
+        value: zn4vrWlnQoePX2k4PCtgGxhnrxk
       - key: AUTO_IMPORT_PRODUCTS
         value: true
 

@@ -424,8 +424,15 @@ class ProductImage(models.Model):
         ordering = ['sort_order']
     
     def save(self, *args, **kwargs):
-        # Оптимізуємо зображення перед збереженням
-        if self.image and hasattr(self.image, 'file'):
+        # Пропускаємо оптимізацію для Cloudinary
+        from django.conf import settings
+        skip_optimization = kwargs.pop('skip_optimization', False)
+        
+        # Оптимізуємо зображення перед збереженням (тільки для локального storage)
+        if (not skip_optimization and 
+            self.image and 
+            hasattr(self.image, 'file') and 
+            'cloudinary' not in str(settings.DEFAULT_FILE_STORAGE).lower()):
             try:
                 from io import BytesIO
                 from django.core.files.uploadedfile import InMemoryUploadedFile

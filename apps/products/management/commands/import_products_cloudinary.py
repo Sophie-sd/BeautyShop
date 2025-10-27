@@ -22,7 +22,7 @@ class Command(BaseCommand):
 
     def __init__(self):
         super().__init__()
-        self.base_url = 'https://beautyshop-ukrane.com.ua'
+        self.base_url = 'https://webosova.com.ua'
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
@@ -369,8 +369,6 @@ class Command(BaseCommand):
 
     def download_images_to_cloudinary(self, product, image_urls):
         """Завантажує зображення на Cloudinary"""
-        images_to_create = []
-        
         for idx, img_url in enumerate(image_urls[:3]):
             try:
                 response = self.session.get(img_url, timeout=20)
@@ -391,18 +389,17 @@ class Command(BaseCommand):
                     sort_order=idx,
                     alt_text=product.name
                 )
-                product_image.image.save(filename, ContentFile(response.content), save=False)
-                images_to_create.append(product_image)
+                # Зберігаємо безпосередньо на Cloudinary без оптимізації
+                product_image.image.save(filename, ContentFile(response.content), save=True)
                 
                 self.stats['images'] += 1
                 del response
                 
-            except Exception:
+            except Exception as e:
+                # Детальне логування помилок
+                import sys
+                print(f"⚠️  Помилка завантаження зображення {img_url[:80]}: {str(e)}", file=sys.stderr)
                 pass
-        
-        if images_to_create:
-            for img in images_to_create:
-                img.save()
 
     def detect_category_from_url(self, url):
         """Визначає категорію на основі URL товару"""
