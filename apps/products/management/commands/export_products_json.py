@@ -49,12 +49,14 @@ class Command(BaseCommand):
                 'sku': product.sku,
                 'images': [
                     {
-                        'path': img.image.name,  # Шлях в storage (Cloudinary)
+                        # Очищуємо шлях від зайвих "media/" префіксів
+                        'path': img.image.name.replace('media/', '') if img.image.name else '',
                         'is_main': img.is_main,
                         'sort_order': img.sort_order,
                         'alt_text': img.alt_text
                     }
                     for img in product.images.all()
+                    if img.image.name  # Тільки зображення з валідними шляхами
                 ],
                 'attributes': [
                     {

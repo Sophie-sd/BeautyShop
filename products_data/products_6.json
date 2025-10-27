@@ -18,19 +18,19 @@
     "sku": "BS03530",
     "images": [
       {
-        "path": "media/products/-12_1_q3WFH1M_sgd7lz",
+        "path": "products/-12_1_q3WFH1M_sgd7lz",
         "is_main": true,
         "sort_order": 0,
         "alt_text": "Шнур живлення"
       },
       {
-        "path": "media/products/-12_2_o5ogjo",
+        "path": "products/-12_2_o5ogjo",
         "is_main": false,
         "sort_order": 1,
         "alt_text": "Шнур живлення"
       },
       {
-        "path": "media/products/-12_3_rklvi7",
+        "path": "products/-12_3_rklvi7",
         "is_main": false,
         "sort_order": 2,
         "alt_text": "Шнур живлення"
