@@ -30,9 +30,12 @@ class Command(BaseCommand):
         
         self.stdout.write(self.style.SUCCESS(f'✅ Розподілено {updated} товарів'))
         
-        if products.count() == 0:
+        remaining = Product.objects.filter(category=import_cat).count()
+        if remaining == 0:
             import_cat.delete()
             self.stdout.write(self.style.SUCCESS('✅ Категорію Імпорт видалено'))
+        else:
+            self.stdout.write(self.style.WARNING(f'⚠️ Залишилось {remaining} товарів в категорії Імпорт'))
     
     def _get_category_map(self):
         return {
