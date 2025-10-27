@@ -73,14 +73,11 @@ if [ "$AUTO_IMPORT_PRODUCTS" = "true" ]; then
             echo "🔄 Запуск повного реімпорту товарів..."
             echo ""
             
-            # Запускаємо повний реімпорт (очищення + імпорт в одній команді)
-            python manage.py reimport_products --input products_data
-            
-            # Виправляємо шляхи зображень (видаляємо зайвий media/ префікс)
-            python manage.py fix_image_paths
+            # Запускаємо імпорт товарів
+            python manage.py import_from_json --input products_data
             
             # Розподіляємо товари по правильним категоріям
-            python manage.py redistribute_products
+            python manage.py assign_categories
             
             echo ""
             echo "✅ Реімпорт товарів завершено успішно!"
