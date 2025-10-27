@@ -79,8 +79,8 @@ if [ "$AUTO_IMPORT_PRODUCTS" = "true" ]; then
             # Виправляємо шляхи зображень (видаляємо зайвий media/ префікс)
             python manage.py fix_image_paths
             
-            # Видаляємо тестову категорію import-webosova
-            python manage.py fix_categories
+            # Розподіляємо товари по правильним категоріям
+            python manage.py redistribute_products
             
             echo ""
             echo "✅ Реімпорт товарів завершено успішно!"
