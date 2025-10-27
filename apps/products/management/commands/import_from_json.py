@@ -84,15 +84,18 @@ class Command(BaseCommand):
                     
                     # Додаємо зображення (вже на Cloudinary, просто посилання)
                     for img_data in product_data.get('images', []):
-                        img = ProductImage(
-                            product=product,
-                            is_main=img_data.get('is_main', False),
-                            sort_order=img_data.get('sort_order', 0),
-                            alt_text=img_data.get('alt_text', '')
-                        )
-                        # Використовуємо path з Cloudinary (не завантажуємо заново)
-                        img.image.name = img_data.get('path', '')
-                        img.save()
+                        # Створюємо ProductImage та зберігаємо path з Cloudinary
+                        path = img_data.get('path', '')
+                        if path:
+                            img = ProductImage(
+                                product=product,
+                                is_main=img_data.get('is_main', False),
+                                sort_order=img_data.get('sort_order', 0),
+                                alt_text=img_data.get('alt_text', '')
+                            )
+                            # Зберігаємо path - Cloudinary storage автоматично згенерує URL
+                            img.image = path
+                            img.save()
                     
                     # Додаємо характеристики
                     for attr_data in product_data.get('attributes', []):
