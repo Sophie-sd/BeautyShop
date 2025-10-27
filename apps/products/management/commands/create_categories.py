@@ -23,7 +23,6 @@ class Command(BaseCommand):
             ('Одноразова продукція', 'odnorazova-produktsia', 8),
             ('Дезінфекція та стерилізація', 'dezinfektsiya-ta-sterylizatsiya', 9),
             ('Меблі для салонів', 'mebli-dlya-saloniv', 10),
-            ('Імпорт з Webosova', 'import-webosova', 99),  # Тимчасова категорія для нерозпізнаних товарів
         ]
         
         created_count = 0
