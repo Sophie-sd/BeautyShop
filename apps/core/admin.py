@@ -166,6 +166,9 @@ class ArticleAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('title',)}
     list_editable = ['is_published']
     date_hierarchy = 'created_at'
+    ordering = ['-created_at']
+    save_on_top = True
+    list_per_page = 50
     
     fieldsets = (
         ('Основна інформація', {
@@ -238,6 +241,10 @@ class ArticleAdmin(admin.ModelAdmin):
             duplicated += 1
         self.message_user(request, f"Продубльовано {duplicated} статей")
     duplicate_articles.short_description = "Дублювати вибрані статті"
+    
+    def get_queryset(self, request):
+        """Оптимізація запитів"""
+        return super().get_queryset(request).prefetch_related('related_products')
     
     class Media:
         css = {
