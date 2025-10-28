@@ -94,36 +94,55 @@
 /* Мобільна версія */
 @media (max-width: 768px) {
     .categories-circular {
-        grid-template-columns: repeat(5, 1fr);
-        gap: 20px 12px;
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        gap: 15px;
         max-width: none;
-        margin: 35px auto 0;
-        padding: 0 15px;
+        margin: 35px 0 0;
+        padding: 0 15px 20px;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .categories-circular::-webkit-scrollbar {
+        height: 4px;
+    }
+    
+    .categories-circular::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .categories-circular::-webkit-scrollbar-thumb {
+        background: rgba(233, 30, 99, 0.3);
+        border-radius: 10px;
+    }
+    
+    .category-circle-item {
+        flex: 0 0 auto;
     }
     
     .category-circle-wrapper {
-        width: 68px;
-        height: 68px;
-        margin-bottom: 8px;
+        width: 85px;
+        height: 85px;
+        margin-bottom: 10px;
     }
     
     .category-circle-name {
-        font-size: 11px;
-        max-width: 72px;
+        font-size: 12px;
+        max-width: 90px;
         margin-top: 0;
     }
     
-    /* Більший відступ від біжучої стрічки на мобільній */
     .categories-section-circular {
         padding-top: 25px;
     }
     
-    /* Приховуємо десктопну секцію на мобільних */
     .categories-section.desktop-only {
         display: none;
     }
     
-    /* Приховуємо заголовки для мобільних категорій на десктопі */
     .categories-section-circular .section-header.mobile-only {
         display: block;
     }
@@ -131,20 +150,20 @@
 
 @media (max-width: 480px) {
     .categories-circular {
-        gap: 18px 8px;
-        padding: 0 10px;
+        gap: 12px;
+        padding: 0 10px 20px;
         margin-top: 30px;
     }
     
     .category-circle-wrapper {
-        width: 60px;
-        height: 60px;
-        margin-bottom: 7px;
+        width: 75px;
+        height: 75px;
+        margin-bottom: 8px;
     }
     
     .category-circle-name {
-        font-size: 10px;
-        max-width: 65px;
+        font-size: 11px;
+        max-width: 80px;
         margin-top: 0;
     }
 }
