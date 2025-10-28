@@ -332,10 +332,6 @@
         padding: 6px 10px;
     }
     
-    .search-icon {
-        width: 16px;
-        height: 16px;
-    }
 }
 
 /* Копірайт */
@@ -426,11 +422,6 @@
     .main-nav,
     .desktop-nav {
         display: none;
-    }
-    
-    /* Спрощений header для мобільних - тільки логотип та кнопка пошуку */
-    .main-header {
-        padding: 8px 0;
     }
     
     .header-content {

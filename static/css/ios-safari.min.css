@@ -237,9 +237,6 @@
 
 /* Tablet Layout */
 @media (max-width: 991.98px) {
-    .main-header {
-        padding: var(--spacing-md) 0;
-    }
     
     .header-content {
         display: flex;
@@ -264,9 +261,6 @@
 
 /* Mobile Layout */
 @media (max-width: 767.98px) {
-    .main-header {
-        padding: var(--spacing-sm) 0;
-    }
     
     .header-content {
         gap: var(--spacing-sm);
@@ -325,7 +319,7 @@
 /* Small Mobile Layout */
 @media (max-width: 575.98px) {
     .main-header {
-        padding: var(--spacing-xs) 0;
+        padding: 0;
     }
     
     .header-content {
