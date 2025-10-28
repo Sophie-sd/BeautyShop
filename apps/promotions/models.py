@@ -107,7 +107,7 @@ class Promotion(models.Model):
             
             # Якщо є знижка на роздрібну ціну
             if self.retail_discount_percent and product.retail_price:
-                discount = product.retail_price * (self.retail_discount_percent / 100)
+                discount = product.retail_price * (Decimal(str(self.retail_discount_percent)) / Decimal('100'))
                 product.sale_price = product.retail_price - discount
                 product.is_sale = True
                 product.sale_start_date = self.start_date
@@ -117,19 +117,18 @@ class Promotion(models.Model):
             
             # Якщо є знижка на оптову ціну
             if self.wholesale_discount_percent and product.wholesale_price:
-                discount = product.wholesale_price * (self.wholesale_discount_percent / 100)
-                # Зберігаємо в окреме поле (якщо є)
+                # Поки не зберігаємо, бо немає окремого поля
                 updated = True
             
             # Якщо є знижка від 3 шт
             if self.qty3_discount_percent and product.price_3_qty:
-                discount = product.price_3_qty * (self.qty3_discount_percent / 100)
+                discount = product.price_3_qty * (Decimal(str(self.qty3_discount_percent)) / Decimal('100'))
                 product.price_3_qty = product.price_3_qty - discount
                 updated = True
             
             # Якщо є знижка від 5 шт
             if self.qty5_discount_percent and product.price_5_qty:
-                discount = product.price_5_qty * (self.qty5_discount_percent / 100)
+                discount = product.price_5_qty * (Decimal(str(self.qty5_discount_percent)) / Decimal('100'))
                 product.price_5_qty = product.price_5_qty - discount
                 updated = True
             
