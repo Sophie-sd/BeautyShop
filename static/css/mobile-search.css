@@ -34,10 +34,10 @@
     justify-content: center;
     width: 44px;
     height: 44px;
-    background: none;
+    background: rgba(233, 30, 99, 0.15);
     border: none;
-    border-radius: var(--border-radius);
-    color: var(--neutral-dark);
+    border-radius: 8px;
+    color: var(--primary-pink);
     cursor: pointer;
     transition: all var(--transition-fast);
     padding: var(--spacing-sm);
@@ -45,7 +45,7 @@
 
 .mobile-search-btn:hover,
 .mobile-search-btn:focus {
-    background: var(--gray-light);
+    background: rgba(233, 30, 99, 0.25);
     color: var(--primary-pink);
 }
 
@@ -125,10 +125,7 @@
     justify-content: center;
     width: 36px;
     height: 36px;
-    background: var(--white);
-    border: 2px solid var(--gray-light);
-    border-radius: var(--border-radius);
-    color: var(--neutral-dark);
+    border-radius: 8px;
     cursor: pointer;
     transition: all var(--transition-fast);
     padding: var(--spacing-xs);
@@ -136,23 +133,29 @@
 }
 
 .mobile-search-close {
-    background: var(--gray-light);
-    border-color: var(--gray-medium);
+    background: var(--white);
+    border: 2px solid var(--primary-pink);
+    color: var(--primary-pink);
 }
 
 .mobile-search-close:hover,
 .mobile-search-close:focus {
-    background: #ff4757;
-    border-color: #ff4757;
+    background: var(--primary-pink);
+    border-color: var(--primary-pink);
     color: var(--white);
     transform: scale(1.05);
 }
 
+.mobile-search-submit {
+    background: var(--primary-pink);
+    border: 2px solid var(--primary-pink);
+    color: var(--white);
+}
+
 .mobile-search-submit:hover,
 .mobile-search-submit:focus {
-    background: var(--primary-pink);
-    border-color: var(--primary-pink);
-    color: var(--white);
+    background: #c2185b;
+    border-color: #c2185b;
     transform: scale(1.05);
 }
 
