@@ -176,10 +176,6 @@ class ArticleAdmin(admin.ModelAdmin):
             'fields': ('content',),
             'classes': ('wide',)
         }),
-        ('Зв\'язані товари', {
-            'fields': ('related_products',),
-            'description': 'Оберіть до 5 товарів для відображення в кінці статті'
-        }),
         ('Публікація', {
             'fields': ('is_published',)
         }),
@@ -188,8 +184,6 @@ class ArticleAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
-    
-    filter_horizontal = ['related_products']
     
     formfield_overrides = {
         models.TextField: {'widget': CKEditorWidget()},
@@ -239,10 +233,6 @@ class ArticleAdmin(admin.ModelAdmin):
             duplicated += 1
         self.message_user(request, f"Продубльовано {duplicated} статей")
     duplicate_articles.short_description = "Дублювати вибрані статті"
-    
-    def get_queryset(self, request):
-        """Оптимізація запитів"""
-        return super().get_queryset(request).prefetch_related('related_products')
     
     class Media:
         css = {

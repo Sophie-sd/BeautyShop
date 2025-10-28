@@ -16,15 +16,6 @@ class Article(models.Model):
     excerpt = models.TextField('Короткий опис', max_length=300, blank=True)
     image = models.ImageField('Зображення', upload_to='articles/', blank=True)
     
-    # Зв'язані товари
-    related_products = models.ManyToManyField(
-        'products.Product',
-        verbose_name='Зв\'язані товари',
-        blank=True,
-        limit_choices_to={'is_active': True},
-        help_text='Максимум 5 товарів для відображення в кінці статті'
-    )
-    
     is_published = models.BooleanField('Опубліковано', default=True)
     created_at = models.DateTimeField('Створено', auto_now_add=True)
     updated_at = models.DateTimeField('Оновлено', auto_now=True)
@@ -45,10 +36,6 @@ class Article(models.Model):
     
     def get_absolute_url(self):
         return reverse('blog:detail', kwargs={'slug': self.slug})
-    
-    def get_related_products(self):
-        """Повертає до 5 зв'язаних товарів"""
-        return self.related_products.filter(is_active=True)[:5]
     
     def __str__(self):
         return self.title
