@@ -237,6 +237,12 @@ class ArticleAdmin(admin.ModelAdmin):
             duplicated += 1
         self.message_user(request, f"Продубльовано {duplicated} статей")
     duplicate_articles.short_description = "Дублювати вибрані статті"
+    
+    class Media:
+        css = {
+            'all': ('admin/css/custom_admin.css',)
+        }
+        js = ('admin/js/custom_admin.js',)
 
 
 # Налаштування відображення моделей в адмінці
