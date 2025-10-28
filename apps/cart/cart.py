@@ -15,6 +15,12 @@ class Cart:
         cart = self.session.get(settings.CART_SESSION_ID)
         if not cart:
             cart = self.session[settings.CART_SESSION_ID] = {}
+        
+        # Конвертуємо всі ціни у float (для сумісності зі старими сесіями)
+        for item in cart.values():
+            if 'price' in item and not isinstance(item['price'], float):
+                item['price'] = float(item['price'])
+        
         self.cart = cart
         self.user = request.user if request.user.is_authenticated else None
     
@@ -85,9 +91,19 @@ class Cart:
     
     def update_quantities(self, product_quantities):
         """Оновлення кількості товарів"""
+        product_ids = [pid for pid in product_quantities.keys() if pid in self.cart]
+        products = Product.objects.filter(id__in=product_ids)
+        products_dict = {str(p.id): p for p in products}
+        
         for product_id, quantity in product_quantities.items():
             if product_id in self.cart:
-                self.cart[product_id]['quantity'] = quantity
                 if quantity <= 0:
                     del self.cart[product_id]
+                else:
+                    self.cart[product_id]['quantity'] = quantity
+                    if product_id in products_dict:
+                        product = products_dict[product_id]
+                        self.cart[product_id]['price'] = float(
+                            product.get_price_for_user(self.user, quantity)
+                        )
         self.save()

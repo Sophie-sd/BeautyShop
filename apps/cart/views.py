@@ -27,7 +27,9 @@ def cart_add(request, product_id):
         product_id_str = str(product_id)
         cart_item = cart.cart.get(product_id_str, {})
         item_quantity = cart_item.get('quantity', 0)
-        item_price = float(cart_item.get('price', product.get_price_for_user(cart.user, item_quantity)))
+        item_price = cart_item.get('price', 0)
+        if not isinstance(item_price, (int, float)):
+            item_price = float(item_price) if item_price else 0.0
         
         return JsonResponse({
             'success': True,
