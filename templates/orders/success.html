@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Замовлення оформлено - Beauty Shop{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/cart.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="order-success-section section-padding">
+    <div class="container">
+        <div class="success-content text-center">
+            <div class="success-icon">
+                ✅
+            </div>
+            
+            <h1 class="success-title">Дякуємо за замовлення!</h1>
+            
+            <p class="success-message">
+                Ваше замовлення успішно оформлено.<br>
+                Ми зв'яжемося з вами найближчим часом для підтвердження.
+            </p>
+            
+            <div class="success-actions">
+                <a href="{% url 'core:home' %}" class="btn btn-primary">На головну</a>
+                <a href="{% url 'core:catalog' %}" class="btn btn-outline">До каталогу</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.order-success-section {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.success-content {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.success-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+}
+
+.success-title {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: var(--dark);
+}
+
+.success-message {
+    font-size: 1.1rem;
+    color: var(--gray-600);
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+.success-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .success-icon {
+        font-size: 60px;
+    }
+    
+    .success-title {
+        font-size: 1.5rem;
+    }
+    
+    .success-message {
+        font-size: 1rem;
+    }
+    
+    .success-actions {
+        flex-direction: column;
+    }
+    
+    .success-actions .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+

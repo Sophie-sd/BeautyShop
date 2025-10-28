@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Оформлення замовлення - Beauty Shop{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/cart.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="order-section section-padding">
+    <div class="container">
+        <h1 class="section-title">Оформлення замовлення</h1>
+        
+        <div class="order-content">
+            <div class="order-form-wrapper">
+                <form method="post" class="order-form">
+                    {% csrf_token %}
+                    
+                    <div class="form-section">
+                        <h3>Контактні дані</h3>
+                        <div class="form-group">
+                            <label for="first_name">Ім'я *</label>
+                            <input type="text" id="first_name" name="first_name" class="form-control" 
+                                   value="{{ user.first_name|default:'' }}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="last_name">Прізвище *</label>
+                            <input type="text" id="last_name" name="last_name" class="form-control" 
+                                   value="{{ user.last_name|default:'' }}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">Телефон *</label>
+                            <input type="tel" id="phone" name="phone" class="form-control" 
+                                   value="{{ user.phone|default:'' }}" required 
+                                   placeholder="+380">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email *</label>
+                            <input type="email" id="email" name="email" class="form-control" 
+                                   value="{{ user.email|default:'' }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Доставка</h3>
+                        <div class="form-group">
+                            <label for="delivery_method">Спосіб доставки *</label>
+                            <select id="delivery_method" name="delivery_method" class="form-control" required>
+                                <option value="">Оберіть спосіб доставки</option>
+                                <option value="nova_poshta">Нова Пошта</option>
+                                <option value="ukr_poshta">Укрпошта</option>
+                                <option value="courier">Кур'єр</option>
+                                <option value="pickup">Самовивіз</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="city">Місто *</label>
+                            <input type="text" id="city" name="city" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group delivery-address">
+                            <label for="address">Адреса/Відділення *</label>
+                            <input type="text" id="address" name="address" class="form-control" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Оплата</h3>
+                        <div class="payment-methods">
+                            <label class="payment-method">
+                                <input type="radio" name="payment_method" value="cash" checked>
+                                <span>Оплата при отриманні</span>
+                            </label>
+                            <label class="payment-method">
+                                <input type="radio" name="payment_method" value="online">
+                                <span>Онлайн оплата (LiqPay)</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Коментар до замовлення</h3>
+                        <div class="form-group">
+                            <textarea id="comment" name="comment" class="form-control" rows="4" 
+                                      placeholder="Додайте коментар (необов'язково)"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <a href="{% url 'cart:detail' %}" class="btn btn-outline">Повернутись до кошика</a>
+                        <button type="submit" class="btn btn-primary">Підтвердити замовлення</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="order-summary">
+                <h3>Ваше замовлення</h3>
+                
+                <div class="order-items">
+                    {% for item in cart %}
+                    <div class="order-item">
+                        <div class="item-info">
+                            <span class="item-name">{{ item.product.name }}</span>
+                            <span class="item-quantity">× {{ item.quantity }}</span>
+                        </div>
+                        <span class="item-price">{{ item.total_price }} ₴</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="order-totals">
+                    <div class="total-row">
+                        <span>Товари:</span>
+                        <span>{{ cart.get_total_price }} ₴</span>
+                    </div>
+                    
+                    {% if request.session.promo_discount %}
+                    <div class="total-row promo-row">
+                        <span>Промокод ({{ request.session.promo_code }}):</span>
+                        <span>{{ request.session.promo_discount }} ₴</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="total-row total-final">
+                        <span>До сплати:</span>
+                        <span class="total-amount">
+                            {% if request.session.promo_discount %}
+                                {{ cart.get_total_price|add:request.session.promo_discount|floatformat:2 }} ₴
+                            {% else %}
+                                {{ cart.get_total_price }} ₴
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="order-info">
+                    <p>Ми зв'яжемося з вами для підтвердження замовлення</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
