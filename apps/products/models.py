@@ -196,6 +196,12 @@ class Product(models.Model):
         blank=True,
         help_text='Акція завершиться автоматично після цієї дати'
     )
+    active_promotion_name = models.CharField(
+        'Назва активної акції',
+        max_length=100,
+        blank=True,
+        help_text='Назва акції для відображення на бейджі'
+    )
     
     # Градація цін
     price_3_qty = models.DecimalField(
@@ -374,11 +380,15 @@ class Product(models.Model):
         if self.is_new:
             stickers.append({'type': 'new', 'text': 'Новинка', 'class': 'badge-new'})
         if self.is_sale_active():
-            discount = self.get_discount_percentage()
-            if discount > 0:
-                stickers.append({'type': 'sale', 'text': f'-{discount}%', 'class': 'badge-sale'})
+            # Якщо є назва акції - показуємо її, інакше відсоток
+            if self.active_promotion_name:
+                stickers.append({'type': 'sale', 'text': self.active_promotion_name, 'class': 'badge-sale'})
             else:
-                stickers.append({'type': 'sale', 'text': 'Акція', 'class': 'badge-sale'})
+                discount = self.get_discount_percentage()
+                if discount > 0:
+                    stickers.append({'type': 'sale', 'text': f'-{discount}%', 'class': 'badge-sale'})
+                else:
+                    stickers.append({'type': 'sale', 'text': 'Акція', 'class': 'badge-sale'})
         return stickers
     
     def get_similar_products(self, limit=4):
@@ -633,122 +643,3 @@ class ProductChangeLog(models.Model):
     def __str__(self):
         return f"{self.product.name} - {self.field_name} ({self.created_at.strftime('%d.%m.%Y %H:%M')})"
 
-
-class SalePromotion(models.Model):
-    """Масові акції з періодом дії"""
-    
-    name = models.CharField('Назва акції', max_length=200)
-    description = models.TextField('Опис', blank=True)
-    
-    discount_type = models.CharField(
-        'Тип знижки',
-        max_length=20,
-        choices=[
-            ('percentage', 'Відсоток'),
-            ('fixed', 'Фіксована сума'),
-        ],
-        default='percentage'
-    )
-    discount_value = models.DecimalField(
-        'Розмір знижки',
-        max_digits=10,
-        decimal_places=2,
-        help_text='Відсоток або сума знижки'
-    )
-    
-    products = models.ManyToManyField(
-        Product,
-        related_name='promotions',
-        verbose_name='Товари',
-        blank=True
-    )
-    
-    categories = models.ManyToManyField(
-        Category,
-        related_name='promotions',
-        verbose_name='Категорії',
-        blank=True,
-        help_text='Застосувати акцію до всіх товарів цих категорій'
-    )
-    
-    start_date = models.DateTimeField('Дата початку')
-    end_date = models.DateTimeField('Дата закінчення')
-    
-    is_active = models.BooleanField('Активна', default=True)
-    show_badge = models.BooleanField('Показувати бейдж "Акція"', default=True)
-    
-    created_at = models.DateTimeField('Створено', auto_now_add=True)
-    updated_at = models.DateTimeField('Оновлено', auto_now=True)
-    created_by = models.ForeignKey(
-        'users.CustomUser',
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='created_promotions',
-        verbose_name='Створив'
-    )
-    
-    class Meta:
-        verbose_name = 'Масова акція'
-        verbose_name_plural = 'Масові акції'
-        ordering = ['-start_date']
-        indexes = [
-            models.Index(fields=['is_active', 'start_date', 'end_date']),
-        ]
-    
-    def __str__(self):
-        return f"{self.name} ({self.start_date.strftime('%d.%m.%Y')} - {self.end_date.strftime('%d.%m.%Y')})"
-    
-    def is_valid(self):
-        """Перевіряє чи дійсна акція зараз"""
-        from django.utils import timezone
-        now = timezone.now()
-        return self.is_active and self.start_date <= now <= self.end_date
-    
-    def apply_to_products(self):
-        """Застосовує акцію до всіх обраних товарів"""
-        from decimal import Decimal
-        
-        # Отримуємо всі товари акції
-        all_products = list(self.products.all())
-        
-        # Додаємо товари з категорій
-        for category in self.categories.all():
-            category_products = Product.objects.filter(category=category, is_active=True)
-            all_products.extend(category_products)
-        
-        # Унікальні товари
-        unique_products = set(all_products)
-        
-        # Застосовуємо знижку
-        for product in unique_products:
-            if self.discount_type == 'percentage':
-                sale_price = product.retail_price * (1 - self.discount_value / 100)
-            else:
-                sale_price = max(product.retail_price - self.discount_value, Decimal('0.01'))
-            
-            product.is_sale = True
-            product.sale_price = sale_price
-            product.sale_start_date = self.start_date
-            product.sale_end_date = self.end_date
-            product.save(update_fields=['is_sale', 'sale_price', 'sale_start_date', 'sale_end_date'])
-        
-        return len(unique_products)
-    
-    def remove_from_products(self):
-        """Видаляє акцію з товарів"""
-        all_products = list(self.products.all())
-        
-        for category in self.categories.all():
-            category_products = Product.objects.filter(category=category)
-            all_products.extend(category_products)
-        
-        unique_products = set(all_products)
-        
-        for product in unique_products:
-            product.is_sale = False
-            product.sale_price = None
-            product.sale_start_date = None
-            product.sale_end_date = None
-            product.save(update_fields=['is_sale', 'sale_price', 'sale_start_date', 'sale_end_date'])
-        
-        return len(unique_products)

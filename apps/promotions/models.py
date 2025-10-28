@@ -110,6 +110,9 @@ class Promotion(models.Model):
                 discount = product.retail_price * (self.retail_discount_percent / 100)
                 product.sale_price = product.retail_price - discount
                 product.is_sale = True
+                product.sale_start_date = self.start_date
+                product.sale_end_date = self.end_date
+                product.active_promotion_name = self.name
                 updated = True
             
             # Якщо є знижка на оптову ціну
@@ -145,6 +148,9 @@ class Promotion(models.Model):
             if product.is_sale and product.sale_price:
                 product.is_sale = False
                 product.sale_price = None
+                product.sale_start_date = None
+                product.sale_end_date = None
+                product.active_promotion_name = ''
                 product.save()
                 count += 1
         
