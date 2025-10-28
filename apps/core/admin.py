@@ -158,13 +158,11 @@ class ArticleAdmin(admin.ModelAdmin):
     """Адміністрування статей"""
     
     list_display = [
-        'title', 'get_image_preview', 'is_published', 
-        'created_at', 'get_excerpt_preview'
+        'title', 'get_image_preview', 'created_at', 'get_excerpt_preview'
     ]
     list_filter = ['is_published', 'created_at']
     search_fields = ['title', 'content', 'excerpt']
     prepopulated_fields = {'slug': ('title',)}
-    list_editable = ['is_published']
     date_hierarchy = 'created_at'
     ordering = ['-created_at']
     save_on_top = True
