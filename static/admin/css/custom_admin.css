@@ -1,25 +1,14 @@
 /* 
  * Beauty Shop - Кастомні стилі адмін-панелі
- * Компактна, швидка, логічна ієрархія
  */
 
-/* ============================================
-   ЗАГАЛЬНІ НАЛАШТУВАННЯ
-   ============================================ */
-
 :root {
-    --primary-color: #4299e1;
-    --primary-hover: #3182ce;
-    --success-color: #48bb78;
-    --warning-color: #ed8936;
-    --danger-color: #f56565;
-    --info-color: #4299e1;
+    --primary-color: #79aec8;
     --text-muted: #718096;
     --border-color: #e2e8f0;
     --bg-light: #f7fafc;
 }
 
-/* Покращуємо зовнішній вигляд форм */
 .form-row {
     margin-bottom: 15px;
 }
@@ -30,10 +19,6 @@
     border-radius: 6px;
     padding: 12px;
 }
-
-/* ============================================
-   КНОПКИ ТА ДІЇ
-   ============================================ */
 
 .button.default,
 input[type="submit"].default,
@@ -51,18 +36,15 @@ input[type="submit"].default,
 .button.default:hover,
 input[type="submit"].default:hover,
 .submit-row input[type="submit"]:hover {
-    background: var(--primary-hover);
+    background: var(--primary-color);
+    opacity: 0.9;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+    box-shadow: 0 4px 12px rgba(121, 174, 200, 0.3);
 }
 
 .button.default:active {
     transform: translateY(0);
 }
-
-/* ============================================
-   ЗОБРАЖЕННЯ ТА ПРЕВЬЮ
-   ============================================ */
 
 .admin-thumbnail {
     width: 100px;
@@ -113,10 +95,6 @@ input[type="submit"].default:hover,
     transform: scale(1.02);
 }
 
-/* ============================================
-   ТАБЛИЦІ ТА СПИСКИ
-   ============================================ */
-
 #result_list {
     border-radius: 8px;
     overflow: hidden;
@@ -125,7 +103,7 @@ input[type="submit"].default:hover,
 }
 
 #result_list thead th {
-    background: #667eea;
+    background: var(--primary-color);
     color: white;
     font-weight: 600;
     text-transform: uppercase;
@@ -143,7 +121,7 @@ input[type="submit"].default:hover,
 }
 
 #result_list tbody tr:hover {
-    background: #fff5f8;
+    background: #f0f7fa;
 }
 
 #result_list tbody tr:nth-child(even) {
@@ -151,19 +129,14 @@ input[type="submit"].default:hover,
 }
 
 #result_list tbody tr:nth-child(even):hover {
-    background: #fff5f8;
+    background: #f0f7fa;
 }
 
-/* Компактність - зменшуємо padding */
 #result_list th,
 #result_list td {
     padding: 8px 10px;
     vertical-align: middle;
 }
-
-/* ============================================
-   БЕЙДЖІ ТА СТАТУСИ
-   ============================================ */
 
 .badge {
     display: inline-block;
@@ -174,44 +147,21 @@ input[type="submit"].default:hover,
     text-transform: uppercase;
     letter-spacing: 0.5px;
     white-space: nowrap;
-}
-
-.badge-sale {
-    background: #f5576c;
+    background: var(--primary-color);
     color: white;
-    box-shadow: 0 2px 6px rgba(245, 87, 108, 0.3);
+    box-shadow: 0 2px 6px rgba(121, 174, 200, 0.3);
 }
 
+.badge-sale,
 .badge-new,
-.badge-success {
-    background: #4facfe;
-    color: white;
-    box-shadow: 0 2px 6px rgba(79, 172, 254, 0.3);
-}
-
-.badge-top {
-    background: #ffa726;
-    color: white;
-    box-shadow: 0 2px 6px rgba(255, 167, 38, 0.3);
-}
-
-.badge-info {
-    background: var(--info-color);
-    color: white;
-}
-
-.badge-warning {
-    background: var(--warning-color);
-    color: white;
-}
-
-.badge-danger {
-    background: var(--danger-color);
-    color: white;
-}
-
-.badge-secondary {
-    background: #a0aec0;
+.badge-success,
+.badge-top,
+.badge-info,
+.badge-warning,
+.badge-danger,
+.badge-secondary,
+.badge-primary {
+    background: var(--primary-color);
     color: white;
 }
 
@@ -220,30 +170,12 @@ input[type="submit"].default:hover,
     color: #718096;
 }
 
-.badge-primary {
-    background: #4299e1;
-    color: white;
-}
-
-/* Статуси товарів */
-.status-active {
-    color: var(--success-color);
-    font-weight: 600;
-}
-
-.status-warning {
-    color: var(--warning-color);
-    font-weight: 600;
-}
-
+.status-active,
+.status-warning,
 .status-inactive {
-    color: var(--danger-color);
+    color: var(--primary-color);
     font-weight: 600;
 }
-
-/* ============================================
-   ЦІНИ ТА ФІНАНСИ
-   ============================================ */
 
 .price-stack {
     line-height: 1.6;
@@ -257,17 +189,13 @@ input[type="submit"].default:hover,
 .pricing-help,
 .sale-help {
     background: #ebf8ff;
-    border-left: 4px solid var(--info-color);
+    border-left: 4px solid var(--primary-color);
     padding: 12px 16px;
     border-radius: 4px;
     margin: 10px 0;
     font-size: 13px;
     line-height: 1.6;
 }
-
-/* ============================================
-   ФІЛЬТРИ (SIDEBAR)
-   ============================================ */
 
 #changelist-filter {
     background: white;
@@ -279,7 +207,7 @@ input[type="submit"].default:hover,
 }
 
 #changelist-filter h2 {
-    background: #667eea;
+    background: var(--primary-color);
     color: white;
     padding: 12px 15px;
     font-size: 13px;
@@ -323,17 +251,13 @@ input[type="submit"].default:hover,
     background: #ebf8ff;
     color: #2c5282;
     font-weight: 600;
-    border-left-color: #4299e1;
+    border-left-color: var(--primary-color);
 }
 
 .filter-tags {
     font-size: 11px;
     color: var(--text-muted);
 }
-
-/* ============================================
-   ПАГІНАЦІЯ
-   ============================================ */
 
 .paginator {
     background: white;
@@ -357,17 +281,14 @@ input[type="submit"].default:hover,
 
 .paginator a:hover {
     background: var(--bg-light);
-    color: var(--primary-hover);
+    color: var(--primary-color);
+    opacity: 0.8;
 }
 
 .paginator .this-page {
     font-weight: 700;
     color: #2d3748;
 }
-
-/* ============================================
-   ПОЛЯ ВВОДУ
-   ============================================ */
 
 input[type="text"],
 input[type="email"],
@@ -395,11 +316,10 @@ input[type="datetime-local"]:focus,
 textarea:focus,
 select:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+    box-shadow: 0 0 0 3px rgba(121, 174, 200, 0.1);
     outline: none;
 }
 
-/* Autocomplete/select2 */
 .select2-container--admin-autocomplete .select2-selection--single {
     border: 2px solid var(--border-color);
     border-radius: 6px;
@@ -410,10 +330,6 @@ select:focus {
 .select2-container--admin-autocomplete .select2-selection--single:focus {
     border-color: var(--primary-color);
 }
-
-/* ============================================
-   FIELDSETS ТА ГРУПУВАННЯ
-   ============================================ */
 
 .module {
     border: 1px solid var(--border-color);
@@ -445,7 +361,6 @@ fieldset.module h2 {
     padding: 12px 20px;
 }
 
-/* Collapsed fieldsets */
 fieldset.collapsed {
     border: 1px solid var(--border-color);
     border-radius: 6px;
@@ -459,10 +374,6 @@ fieldset.collapsed h2 {
 fieldset.collapsed h2:hover {
     background: #edf2f7;
 }
-
-/* ============================================
-   INLINE FORMS
-   ============================================ */
 
 .inline-group {
     border: 1px solid var(--border-color);
@@ -494,10 +405,6 @@ fieldset.collapsed h2:hover {
     border-bottom: none;
 }
 
-/* ============================================
-   ПОВІДОМЛЕННЯ
-   ============================================ */
-
 .messagelist {
     margin: 0 0 20px 0;
     padding: 0;
@@ -509,34 +416,20 @@ fieldset.collapsed h2:hover {
     border-radius: 6px;
     font-weight: 500;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.messagelist .success {
-    background: #48bb78;
+    background: var(--primary-color);
     color: white;
 }
 
-.messagelist .warning {
-    background: #ed8936;
-    color: white;
-}
-
-.messagelist .error {
-    background: #f56565;
-    color: white;
-}
-
+.messagelist .success,
+.messagelist .warning,
+.messagelist .error,
 .messagelist .info {
-    background: #4299e1;
+    background: var(--primary-color);
     color: white;
 }
-
-/* ============================================
-   BREADCRUMBS
-   ============================================ */
 
 .breadcrumbs {
-    background: #667eea;
+    background: var(--primary-color);
     padding: 12px 20px;
     border-radius: 0;
     color: white;
@@ -556,12 +449,8 @@ fieldset.collapsed h2:hover {
     text-decoration: underline;
 }
 
-/* ============================================
-   HEADER
-   ============================================ */
-
 #header {
-    background: #667eea;
+    background: var(--primary-color);
     color: white;
     box-shadow: 0 2px 12px rgba(0,0,0,0.15);
     padding: 0px 30px;
@@ -638,10 +527,6 @@ fieldset.collapsed h2:hover {
     content: none;
 }
 
-/* ============================================
-   DASHBOARD (INDEX PAGE)
-   ============================================ */
-
 .dashboard .module {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -650,10 +535,6 @@ fieldset.collapsed h2:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
-
-/* ============================================
-   ACTION CHECKBOXES
-   ============================================ */
 
 .action-checkbox {
     width: 20px;
@@ -680,10 +561,6 @@ fieldset.collapsed h2:hover {
     margin-left: 10px;
 }
 
-/* ============================================
-   HELP TEXT
-   ============================================ */
-
 .help,
 .helptext {
     font-size: 12px;
@@ -697,10 +574,6 @@ fieldset.collapsed h2:hover {
     color: var(--primary-color);
 }
 
-/* ============================================
-   ERRORS
-   ============================================ */
-
 .errorlist {
     margin: 0 0 10px 0;
     padding: 0;
@@ -712,56 +585,39 @@ fieldset.collapsed h2:hover {
     padding: 8px 12px;
     border-radius: 4px;
     margin-bottom: 5px;
-    border-left: 4px solid var(--danger-color);
+    border-left: 4px solid #f56565;
     font-size: 13px;
 }
 
 .errors {
     background: #fed7d7;
-    border: 2px solid var(--danger-color);
+    border: 2px solid #f56565;
     border-radius: 6px;
     padding: 12px;
     margin-bottom: 15px;
 }
 
-/* ============================================
-   TEXT UTILITIES
-   ============================================ */
-
 .text-muted {
     color: var(--text-muted);
 }
 
-.text-success {
-    color: var(--success-color);
-}
-
-.text-warning {
-    color: var(--warning-color);
-}
-
-.text-danger {
-    color: var(--danger-color);
-}
-
+.text-success,
+.text-warning,
+.text-danger,
 .text-info {
-    color: var(--info-color);
+    color: var(--primary-color);
 }
-
-/* ============================================
-   BANNER ADMIN STYLES
-   ============================================ */
 
 .banner-image-info {
     background: #ebf8ff;
     padding: 15px;
     border-radius: 8px;
     margin: 10px 0;
-    border-left: 4px solid var(--info-color);
+    border-left: 4px solid var(--primary-color);
 }
 
 .banner-image-info h4 {
-    color: var(--info-color);
+    color: var(--primary-color);
     margin-top: 0;
     font-size: 14px;
     font-weight: 600;
@@ -802,17 +658,13 @@ fieldset.collapsed h2:hover {
 }
 
 .admin-has-link {
-    color: var(--success-color);
+    color: var(--primary-color);
     font-weight: 600;
 }
 
 .admin-no-link {
     color: var(--text-muted);
 }
-
-/* ============================================
-   RESPONSIVE
-   ============================================ */
 
 @media (max-width: 1024px) {
     #changelist-filter {
@@ -852,10 +704,6 @@ fieldset.collapsed h2:hover {
         padding: 3px 8px;
     }
 }
-
-/* ============================================
-   PRINT STYLES
-   ============================================ */
 
 @media print {
     #header,
