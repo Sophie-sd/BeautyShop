@@ -13,9 +13,8 @@ from decimal import Decimal
 
 from .models import (
     Category, Product, ProductImage, ProductAttribute, 
-    NewProduct, PromotionProduct, ProductTag,
-    Brand, ProductGroup, ProductPurpose,
-    CategoryFilterConfig, ProductChangeLog, SalePromotion
+    NewProduct, PromotionProduct,
+    CategoryFilterConfig, SalePromotion
 )
 from .forms import ProductAdminForm
 
@@ -457,174 +456,11 @@ class ProductAdmin(admin.ModelAdmin):
             kwargs["queryset"] = Category.objects.filter(is_active=True).order_by('sort_order', 'name')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
     
-    def save_model(self, request, obj, form, change):
-        """Логування змін критичних полів"""
-        if change:
-            # Отримуємо старий об'єкт
-            try:
-                old_obj = Product.objects.get(pk=obj.pk)
-                
-                # Відслідковуємо зміни критичних полів
-                critical_fields = {
-                    'retail_price': ('price', 'Роздрібна ціна'),
-                    'wholesale_price': ('price', 'Оптова ціна'),
-                    'sale_price': ('sale', 'Акційна ціна'),
-                    'is_active': ('visibility', 'Активність'),
-                    'is_sale': ('sale', 'Статус акції'),
-                    'stock': ('stock', 'Кількість на складі'),
-                }
-                
-                for field_name, (change_type, display_name) in critical_fields.items():
-                    old_value = getattr(old_obj, field_name)
-                    new_value = getattr(obj, field_name)
-                    
-                    if old_value != new_value:
-                        ProductChangeLog.objects.create(
-                            product=obj,
-                            user=request.user if request.user.is_authenticated else None,
-                            field_name=display_name,
-                            old_value=str(old_value),
-                            new_value=str(new_value),
-                            change_type=change_type
-                        )
-            except Product.DoesNotExist:
-                pass
-        
-        super().save_model(request, obj, form, change)
-    
     class Media:
         css = {
             'all': ('admin/css/custom_admin.css',)
         }
         js = ('admin/js/custom_admin.js',)
-
-
-# ============================================
-#       БРЕНДИ, ГРУПИ, ПРИЗНАЧЕННЯ
-# ============================================
-
-@admin.register(Brand)
-class BrandAdmin(admin.ModelAdmin):
-    """Адміністрування брендів"""
-    
-    list_display = ('get_logo_preview', 'name', 'is_active', 'products_count', 'sort_order', 'created_at')
-    list_filter = ('is_active', 'created_at')
-    search_fields = ('name', 'description')
-    prepopulated_fields = {'slug': ('name',)}
-    readonly_fields = ('created_at', 'get_logo_preview_large')
-    list_editable = ('is_active', 'sort_order')
-    ordering = ('sort_order', 'name')
-    save_on_top = True
-    
-    fieldsets = (
-        ('Основна інформація', {
-            'fields': ('name', 'slug', ('logo', 'get_logo_preview_large'), 'description')
-        }),
-        ('Налаштування', {
-            'fields': ('is_active', 'sort_order')
-        }),
-        ('Системна інформація', {
-            'fields': ('created_at',),
-            'classes': ('collapse',)
-        }),
-    )
-    
-    def get_logo_preview(self, obj):
-        if obj.logo:
-            return format_html('<img src="{}" class="admin-thumbnail-small" />', obj.logo.url)
-        return '—'
-    get_logo_preview.short_description = 'Лого'
-    
-    def get_logo_preview_large(self, obj):
-        if obj.logo:
-            return format_html('<img src="{}" class="admin-thumbnail" />', obj.logo.url)
-        return 'Логотип не завантажено'
-    get_logo_preview_large.short_description = 'Превью логотипу'
-    
-    def products_count(self, obj):
-        return obj.product_set.count()
-    products_count.short_description = 'Кількість товарів'
-    
-    class Media:
-        css = {
-            'all': ('admin/css/custom_admin.css',)
-        }
-        js = ('admin/js/custom_admin.js',)
-
-
-@admin.register(ProductGroup)
-class ProductGroupAdmin(admin.ModelAdmin):
-    """Адміністрування груп товарів"""
-    
-    list_display = ('name', 'is_active', 'products_count', 'sort_order', 'created_at')
-    list_filter = ('is_active', 'created_at')
-    search_fields = ('name', 'description')
-    prepopulated_fields = {'slug': ('name',)}
-    readonly_fields = ('created_at',)
-    list_editable = ('is_active', 'sort_order')
-    ordering = ('sort_order', 'name')
-    save_on_top = True
-    
-    fieldsets = (
-        ('Основна інформація', {
-            'fields': ('name', 'slug', 'description')
-        }),
-        ('Налаштування', {
-            'fields': ('is_active', 'sort_order')
-        }),
-        ('Системна інформація', {
-            'fields': ('created_at',),
-            'classes': ('collapse',)
-        }),
-    )
-    
-    def products_count(self, obj):
-        return obj.product_set.count()
-    products_count.short_description = 'Кількість товарів'
-    
-    class Media:
-        css = {
-            'all': ('admin/css/custom_admin.css',)
-        }
-        js = ('admin/js/custom_admin.js',)
-
-
-@admin.register(ProductPurpose)
-class ProductPurposeAdmin(admin.ModelAdmin):
-    """Адміністрування призначень"""
-    
-    list_display = ('name', 'is_active', 'products_count', 'sort_order', 'created_at')
-    list_filter = ('is_active', 'created_at')
-    search_fields = ('name', 'description')
-    prepopulated_fields = {'slug': ('name',)}
-    readonly_fields = ('created_at',)
-    list_editable = ('is_active', 'sort_order')
-    ordering = ('sort_order', 'name')
-    save_on_top = True
-    
-    fieldsets = (
-        ('Основна інформація', {
-            'fields': ('name', 'slug', 'description')
-        }),
-        ('Налаштування', {
-            'fields': ('is_active', 'sort_order')
-        }),
-        ('Системна інформація', {
-            'fields': ('created_at',),
-            'classes': ('collapse',)
-        }),
-    )
-    
-    def products_count(self, obj):
-        return obj.product_set.count()
-    products_count.short_description = 'Кількість товарів'
-    
-    class Media:
-        css = {
-            'all': ('admin/css/custom_admin.css',)
-        }
-        js = ('admin/js/custom_admin.js',)
-
 
 # ============================================
 #              АКЦІЇ (МАСОВІ)
@@ -799,25 +635,8 @@ class SalePromotionAdmin(admin.ModelAdmin):
 
 
 # ============================================
-#       ТЕГИ, НОВИНКИ, АКЦІЙНІ ПРОПОЗИЦІЇ
+#       НОВИНКИ, АКЦІЙНІ ПРОПОЗИЦІЇ
 # ============================================
-
-@admin.register(ProductTag)
-class ProductTagAdmin(admin.ModelAdmin):
-    """Адміністрування тегів товарів"""
-    
-    list_display = ['name', 'slug', 'is_active']
-    list_editable = ['is_active']
-    search_fields = ['name']
-    prepopulated_fields = {'slug': ('name',)}
-    ordering = ['name']
-    
-    class Media:
-        css = {
-            'all': ('admin/css/custom_admin.css',)
-        }
-        js = ('admin/js/custom_admin.js',)
-
 
 @admin.register(NewProduct)
 class NewProductAdmin(admin.ModelAdmin):
@@ -923,37 +742,6 @@ class PromotionProductAdmin(admin.ModelAdmin):
         }
         js = ('admin/js/custom_admin.js',)
 
-
-# ============================================
-#              ЛОГИ ЗМІН
-# ============================================
-
-@admin.register(ProductChangeLog)
-class ProductChangeLogAdmin(admin.ModelAdmin):
-    """Перегляд логів змін товарів"""
-    
-    list_display = ['product', 'field_name', 'old_value', 'new_value', 'user', 'change_type', 'created_at']
-    list_filter = ['change_type', 'created_at', 'user']
-    search_fields = ['product__name', 'product__sku', 'field_name']
-    date_hierarchy = 'created_at'
-    readonly_fields = ['product', 'user', 'field_name', 'old_value', 'new_value', 'change_type', 'created_at']
-    
-    def has_add_permission(self, request):
-        return False
-    
-    def has_change_permission(self, request, obj=None):
-        return False
-    
-    def has_delete_permission(self, request, obj=None):
-        return request.user.is_superuser
-    
-    class Media:
-        css = {
-            'all': ('admin/css/custom_admin.css',)
-        }
-        js = ('admin/js/custom_admin.js',)
-
-
 # ============================================
 #       НАЛАШТУВАННЯ ГРУПУВАННЯ В АДМІНЦІ
 # ============================================
@@ -966,26 +754,11 @@ Product._meta.app_label = "products"
 Category._meta.verbose_name = "Категорія"
 Category._meta.verbose_name_plural = "📂 Категорії"
 
-Brand._meta.verbose_name = "Бренд"
-Brand._meta.verbose_name_plural = "🏷️ Бренди"
-
-ProductGroup._meta.verbose_name = "Група товарів"
-ProductGroup._meta.verbose_name_plural = "📊 Групи товарів"
-
-ProductPurpose._meta.verbose_name = "Призначення"
-ProductPurpose._meta.verbose_name_plural = "🎯 Призначення"
-
 SalePromotion._meta.verbose_name = "Масова акція"
 SalePromotion._meta.verbose_name_plural = "🔥 Масові акції"
-
-ProductTag._meta.verbose_name = "Тег"
-ProductTag._meta.verbose_name_plural = "🏷️ Теги"
 
 NewProduct._meta.verbose_name = "Новинка"
 NewProduct._meta.verbose_name_plural = "✨ Новинки"
 
 PromotionProduct._meta.verbose_name = "Акційна пропозиція"
 PromotionProduct._meta.verbose_name_plural = "🔥 Акції (Головна)"
-
-ProductChangeLog._meta.verbose_name = "Лог змін"
-ProductChangeLog._meta.verbose_name_plural = "📝 Логи змін товарів"
