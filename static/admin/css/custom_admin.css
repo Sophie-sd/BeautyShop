@@ -285,39 +285,38 @@ input[type="submit"].default:hover,
 #changelist-filter h3 {
     padding: 10px 15px;
     margin: 0;
-    font-size: 12px;
-    font-weight: 600;
-    color: #4a5568;
+    font-size: 13px;
+    font-weight: 700;
+    color: #2d3748;
     background: var(--bg-light);
     border-top: 1px solid var(--border-color);
 }
 
 #changelist-filter li {
-    padding: 6px 15px;
-    transition: background 0.2s ease;
+    padding: 0;
+    margin: 0;
+    list-style: none;
 }
 
-#changelist-filter li:hover {
-    background: var(--bg-light);
+#changelist-filter li a {
+    display: block;
+    padding: 8px 15px;
+    color: #4a5568;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
 }
 
-#changelist-filter li.selected {
-    background: var(--primary-color);
+#changelist-filter li:hover a {
+    background: #f7fafc;
+    color: #2d3748;
 }
 
 #changelist-filter li.selected a {
-    color: white;
+    background: #ebf8ff;
+    color: #2c5282;
     font-weight: 600;
-}
-
-#changelist-filter a {
-    color: #4a5568;
-    text-decoration: none;
-    display: block;
-}
-
-#changelist-filter a:hover {
-    color: var(--primary-color);
+    border-left-color: #4299e1;
 }
 
 .filter-tags {
@@ -576,13 +575,55 @@ fieldset.collapsed h2:hover {
 #user-tools {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 10px;
     padding: 10px 20px;
     flex-wrap: wrap;
 }
 
+#user-tools a,
+#user-tools button,
+#user-tools form {
+    margin: 0;
+}
+
 #user-tools a {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
     white-space: nowrap;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    font-weight: 500;
+    font-size: 13px;
+}
+
+#user-tools a:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+}
+
+#user-tools button[type="button"],
+#user-tools input[type="submit"] {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    font-size: 13px;
+}
+
+#user-tools button[type="button"]:hover,
+#user-tools input[type="submit"]:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
 }
 
 /* ============================================
