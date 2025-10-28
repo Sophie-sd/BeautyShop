@@ -145,12 +145,6 @@ class BannerAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         """Оптимізація запитів"""
         return super().get_queryset(request).select_related()
-        
-    class Media:
-        css = {
-            'all': ('admin/css/custom_admin.css',)
-        }
-        js = ('admin/js/custom_admin.js',)
 
 
 @admin.register(Article)
@@ -237,12 +231,6 @@ class ArticleAdmin(admin.ModelAdmin):
             duplicated += 1
         self.message_user(request, f"Продубльовано {duplicated} статей")
     duplicate_articles.short_description = "Дублювати вибрані статті"
-    
-    class Media:
-        css = {
-            'all': ('admin/css/custom_admin.css',)
-        }
-        js = ('admin/js/custom_admin.js',)
 
 
 # Налаштування відображення моделей в адмінці
