@@ -14,7 +14,7 @@ from decimal import Decimal
 from .models import (
     Category, Product, ProductImage, ProductAttribute, 
     NewProduct, PromotionProduct,
-    CategoryFilterConfig, SalePromotion
+    CategoryFilterConfig
 )
 from .forms import ProductAdminForm
 
@@ -463,178 +463,6 @@ class ProductAdmin(admin.ModelAdmin):
         js = ('admin/js/custom_admin.js',)
 
 # ============================================
-#              АКЦІЇ (МАСОВІ)
-# ============================================
-
-@admin.register(SalePromotion)
-class SalePromotionAdmin(admin.ModelAdmin):
-    """Адміністрування масових акцій"""
-    
-    list_display = [
-        'name', 'discount_type', 'discount_value', 
-        'get_period', 'get_status', 'get_products_count', 
-        'show_badge', 'created_at'
-    ]
-    list_filter = ['is_active', 'discount_type', 'start_date', 'end_date']
-    search_fields = ['name', 'description']
-    date_hierarchy = 'start_date'
-    filter_horizontal = ['products', 'categories']
-    readonly_fields = ['created_at', 'updated_at', 'created_by', 'get_products_preview']
-    save_on_top = True
-    
-    fieldsets = (
-        ('📝 Основна інформація', {
-            'fields': ('name', 'description')
-        }),
-        ('💰 Знижка', {
-            'fields': (
-                'discount_type',
-                'discount_value',
-            ),
-            'description': 'Вкажіть тип знижки (відсоток або фіксована сума) та її розмір'
-        }),
-        ('🎯 Товари та категорії', {
-            'fields': ('products', 'categories', 'get_products_preview'),
-            'description': 'Оберіть конкретні товари або цілі категорії для застосування акції'
-        }),
-        ('📅 Період дії', {
-            'fields': (
-                ('start_date', 'end_date'),
-            ),
-        }),
-        ('⚙️ Налаштування', {
-            'fields': (
-                'is_active',
-                'show_badge',
-            ),
-        }),
-        ('📊 Системна інформація', {
-            'fields': ('created_at', 'updated_at', 'created_by'),
-            'classes': ('collapse',),
-        }),
-    )
-    
-    actions = [
-        'apply_promotion_to_products',
-        'remove_promotion_from_products',
-        'activate_promotions',
-        'deactivate_promotions',
-    ]
-    
-    def get_period(self, obj):
-        """Відображення періоду"""
-        start = obj.start_date.strftime('%d.%m.%Y')
-        end = obj.end_date.strftime('%d.%m.%Y')
-        return f"{start} - {end}"
-    get_period.short_description = 'Період'
-    
-    def get_status(self, obj):
-        """Статус акції"""
-        if obj.is_valid():
-            days_left = (obj.end_date - timezone.now()).days
-            return format_html(
-                '<span class="badge badge-success">Активна ({} дн.)</span>',
-                days_left
-            )
-        elif obj.end_date < timezone.now():
-            return format_html('<span class="badge badge-secondary">Завершена</span>')
-        else:
-            return format_html('<span class="badge badge-warning">Очікується</span>')
-    get_status.short_description = 'Статус'
-    
-    def get_products_count(self, obj):
-        """Кількість товарів"""
-        direct = obj.products.count()
-        from_categories = 0
-        for cat in obj.categories.all():
-            from_categories += cat.product_set.filter(is_active=True).count()
-        
-        total = direct + from_categories
-        return format_html('<span class="badge badge-info">{} товарів</span>', total)
-    get_products_count.short_description = 'Товарів'
-    
-    def get_products_preview(self, obj):
-        """Попередній перегляд товарів"""
-        if not obj.pk:
-            return "Збережіть акцію щоб побачити список товарів"
-        
-        all_products = list(obj.products.all()[:5])
-        html = "<ul>"
-        for product in all_products:
-            html += f"<li>{product.name} - {product.retail_price} ₴</li>"
-        
-        if obj.products.count() > 5:
-            html += f"<li><em>... та ще {obj.products.count() - 5} товарів</em></li>"
-        
-        html += "</ul>"
-        
-        if obj.categories.exists():
-            html += "<strong>Категорії:</strong><ul>"
-            for cat in obj.categories.all():
-                count = cat.product_set.filter(is_active=True).count()
-                html += f"<li>{cat.name} ({count} товарів)</li>"
-            html += "</ul>"
-        
-        return format_html(html)
-    get_products_preview.short_description = 'Товари в акції'
-    
-    # Дії
-    
-    def apply_promotion_to_products(self, request, queryset):
-        """Застосувати акцію до товарів"""
-        total = 0
-        for promotion in queryset:
-            if promotion.is_active:
-                count = promotion.apply_to_products()
-                total += count
-        
-        self.message_user(
-            request,
-            f"Акцію застосовано до {total} товарів",
-            messages.SUCCESS
-        )
-    apply_promotion_to_products.short_description = "✓ Застосувати акції до товарів"
-    
-    def remove_promotion_from_products(self, request, queryset):
-        """Видалити акцію з товарів"""
-        total = 0
-        for promotion in queryset:
-            count = promotion.remove_from_products()
-            total += count
-        
-        self.message_user(
-            request,
-            f"Акцію видалено з {total} товарів",
-            messages.SUCCESS
-        )
-    remove_promotion_from_products.short_description = "✕ Видалити акції з товарів"
-    
-    def activate_promotions(self, request, queryset):
-        """Активувати акції"""
-        updated = queryset.update(is_active=True)
-        self.message_user(request, f"Активовано {updated} акцій", messages.SUCCESS)
-    activate_promotions.short_description = "✓ Активувати акції"
-    
-    def deactivate_promotions(self, request, queryset):
-        """Деактивувати акції"""
-        updated = queryset.update(is_active=False)
-        self.message_user(request, f"Деактивовано {updated} акцій", messages.SUCCESS)
-    deactivate_promotions.short_description = "✕ Деактивувати акції"
-    
-    def save_model(self, request, obj, form, change):
-        """Зберігаємо автора"""
-        if not change:
-            obj.created_by = request.user
-        super().save_model(request, obj, form, change)
-    
-    class Media:
-        css = {
-            'all': ('admin/css/custom_admin.css',)
-        }
-        js = ('admin/js/custom_admin.js',)
-
-
-# ============================================
 #       НОВИНКИ, АКЦІЙНІ ПРОПОЗИЦІЇ
 # ============================================
 
@@ -753,9 +581,6 @@ Product._meta.app_label = "products"
 
 Category._meta.verbose_name = "Категорія"
 Category._meta.verbose_name_plural = "📂 Категорії"
-
-SalePromotion._meta.verbose_name = "Масова акція"
-SalePromotion._meta.verbose_name_plural = "🔥 Масові акції"
 
 NewProduct._meta.verbose_name = "Новинка"
 NewProduct._meta.verbose_name_plural = "✨ Новинки"

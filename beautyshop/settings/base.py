@@ -41,6 +41,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     'apps.core',
     'apps.products',
+    'apps.promotions',
     'apps.cart',
     'apps.wishlist',
     'apps.orders',
