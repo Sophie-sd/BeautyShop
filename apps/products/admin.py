@@ -151,6 +151,12 @@ class CategoryAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
         # Створюємо конфіг фільтрів за замовчуванням
         CategoryFilterConfig.objects.get_or_create(category=obj)
+    
+    class Media:
+        css = {
+            'all': ('admin/css/custom_admin.css',)
+        }
+        js = ('admin/js/custom_admin.js',)
 
 
 # ============================================
@@ -485,6 +491,12 @@ class ProductAdmin(admin.ModelAdmin):
                 pass
         
         super().save_model(request, obj, form, change)
+    
+    class Media:
+        css = {
+            'all': ('admin/css/custom_admin.css',)
+        }
+        js = ('admin/js/custom_admin.js',)
 
 
 # ============================================
@@ -532,6 +544,12 @@ class BrandAdmin(admin.ModelAdmin):
     def products_count(self, obj):
         return obj.product_set.count()
     products_count.short_description = 'Кількість товарів'
+    
+    class Media:
+        css = {
+            'all': ('admin/css/custom_admin.css',)
+        }
+        js = ('admin/js/custom_admin.js',)
 
 
 @admin.register(ProductGroup)
@@ -563,6 +581,12 @@ class ProductGroupAdmin(admin.ModelAdmin):
     def products_count(self, obj):
         return obj.product_set.count()
     products_count.short_description = 'Кількість товарів'
+    
+    class Media:
+        css = {
+            'all': ('admin/css/custom_admin.css',)
+        }
+        js = ('admin/js/custom_admin.js',)
 
 
 @admin.register(ProductPurpose)
@@ -594,6 +618,12 @@ class ProductPurposeAdmin(admin.ModelAdmin):
     def products_count(self, obj):
         return obj.product_set.count()
     products_count.short_description = 'Кількість товарів'
+    
+    class Media:
+        css = {
+            'all': ('admin/css/custom_admin.css',)
+        }
+        js = ('admin/js/custom_admin.js',)
 
 
 # ============================================
@@ -760,6 +790,12 @@ class SalePromotionAdmin(admin.ModelAdmin):
         if not change:
             obj.created_by = request.user
         super().save_model(request, obj, form, change)
+    
+    class Media:
+        css = {
+            'all': ('admin/css/custom_admin.css',)
+        }
+        js = ('admin/js/custom_admin.js',)
 
 
 # ============================================
@@ -775,6 +811,12 @@ class ProductTagAdmin(admin.ModelAdmin):
     search_fields = ['name']
     prepopulated_fields = {'slug': ('name',)}
     ordering = ['name']
+    
+    class Media:
+        css = {
+            'all': ('admin/css/custom_admin.css',)
+        }
+        js = ('admin/js/custom_admin.js',)
 
 
 @admin.register(NewProduct)
@@ -817,6 +859,12 @@ class NewProductAdmin(admin.ModelAdmin):
         obj.product.save(update_fields=['is_new'])
         super().delete_model(request, obj)
         self.message_user(request, f'❌ Товар "{product_name}" видалено з новинок і знято статус NEW')
+    
+    class Media:
+        css = {
+            'all': ('admin/css/custom_admin.css',)
+        }
+        js = ('admin/js/custom_admin.js',)
 
 
 @admin.register(PromotionProduct)
@@ -868,6 +916,12 @@ class PromotionProductAdmin(admin.ModelAdmin):
         percentage = obj.get_discount_percentage()
         return format_html('<span class="badge badge-sale">-{}%</span>', percentage)
     get_discount_display.short_description = 'Знижка'
+    
+    class Media:
+        css = {
+            'all': ('admin/css/custom_admin.css',)
+        }
+        js = ('admin/js/custom_admin.js',)
 
 
 # ============================================
@@ -892,6 +946,12 @@ class ProductChangeLogAdmin(admin.ModelAdmin):
     
     def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser
+    
+    class Media:
+        css = {
+            'all': ('admin/css/custom_admin.css',)
+        }
+        js = ('admin/js/custom_admin.js',)
 
 
 # ============================================

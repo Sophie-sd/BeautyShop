@@ -221,6 +221,12 @@ class OrderAdmin(admin.ModelAdmin):
         self.message_user(request, f"Доставлено {updated} замовлень")
     
     mark_as_delivered.short_description = "Доставлено замовлення"
+    
+    class Media:
+        css = {
+            'all': ('admin/css/custom_admin.css',)
+        }
+        js = ('admin/js/custom_admin.js',)
 
 
 # Налаштування відображення в адмінці
