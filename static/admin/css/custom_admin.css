@@ -81,6 +81,14 @@ input[type="submit"].default:hover,
     border: 1px solid var(--border-color);
 }
 
+#result_list img {
+    max-width: 50px;
+    max-height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
 .admin-icon-placeholder {
     width: 50px;
     height: 50px;
