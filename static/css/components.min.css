@@ -60,18 +60,12 @@
 
 /* Sticky Header для Desktop */
 @media (min-width: 992px) {
-    .header {
-        position: sticky;
-        top: 0;
-        z-index: 999;
-        background: var(--white);
-    }
-    
     .main-header {
         position: sticky;
         top: 40px;
         z-index: 998;
         background: var(--white);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
     }
     
     .main-nav {
