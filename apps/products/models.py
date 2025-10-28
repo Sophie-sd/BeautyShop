@@ -548,47 +548,6 @@ class NewProduct(models.Model):
         Product.objects.filter(pk=product_id).update(is_new=False)
 
 
-class PromotionProduct(models.Model):
-    """Акційні пропозиції на головній сторінці"""
-    
-    product = models.ForeignKey(
-        Product, 
-        on_delete=models.CASCADE, 
-        verbose_name='Товар',
-        limit_choices_to={'is_active': True}
-    )
-    discount_price = models.DecimalField(
-        'Акційна ціна', 
-        max_digits=10, 
-        decimal_places=2,
-        help_text='Нова ціна для акційної пропозиції'
-    )
-    sort_order = models.PositiveIntegerField('Порядок відображення', default=0)
-    is_active = models.BooleanField('Активний', default=True)
-    created_at = models.DateTimeField('Додано', auto_now_add=True)
-    updated_at = models.DateTimeField('Оновлено', auto_now=True)
-    
-    class Meta:
-        verbose_name = 'Акційна пропозиція'
-        verbose_name_plural = 'Акційні пропозиції'
-        ordering = ['sort_order', '-created_at']
-        unique_together = ['product']
-    
-    def __str__(self):
-        return f"{self.product.name} - {self.discount_price} ₴ (позиція {self.sort_order})"
-    
-    def get_original_price(self):
-        """Повертає оригінальну ціну товару"""
-        return self.product.retail_price
-    
-    def get_discount_percentage(self):
-        """Розраховує відсоток знижки"""
-        if self.product.retail_price > 0:
-            discount = ((self.product.retail_price - self.discount_price) / self.product.retail_price) * 100
-            return round(discount, 0)
-        return 0
-
-
 # ============================================
 #        НОВІ МОДЕЛІ ДЛЯ РОЗШИРЕНОЇ АДМІНКИ
 # ============================================

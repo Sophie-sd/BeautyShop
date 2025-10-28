@@ -96,6 +96,59 @@ class Promotion(models.Model):
             products.update(category_products)
         
         return list(products)
+    
+    def apply_to_products(self):
+        """Застосовує акцію до всіх товарів"""
+        products = self.get_affected_products()
+        count = 0
+        
+        for product in products:
+            updated = False
+            
+            # Якщо є знижка на роздрібну ціну
+            if self.retail_discount_percent and product.retail_price:
+                discount = product.retail_price * (self.retail_discount_percent / 100)
+                product.sale_price = product.retail_price - discount
+                product.is_sale = True
+                updated = True
+            
+            # Якщо є знижка на оптову ціну
+            if self.wholesale_discount_percent and product.wholesale_price:
+                discount = product.wholesale_price * (self.wholesale_discount_percent / 100)
+                # Зберігаємо в окреме поле (якщо є)
+                updated = True
+            
+            # Якщо є знижка від 3 шт
+            if self.qty3_discount_percent and product.price_3_qty:
+                discount = product.price_3_qty * (self.qty3_discount_percent / 100)
+                product.price_3_qty = product.price_3_qty - discount
+                updated = True
+            
+            # Якщо є знижка від 5 шт
+            if self.qty5_discount_percent and product.price_5_qty:
+                discount = product.price_5_qty * (self.qty5_discount_percent / 100)
+                product.price_5_qty = product.price_5_qty - discount
+                updated = True
+            
+            if updated:
+                product.save()
+                count += 1
+        
+        return count
+    
+    def remove_from_products(self):
+        """Видаляє акцію з товарів"""
+        products = self.get_affected_products()
+        count = 0
+        
+        for product in products:
+            if product.is_sale and product.sale_price:
+                product.is_sale = False
+                product.sale_price = None
+                product.save()
+                count += 1
+        
+        return count
 
 
 class PromoCode(models.Model):

@@ -13,8 +13,7 @@ from decimal import Decimal
 
 from .models import (
     Category, Product, ProductImage, ProductAttribute, 
-    NewProduct, PromotionProduct,
-    CategoryFilterConfig
+    NewProduct, CategoryFilterConfig
 )
 from .forms import ProductAdminForm
 
@@ -513,63 +512,6 @@ class NewProductAdmin(admin.ModelAdmin):
         }
         js = ('admin/js/custom_admin.js',)
 
-
-@admin.register(PromotionProduct)
-class PromotionProductAdmin(admin.ModelAdmin):
-    """Адміністрування акційних пропозицій на головній сторінці"""
-    
-    list_display = [
-        'product', 
-        'get_original_price_display', 
-        'discount_price', 
-        'get_discount_display',
-        'sort_order', 
-        'is_active', 
-        'updated_at'
-    ]
-    list_filter = ['is_active', 'created_at', 'updated_at']
-    search_fields = ['product__name', 'product__sku']
-    list_editable = ['discount_price', 'sort_order', 'is_active']
-    ordering = ['sort_order', '-created_at']
-    readonly_fields = ['created_at', 'updated_at', 'get_discount_percentage']
-    
-    fieldsets = (
-        ('Товар', {
-            'fields': ('product',)
-        }),
-        ('Ціни', {
-            'fields': (
-                'discount_price',
-                'get_discount_percentage'
-            ),
-            'description': 'Оригінальна ціна буде перекреслена на сайті, відображатиметься акційна ціна'
-        }),
-        ('Налаштування', {
-            'fields': ('sort_order', 'is_active')
-        }),
-        ('Дати', {
-            'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',)
-        }),
-    )
-    
-    def get_original_price_display(self, obj):
-        """Відображення оригінальної ціни"""
-        return f"{obj.get_original_price()} ₴"
-    get_original_price_display.short_description = 'Оригінальна ціна'
-    
-    def get_discount_display(self, obj):
-        """Відображення знижки у відсотках"""
-        percentage = obj.get_discount_percentage()
-        return format_html('<span class="badge badge-sale">-{}%</span>', percentage)
-    get_discount_display.short_description = 'Знижка'
-    
-    class Media:
-        css = {
-            'all': ('admin/css/custom_admin.css',)
-        }
-        js = ('admin/js/custom_admin.js',)
-
 # ============================================
 #       НАЛАШТУВАННЯ ГРУПУВАННЯ В АДМІНЦІ
 # ============================================
@@ -584,6 +526,3 @@ Category._meta.verbose_name_plural = "📂 Категорії"
 
 NewProduct._meta.verbose_name = "Новинка"
 NewProduct._meta.verbose_name_plural = "✨ Новинки"
-
-PromotionProduct._meta.verbose_name = "Акційна пропозиція"
-PromotionProduct._meta.verbose_name_plural = "🔥 Акції (Головна)"

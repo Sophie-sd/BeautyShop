@@ -31,37 +31,14 @@ class ProductDetailView(DetailView):
 
 
 class SaleProductsView(ListView):
-    """Акції - показує товари з is_sale=True АБО товари з PromotionProduct"""
+    """Акції - показує товари з is_sale=True"""
     model = Product
     template_name = 'products/sale.html'
     context_object_name = 'products'
     paginate_by = 12
     
     def get_queryset(self):
-        from .models import PromotionProduct
-        from django.db.models import Q
-        
-        # Отримуємо ID товарів з PromotionProduct
-        promo_product_ids = PromotionProduct.objects.filter(
-            is_active=True
-        ).values_list('product_id', flat=True)
-        
-        # Показуємо товари де is_sale=True АБО товар є в PromotionProduct
         return Product.objects.filter(
-            Q(is_sale=True) | Q(id__in=promo_product_ids),
+            is_sale=True,
             is_active=True
-        ).prefetch_related('images').distinct().order_by('-created_at')
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        from .models import PromotionProduct
-        
-        # Створюємо словник з PromotionProduct для швидкого доступу
-        promo_products = PromotionProduct.objects.filter(
-            is_active=True
-        ).select_related('product')
-        
-        promo_dict = {pp.product_id: pp for pp in promo_products}
-        context['promo_dict'] = promo_dict
-        
-        return context
+        ).prefetch_related('images').order_by('-created_at')

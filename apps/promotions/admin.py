@@ -90,6 +90,43 @@ class PromotionAdmin(admin.ModelAdmin):
         return format_html('<span class="badge badge-info">{} товарів</span>', total)
     get_products_count.short_description = 'Товарів'
     
+    actions = ['apply_to_products_action', 'remove_from_products_action', 'activate', 'deactivate']
+    
+    def apply_to_products_action(self, request, queryset):
+        """Застосувати акції до товарів"""
+        total = 0
+        for promotion in queryset:
+            if promotion.is_valid():
+                count = promotion.apply_to_products()
+                total += count
+        from django.contrib import messages
+        self.message_user(request, f'✅ Застосовано акції до {total} товарів', messages.SUCCESS)
+    apply_to_products_action.short_description = '✓ Застосувати акції до товарів'
+    
+    def remove_from_products_action(self, request, queryset):
+        """Видалити акції з товарів"""
+        total = 0
+        for promotion in queryset:
+            count = promotion.remove_from_products()
+            total += count
+        from django.contrib import messages
+        self.message_user(request, f'❌ Видалено акції з {total} товарів', messages.SUCCESS)
+    remove_from_products_action.short_description = '✕ Видалити акції з товарів'
+    
+    def activate(self, request, queryset):
+        """Активувати акції"""
+        updated = queryset.update(is_active=True)
+        from django.contrib import messages
+        self.message_user(request, f'✅ Активовано {updated} акцій', messages.SUCCESS)
+    activate.short_description = '✓ Активувати акції'
+    
+    def deactivate(self, request, queryset):
+        """Деактивувати акції"""
+        updated = queryset.update(is_active=False)
+        from django.contrib import messages
+        self.message_user(request, f'❌ Деактивовано {updated} акцій', messages.SUCCESS)
+    deactivate.short_description = '✕ Деактивувати акції'
+    
     class Media:
         css = {
             'all': ('admin/css/custom_admin.css',)

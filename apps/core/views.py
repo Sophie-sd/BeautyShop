@@ -4,7 +4,7 @@ Core Views - основні представлення сайту
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.db.models import Q
-from apps.products.models import Product, Category, NewProduct, PromotionProduct
+from apps.products.models import Product, Category, NewProduct
 from apps.blog.models import Article
 from .models import Banner
 
@@ -28,11 +28,11 @@ class HomeView(TemplateView):
             product__is_new=True
         ).select_related('product').prefetch_related('product__images')[:12]
         
-        # Отримуємо акційні пропозиції
-        promotion_products = PromotionProduct.objects.filter(
+        # Отримуємо акційні товари
+        promotion_products = Product.objects.filter(
             is_active=True,
-            product__is_active=True
-        ).select_related('product__category').prefetch_related('product__images')[:20]
+            is_sale=True
+        ).select_related('category').prefetch_related('images')[:20]
         
         context.update({
             'banners': banners,
