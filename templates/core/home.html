@@ -144,37 +144,41 @@
             </button>
             
             <div class="promotions-slider" id="promotionsSlider">
-                {% for promo in promotion_products %}
+                {% for product in promotion_products %}
                     <div class="promo-card">
                         <div class="promo-image">
-                            <a href="{{ promo.product.get_absolute_url }}">
-                                {% if promo.product.images.first %}
-                                    <img src="{{ promo.product.images.first.image.url }}" alt="{{ promo.product.name }}" loading="lazy">
+                            <a href="{{ product.get_absolute_url }}">
+                                {% if product.images.first %}
+                                    <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" loading="lazy">
                                 {% else %}
                                     <div class="product-placeholder">
                                         <span class="placeholder-icon">📦</span>
                                     </div>
                                 {% endif %}
                                 
-                                <div class="promo-badge">-{{ promo.get_discount_percentage }}%</div>
+                                {% for sticker in product.get_stickers %}
+                                    {% if sticker.type == 'sale' %}
+                                        <div class="promo-badge">{{ sticker.text }}</div>
+                                    {% endif %}
+                                {% endfor %}
                             </a>
                         </div>
                         
                         <div class="promo-content">
                             <h3 class="promo-name">
-                                <a href="{{ promo.product.get_absolute_url }}">{{ promo.product.name }}</a>
+                                <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
                             </h3>
                             
                             <div class="promo-price">
-                                <span class="price-old">{{ promo.get_original_price }} ₴</span>
-                                <span class="price-new">{{ promo.discount_price }} ₴</span>
+                                <span class="price-old">{{ product.retail_price }} ₴</span>
+                                <span class="price-new">{{ product.sale_price }} ₴</span>
                             </div>
                             
                             <button class="btn btn-primary btn-sm add-to-cart" 
-                                    data-product-id="{{ promo.product.id }}"
-                                    data-product-name="{{ promo.product.name }}"
-                                    {% if not promo.product.is_in_stock %}disabled{% endif %}>
-                                {% if promo.product.is_in_stock %}
+                                    data-product-id="{{ product.id }}"
+                                    data-product-name="{{ product.name }}"
+                                    {% if not product.is_in_stock %}disabled{% endif %}>
+                                {% if product.is_in_stock %}
                                     Купити
                                 {% else %}
                                     Немає в наявності
@@ -225,37 +229,41 @@
             </button>
             
             <div class="promotions-slider" id="promotionsSliderDesktop">
-                {% for promo in promotion_products %}
+                {% for product in promotion_products %}
                     <div class="promo-card">
                         <div class="promo-image">
-                            <a href="{{ promo.product.get_absolute_url }}">
-                                {% if promo.product.images.first %}
-                                    <img src="{{ promo.product.images.first.image.url }}" alt="{{ promo.product.name }}" loading="lazy">
+                            <a href="{{ product.get_absolute_url }}">
+                                {% if product.images.first %}
+                                    <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" loading="lazy">
                                 {% else %}
                                     <div class="product-placeholder">
                                         <span class="placeholder-icon">📦</span>
                                     </div>
                                 {% endif %}
                                 
-                                <div class="promo-badge">-{{ promo.get_discount_percentage }}%</div>
+                                {% for sticker in product.get_stickers %}
+                                    {% if sticker.type == 'sale' %}
+                                        <div class="promo-badge">{{ sticker.text }}</div>
+                                    {% endif %}
+                                {% endfor %}
                             </a>
                         </div>
                         
                         <div class="promo-content">
                             <h3 class="promo-name">
-                                <a href="{{ promo.product.get_absolute_url }}">{{ promo.product.name }}</a>
+                                <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
                             </h3>
                             
                             <div class="promo-price">
-                                <span class="price-old">{{ promo.get_original_price }} ₴</span>
-                                <span class="price-new">{{ promo.discount_price }} ₴</span>
+                                <span class="price-old">{{ product.retail_price }} ₴</span>
+                                <span class="price-new">{{ product.sale_price }} ₴</span>
                             </div>
                             
                             <button class="btn btn-primary btn-sm add-to-cart" 
-                                    data-product-id="{{ promo.product.id }}"
-                                    data-product-name="{{ promo.product.name }}"
-                                    {% if not promo.product.is_in_stock %}disabled{% endif %}>
-                                {% if promo.product.is_in_stock %}
+                                    data-product-id="{{ product.id }}"
+                                    data-product-name="{{ product.name }}"
+                                    {% if not product.is_in_stock %}disabled{% endif %}>
+                                {% if product.is_in_stock %}
                                     Купити
                                 {% else %}
                                     Немає в наявності
