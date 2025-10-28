@@ -417,47 +417,6 @@
         updateTimers();
         setInterval(updateTimers, 60000); // Оновлюємо кожну хвилину
         
-        // ========== КОМПАКТНИЙ РЕЖИМ (EXPERIMENTAL) ==========
-        
-        // Додаємо перемикач компактного режиму
-        const createCompactToggle = () => {
-            const header = document.querySelector('#header');
-            if (header && !document.querySelector('#compact-toggle')) {
-                const toggle = document.createElement('button');
-                toggle.id = 'compact-toggle';
-                toggle.textContent = 'Компактний вигляд';
-                toggle.style.cssText = `
-                    position: absolute;
-                    right: 100px;
-                    top: 15px;
-                    background: rgba(255,255,255,0.2);
-                    color: white;
-                    border: 1px solid rgba(255,255,255,0.3);
-                    padding: 6px 12px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-size: 12px;
-                `;
-                
-                toggle.addEventListener('click', function() {
-                    document.body.classList.toggle('compact-mode');
-                    const isCompact = document.body.classList.contains('compact-mode');
-                    this.textContent = isCompact ? 'Звичайний вигляд' : 'Компактний вигляд';
-                    localStorage.setItem('admin_compact_mode', isCompact);
-                });
-                
-                // Відновлюємо з localStorage
-                if (localStorage.getItem('admin_compact_mode') === 'true') {
-                    document.body.classList.add('compact-mode');
-                    toggle.textContent = 'Звичайний вигляд';
-                }
-                
-                header.appendChild(toggle);
-            }
-        };
-        
-        createCompactToggle();
-        
         console.log('✅ Beauty Shop Admin JS initialized');
     });
     
@@ -476,17 +435,6 @@
                 transform: translateX(0);
                 opacity: 1;
             }
-        }
-        
-        .compact-mode #result_list th,
-        .compact-mode #result_list td {
-            padding: 4px 6px !important;
-            font-size: 12px !important;
-        }
-        
-        .compact-mode .admin-thumbnail-small {
-            width: 35px !important;
-            height: 35px !important;
         }
     `;
     document.head.appendChild(style);

@@ -212,6 +212,11 @@ input[type="submit"].default:hover,
     color: #718096;
 }
 
+.badge-primary {
+    background: #4299e1;
+    color: white;
+}
+
 /* Статуси товарів */
 .status-active {
     color: var(--success-color);
