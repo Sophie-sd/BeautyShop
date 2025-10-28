@@ -823,10 +823,10 @@ class ProductTagAdmin(admin.ModelAdmin):
 class NewProductAdmin(admin.ModelAdmin):
     """Адміністрування новинок на головній сторінці"""
     
-    list_display = ['product', 'get_is_new_status', 'sort_order', 'is_active', 'created_at']
+    list_display = ['product', 'get_is_new_status', 'sort_order', 'created_at']
     list_filter = ['is_active', 'created_at']
     search_fields = ['product__name', 'product__sku']
-    list_editable = ['sort_order', 'is_active']
+    list_editable = ['sort_order']
     ordering = ['sort_order', '-created_at']
     autocomplete_fields = ['product']
     
@@ -982,7 +982,7 @@ ProductTag._meta.verbose_name = "Тег"
 ProductTag._meta.verbose_name_plural = "🏷️ Теги"
 
 NewProduct._meta.verbose_name = "Новинка"
-NewProduct._meta.verbose_name_plural = "✨ Новинки (Головна)"
+NewProduct._meta.verbose_name_plural = "✨ Новинки"
 
 PromotionProduct._meta.verbose_name = "Акційна пропозиція"
 PromotionProduct._meta.verbose_name_plural = "🔥 Акції (Головна)"
