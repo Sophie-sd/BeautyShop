@@ -3,6 +3,16 @@
     background: var(--white);
 }
 
+@media (min-width: 992px) {
+    .header {
+        position: sticky;
+        top: 0;
+        z-index: 999;
+        background: var(--white);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+}
+
 .top-bar {
     background: var(--neutral-dark);
     color: var(--white);
@@ -58,24 +68,6 @@
     padding: var(--spacing-lg) 0;
 }
 
-/* Sticky Header для Desktop */
-@media (min-width: 992px) {
-    .main-header {
-        position: sticky;
-        top: 40px;
-        z-index: 998;
-        background: var(--white);
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    }
-    
-    .main-nav {
-        position: sticky;
-        top: 121px;
-        z-index: 997;
-        background: var(--white);
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    }
-}
 
 .header-content {
     display: flex;
