@@ -44,7 +44,6 @@ class OrderAdmin(admin.ModelAdmin):
         'order_number', 'created_at', 'updated_at',
         'get_total_cost', 'get_customer_info', 'get_items_list'
     ]
-    list_editable = ['status', 'is_paid']
     date_hierarchy = 'created_at'
     ordering = ['-created_at']
     list_per_page = 50
