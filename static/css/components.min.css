@@ -71,7 +71,7 @@
     
     .main-nav {
         position: sticky;
-        top: 168px;
+        top: 121px;
         z-index: 997;
         background: var(--white);
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
