@@ -30,7 +30,21 @@
                             
                             <div class="item-details">
                                 <h3 class="item-name">{{ item.product.name }}</h3>
-                                <p class="item-price">{{ item.price }} ₴</p>
+                                {% if item.product.is_sale_active %}
+                                    <div class="item-price-wrapper">
+                                        <p class="item-price-old">{{ item.product.retail_price }} ₴</p>
+                                        <p class="item-price item-price-sale">{{ item.price }} ₴</p>
+                                        <span class="item-discount-badge">
+                                            {% if item.product.active_promotion_name %}
+                                                {{ item.product.active_promotion_name }}
+                                            {% else %}
+                                                -{{ item.product.get_discount_percentage }}%
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                {% else %}
+                                    <p class="item-price">{{ item.price }} ₴</p>
+                                {% endif %}
                             </div>
                             
                             <div class="item-quantity">
@@ -59,9 +73,42 @@
                 </div>
                 
                 <div class="cart-summary">
-                    <div class="summary-row">
-                        <span>Загальна сума:</span>
-                        <span class="cart-grand-total">{{ cart.get_total_price }} ₴</span>
+                    <div class="promo-code-section">
+                        <h3>Промокод</h3>
+                        <div class="promo-code-input-group">
+                            <input type="text" 
+                                   id="promo-code" 
+                                   class="form-control" 
+                                   placeholder="Введіть промокод"
+                                   value="{{ request.session.promo_code|default:'' }}">
+                            <button class="btn btn-outline apply-promo-btn">Застосувати</button>
+                        </div>
+                        <div class="promo-message" style="display:none;"></div>
+                    </div>
+                    
+                    <div class="summary-details">
+                        <div class="summary-row">
+                            <span>Сума товарів:</span>
+                            <span class="cart-subtotal">{{ cart.get_total_price }} ₴</span>
+                        </div>
+                        
+                        {% if request.session.promo_discount %}
+                        <div class="summary-row promo-discount-row">
+                            <span>Знижка ({{ request.session.promo_code }}):</span>
+                            <span class="promo-discount">-{{ request.session.promo_discount }} ₴</span>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="summary-row summary-total">
+                            <span>До сплати:</span>
+                            <span class="cart-grand-total">
+                                {% if request.session.promo_discount %}
+                                    {{ cart.get_total_price|add:request.session.promo_discount|floatformat:2 }} ₴
+                                {% else %}
+                                    {{ cart.get_total_price }} ₴
+                                {% endif %}
+                            </span>
+                        </div>
                     </div>
                     
                     {% if user.is_authenticated %}

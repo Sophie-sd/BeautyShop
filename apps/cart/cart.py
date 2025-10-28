@@ -45,6 +45,10 @@ class Cart:
     
     def save(self):
         """Зберігання кошика в сесії"""
+        # Гарантуємо що всі ціни float
+        for item in self.cart.values():
+            if 'price' in item:
+                item['price'] = float(item['price'])
         self.session.modified = True
     
     def remove(self, product):

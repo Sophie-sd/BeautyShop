@@ -94,3 +94,84 @@ def cart_count(request):
     """Повертає кількість товарів у кошику (для badge)"""
     cart = Cart(request)
     return JsonResponse({'count': len(cart)})
+
+
+@require_POST
+def apply_promo_code(request):
+    """Застосування промокоду"""
+    from apps.promotions.models import PromoCode
+    from django.utils import timezone
+    
+    promo_code = request.POST.get('code', '').strip().upper()
+    
+    if not promo_code:
+        return JsonResponse({
+            'success': False,
+            'message': 'Введіть промокод'
+        })
+    
+    try:
+        promo = PromoCode.objects.get(
+            code=promo_code,
+            is_active=True,
+            start_date__lte=timezone.now(),
+            end_date__gte=timezone.now()
+        )
+        
+        cart = Cart(request)
+        total = cart.get_total_price()
+        
+        # Перевірка мінімальної суми
+        if promo.min_order_amount and total < promo.min_order_amount:
+            return JsonResponse({
+                'success': False,
+                'message': f'Мінімальна сума замовлення для цього промокоду: {promo.min_order_amount} ₴'
+            })
+        
+        # Перевірка ліміту використань
+        if promo.usage_limit and promo.used_count >= promo.usage_limit:
+            return JsonResponse({
+                'success': False,
+                'message': 'Промокод вичерпано'
+            })
+        
+        # Розрахунок знижки
+        if promo.discount_type == 'percent':
+            discount = total * (Decimal(str(promo.discount_value)) / Decimal('100'))
+        else:  # fixed
+            discount = Decimal(str(promo.discount_value))
+        
+        discount = min(discount, total)  # Знижка не може бути більше суми
+        
+        # Зберігаємо в сесії
+        request.session['promo_code'] = promo_code
+        request.session['promo_discount'] = float(-discount)
+        request.session['promo_id'] = promo.id
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Промокод "{promo_code}" застосовано',
+            'discount': float(discount),
+            'new_total': float(total - discount)
+        })
+        
+    except PromoCode.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Невірний промокод'
+        })
+
+
+def remove_promo_code(request):
+    """Видалення промокоду"""
+    if 'promo_code' in request.session:
+        del request.session['promo_code']
+    if 'promo_discount' in request.session:
+        del request.session['promo_discount']
+    if 'promo_id' in request.session:
+        del request.session['promo_id']
+    
+    return JsonResponse({
+        'success': True,
+        'message': 'Промокод видалено'
+    })

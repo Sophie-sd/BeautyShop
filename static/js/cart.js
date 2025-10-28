@@ -38,6 +38,14 @@ class ShoppingCart {
                 this.handleClearCart();
             }
         });
+
+        document.addEventListener('click', (e) => {
+            const promoBtn = e.target.closest('.apply-promo-btn');
+            if (promoBtn) {
+                e.preventDefault();
+                this.handleApplyPromo();
+            }
+        });
     }
 
     async handleAddToCart(button) {
@@ -289,6 +297,51 @@ class ShoppingCart {
 
     showErrorMessage(message) {
         this.showMessage(message, 'error');
+    }
+
+    async handleApplyPromo() {
+        const promoInput = document.getElementById('promo-code');
+        const promoMessage = document.querySelector('.promo-message');
+        const code = promoInput.value.trim();
+
+        if (!code) {
+            this.showPromoMessage('Введіть промокод', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch('/cart/apply-promo/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': this.getCsrfToken(),
+                },
+                body: `code=${encodeURIComponent(code)}`,
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                this.showPromoMessage(data.message, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                this.showPromoMessage(data.message, 'error');
+            }
+        } catch (error) {
+            this.showPromoMessage('Помилка застосування промокоду', 'error');
+        }
+    }
+
+    showPromoMessage(message, type = 'info') {
+        const promoMessage = document.querySelector('.promo-message');
+        if (promoMessage) {
+            promoMessage.textContent = message;
+            promoMessage.className = `promo-message promo-message-${type}`;
+            promoMessage.style.display = 'block';
+            setTimeout(() => {
+                promoMessage.style.display = 'none';
+            }, 5000);
+        }
     }
 
     showMessage(message, type = 'info') {
