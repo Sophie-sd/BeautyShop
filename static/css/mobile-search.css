@@ -34,9 +34,8 @@
     justify-content: center;
     width: 44px;
     height: 44px;
-    background: rgba(233, 30, 99, 0.15);
+    background: transparent;
     border: none;
-    border-radius: 8px;
     color: var(--primary-pink);
     cursor: pointer;
     transition: all var(--transition-fast);
@@ -45,8 +44,7 @@
 
 .mobile-search-btn:hover,
 .mobile-search-btn:focus {
-    background: rgba(233, 30, 99, 0.25);
-    color: var(--primary-pink);
+    opacity: 0.7;
 }
 
 .mobile-search-btn .search-icon {

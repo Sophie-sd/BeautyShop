@@ -98,7 +98,7 @@
         flex-wrap: nowrap;
         overflow-x: auto;
         overflow-y: hidden;
-        gap: 15px;
+        gap: 18px;
         max-width: none;
         margin: 35px 0 0;
         padding: 0 15px 20px;
@@ -124,15 +124,16 @@
     }
     
     .category-circle-wrapper {
-        width: 85px;
-        height: 85px;
-        margin-bottom: 10px;
+        width: 95px;
+        height: 95px;
+        margin-bottom: 12px;
     }
     
     .category-circle-name {
         font-size: 12px;
-        max-width: 90px;
+        max-width: 100px;
         margin-top: 0;
+        line-height: 1.4;
     }
     
     .categories-section-circular {
@@ -150,21 +151,22 @@
 
 @media (max-width: 480px) {
     .categories-circular {
-        gap: 12px;
+        gap: 15px;
         padding: 0 10px 20px;
         margin-top: 30px;
     }
     
     .category-circle-wrapper {
-        width: 75px;
-        height: 75px;
-        margin-bottom: 8px;
+        width: 85px;
+        height: 85px;
+        margin-bottom: 10px;
     }
     
     .category-circle-name {
         font-size: 11px;
-        max-width: 80px;
+        max-width: 90px;
         margin-top: 0;
+        line-height: 1.4;
     }
 }
 
