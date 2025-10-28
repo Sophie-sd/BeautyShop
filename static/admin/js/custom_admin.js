@@ -417,6 +417,34 @@
         updateTimers();
         setInterval(updateTimers, 60000); // Оновлюємо кожну хвилину
         
+        // ========== ЗАКРИТТЯ ПОВІДОМЛЕНЬ ==========
+        
+        const messageList = document.querySelector('.messagelist');
+        if (messageList) {
+            const messages = messageList.querySelectorAll('li');
+            messages.forEach(message => {
+                message.addEventListener('click', function() {
+                    this.style.animation = 'slideOut 0.3s ease-out';
+                    setTimeout(() => {
+                        this.remove();
+                        if (messageList.children.length === 0) {
+                            messageList.remove();
+                        }
+                    }, 300);
+                });
+                
+                setTimeout(() => {
+                    message.style.animation = 'slideOut 0.3s ease-out';
+                    setTimeout(() => {
+                        message.remove();
+                        if (messageList.children.length === 0) {
+                            messageList.remove();
+                        }
+                    }, 300);
+                }, 5000);
+            });
+        }
+        
         console.log('✅ Beauty Shop Admin JS initialized');
     });
     
@@ -434,6 +462,16 @@
             to {
                 transform: translateX(0);
                 opacity: 1;
+            }
+        }
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
             }
         }
     `;

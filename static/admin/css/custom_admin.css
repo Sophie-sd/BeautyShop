@@ -406,26 +406,71 @@ fieldset.collapsed h2:hover {
 }
 
 .messagelist {
-    margin: 0 0 20px 0;
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    z-index: 9999;
+    margin: 0;
     padding: 0;
+    max-width: 350px;
+    pointer-events: none;
 }
 
 .messagelist li {
-    padding: 12px 20px;
+    position: relative;
+    padding: 12px 40px 12px 16px;
     margin: 0 0 10px 0;
-    border-radius: 6px;
+    border-radius: 8px;
     font-weight: 500;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    background: var(--primary-color);
+    font-size: 13px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    background: rgba(121, 174, 200, 0.95);
     color: white;
+    backdrop-filter: blur(10px);
+    animation: slideIn 0.3s ease-out;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.messagelist li:hover {
+    background: rgba(121, 174, 200, 1);
+}
+
+.messagelist li::after {
+    content: "×";
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    font-size: 20px;
+    font-weight: 300;
+    color: white;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.messagelist li:hover::after {
+    opacity: 1;
 }
 
 .messagelist .success,
 .messagelist .warning,
 .messagelist .error,
 .messagelist .info {
-    background: var(--primary-color);
+    background: rgba(121, 174, 200, 0.95);
     color: white;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 .breadcrumbs {
