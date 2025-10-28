@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Build script для Render.com
+# Updated: 2025-10-28 - Fixed migrations for promotions and blog
 set -e  # Зупинити при помилках
 
 echo "🔨 BUILD PROCESS STARTED"
