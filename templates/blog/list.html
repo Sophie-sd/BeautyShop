@@ -41,7 +41,7 @@
                             </h2>
                             
                             {% if article.excerpt %}
-                                <p class="article-excerpt">{{ article.excerpt|truncatewords:20 }}</p>
+                                <p class="article-excerpt">{{ article.excerpt|striptags|truncatewords:20 }}</p>
                             {% endif %}
                             
                             <div class="article-meta">

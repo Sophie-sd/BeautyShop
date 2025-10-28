@@ -3,6 +3,7 @@
 """
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import Group
 from .models import CustomUser, UserProfile
 
 
@@ -109,3 +110,6 @@ class CustomUserAdmin(UserAdmin):
 
 # Видаляємо окрему реєстрацію UserProfile - тепер він тільки inline
 admin.site.unregister(UserProfile) if admin.site.is_registered(UserProfile) else None
+
+# Приховуємо "Групи" з адміністративної панелі (не використовуються в проекті)
+admin.site.unregister(Group)

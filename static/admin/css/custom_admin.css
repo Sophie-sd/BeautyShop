@@ -117,7 +117,7 @@ input[type="submit"].default:hover,
 }
 
 #result_list thead th {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: #667eea;
     color: white;
     font-weight: 600;
     text-transform: uppercase;
@@ -169,22 +169,22 @@ input[type="submit"].default:hover,
 }
 
 .badge-sale {
-    background: linear-gradient(135deg, #f093fb, #f5576c);
+    background: #f5576c;
     color: white;
     box-shadow: 0 2px 6px rgba(245, 87, 108, 0.3);
 }
 
 .badge-new,
 .badge-success {
-    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    background: #4facfe;
     color: white;
     box-shadow: 0 2px 6px rgba(79, 172, 254, 0.3);
 }
 
 .badge-top {
-    background: linear-gradient(135deg, #ffd89b, #19547b);
+    background: #ffa726;
     color: white;
-    box-shadow: 0 2px 6px rgba(255, 216, 155, 0.3);
+    box-shadow: 0 2px 6px rgba(255, 167, 38, 0.3);
 }
 
 .badge-info {
@@ -266,7 +266,7 @@ input[type="submit"].default:hover,
 }
 
 #changelist-filter h2 {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: #667eea;
     color: white;
     padding: 12px 15px;
     margin: 0;
@@ -413,7 +413,7 @@ select:focus {
 }
 
 .module h2 {
-    background: linear-gradient(135deg, #f7fafc, #edf2f7);
+    background: #edf2f7;
     padding: 12px 20px;
     margin: 0;
     font-size: 14px;
@@ -466,7 +466,7 @@ fieldset.collapsed h2:hover {
 }
 
 .inline-group thead th {
-    background: linear-gradient(135deg, #f7fafc, #edf2f7);
+    background: #edf2f7;
     border-bottom: 2px solid var(--border-color);
     padding: 10px;
     font-weight: 600;
@@ -501,22 +501,22 @@ fieldset.collapsed h2:hover {
 }
 
 .messagelist .success {
-    background: linear-gradient(135deg, #48bb78, #38a169);
+    background: #48bb78;
     color: white;
 }
 
 .messagelist .warning {
-    background: linear-gradient(135deg, #ed8936, #dd6b20);
+    background: #ed8936;
     color: white;
 }
 
 .messagelist .error {
-    background: linear-gradient(135deg, #f56565, #e53e3e);
+    background: #f56565;
     color: white;
 }
 
 .messagelist .info {
-    background: linear-gradient(135deg, #4299e1, #3182ce);
+    background: #4299e1;
     color: white;
 }
 
@@ -525,7 +525,7 @@ fieldset.collapsed h2:hover {
    ============================================ */
 
 .breadcrumbs {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: #667eea;
     padding: 12px 20px;
     border-radius: 0;
     color: white;
@@ -550,7 +550,7 @@ fieldset.collapsed h2:hover {
    ============================================ */
 
 #header {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: #667eea;
     color: white;
     box-shadow: 0 2px 12px rgba(0,0,0,0.15);
 }
@@ -566,6 +566,18 @@ fieldset.collapsed h2:hover {
 #branding h1 {
     font-weight: 700;
     letter-spacing: 0.5px;
+}
+
+#user-tools {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 20px;
+    flex-wrap: wrap;
+}
+
+#user-tools a {
+    white-space: nowrap;
 }
 
 /* ============================================

@@ -30,7 +30,7 @@
             </div>
             
             {% if article.excerpt %}
-                <p class="article-excerpt lead">{{ article.excerpt }}</p>
+                <p class="article-excerpt lead">{{ article.excerpt|striptags }}</p>
             {% endif %}
         </div>
     </div>
