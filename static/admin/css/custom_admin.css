@@ -282,7 +282,6 @@ input[type="submit"].default:hover,
     background: #667eea;
     color: white;
     padding: 12px 15px;
-    margin: 0;
     font-size: 13px;
     text-transform: uppercase;
     font-weight: 600;
@@ -565,6 +564,7 @@ fieldset.collapsed h2:hover {
     background: #667eea;
     color: white;
     box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    padding: 0px 30px;
 }
 
 #header a {
@@ -632,6 +632,10 @@ fieldset.collapsed h2:hover {
     background: rgba(255, 255, 255, 0.3);
     border-color: rgba(255, 255, 255, 0.5);
     transform: translateY(-1px);
+}
+
+#user-tools a:after {
+    content: none;
 }
 
 /* ============================================

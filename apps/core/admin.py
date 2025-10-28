@@ -2,7 +2,7 @@
 Адміністративна панель для core додатку - банери та статті
 """
 from django.contrib import admin
-from django.utils.html import format_html
+from django.utils.html import format_html, strip_tags
 from django.utils.safestring import mark_safe
 from django.db import models
 from ckeditor.widgets import CKEditorWidget
@@ -209,7 +209,8 @@ class ArticleAdmin(admin.ModelAdmin):
     def get_excerpt_preview(self, obj):
         """Попередній перегляд опису"""
         if obj.excerpt:
-            return obj.excerpt[:50] + "..." if len(obj.excerpt) > 50 else obj.excerpt
+            clean_text = strip_tags(obj.excerpt)
+            return clean_text[:50] + "..." if len(clean_text) > 50 else clean_text
         return "Немає опису"
     get_excerpt_preview.short_description = "Короткий опис"
     
