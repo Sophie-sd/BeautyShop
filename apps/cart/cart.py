@@ -62,16 +62,17 @@ class Cart:
         """Ітерація по товарах в кошику"""
         product_ids = self.cart.keys()
         products = Product.objects.filter(id__in=product_ids)
-        cart = self.cart.copy()
+        products_dict = {str(p.id): p for p in products}
         
-        for product in products:
-            cart[str(product.id)]['product'] = product
-        
-        for item in cart.values():
-            price = Decimal(str(item['price']))
-            item['price'] = price
-            item['total_price'] = price * item['quantity']
-            yield item
+        for product_id, item in self.cart.items():
+            if product_id in products_dict:
+                # Створюємо новий словник для кожного item
+                yield {
+                    'product': products_dict[product_id],
+                    'quantity': item['quantity'],
+                    'price': Decimal(str(item['price'])),
+                    'total_price': Decimal(str(item['price'])) * item['quantity']
+                }
     
     def __len__(self):
         """Кількість товарів в кошику"""
