@@ -719,45 +719,6 @@
   border-radius: var(--radius-md);
 }
 
-/* Іконка обраного */
-.product-card__wishlist {
-  position: absolute;
-  top: var(--space-sm);
-  right: var(--space-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: rgba(255, 255, 255, 0.95);
-  border: none;
-  border-radius: var(--radius-round);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  z-index: 10;
-  backdrop-filter: blur(4px);
-}
-
-.product-card__wishlist:hover {
-  background: var(--color-white);
-  box-shadow: var(--shadow-md);
-  transform: scale(1.1);
-}
-
-.product-card__wishlist--active {
-  background: var(--color-primary);
-  color: var(--color-white);
-}
-
-.product-card__wishlist-icon {
-  font-size: 16px;
-  line-height: 1;
-  transition: transform var(--transition-fast);
-}
-
-.product-card__wishlist:hover .product-card__wishlist-icon {
-  transform: scale(1.1);
-}
 
 /* Бейджі */
 .product-card__badges {

@@ -340,8 +340,7 @@
 .btn-toggle-wishlist,
 .wishlist-toggle,
 .btn-wishlist,
-.wishlist-btn,
-.product-card__wishlist {
+.wishlist-btn {
     position: relative;
     background: var(--white);
     border: 2px solid var(--gray-light);
@@ -359,8 +358,7 @@
 .btn-toggle-wishlist:hover,
 .wishlist-toggle:hover,
 .btn-wishlist:hover,
-.wishlist-btn:hover,
-.product-card__wishlist:hover {
+.wishlist-btn:hover {
     border-color: var(--primary-pink);
     background: rgba(233, 30, 99, 0.05);
 }
@@ -368,9 +366,7 @@
 .btn-toggle-wishlist.active,
 .wishlist-toggle.active,
 .btn-wishlist.active,
-.wishlist-btn.active,
-.product-card__wishlist.active,
-.product-card__wishlist--active {
+.wishlist-btn.active {
     background: var(--primary-pink);
     border-color: var(--primary-pink);
     color: var(--white);
@@ -396,25 +392,21 @@
 }
 
 /* Для text-based іконок */
-.icon-heart,
-.product-card__wishlist-icon {
+.icon-heart {
     font-size: 24px;
     color: var(--neutral-dark);
     transition: all var(--transition-fast);
 }
 
 .btn-wishlist.active .icon-heart,
-.wishlist-btn.active .icon-heart,
-.product-card__wishlist.active .product-card__wishlist-icon,
-.product-card__wishlist--active .product-card__wishlist-icon {
+.wishlist-btn.active .icon-heart {
     color: var(--white);
 }
 
 .btn-toggle-wishlist.animate-heart,
 .wishlist-toggle.animate-heart,
 .btn-wishlist.animate-heart,
-.wishlist-btn.animate-heart,
-.product-card__wishlist.animate-heart {
+.wishlist-btn.animate-heart {
     animation: heartBeat 0.6s ease;
 }
 
@@ -634,7 +626,6 @@
     .wishlist-toggle,
     .btn-wishlist,
     .wishlist-btn,
-    .product-card__wishlist,
     .btn-remove-wishlist,
     .btn-add-to-cart {
         -webkit-tap-highlight-color: transparent;
@@ -666,8 +657,7 @@
     .btn-toggle-wishlist,
     .wishlist-toggle,
     .btn-wishlist,
-    .wishlist-btn,
-    .product-card__wishlist {
+    .wishlist-btn {
         border-width: 3px;
     }
 }
@@ -682,7 +672,6 @@
     .wishlist-toggle,
     .btn-wishlist,
     .wishlist-btn,
-    .product-card__wishlist,
     .btn-add-to-cart,
     .notification {
         transition: none;
@@ -691,8 +680,7 @@
     .btn-toggle-wishlist.animate-heart,
     .wishlist-toggle.animate-heart,
     .btn-wishlist.animate-heart,
-    .wishlist-btn.animate-heart,
-    .product-card__wishlist.animate-heart {
+    .wishlist-btn.animate-heart {
         animation: none;
     }
 }
