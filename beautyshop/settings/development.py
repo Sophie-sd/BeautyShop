@@ -54,6 +54,25 @@ LOGGING = {
     },
 }
 
+# Cloudinary для зберігання media файлів (навіть в development)
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME', default='dahkrj6ye'),
+    'API_KEY': config('CLOUDINARY_API_KEY', default=''),
+    'API_SECRET': config('CLOUDINARY_API_SECRET', default=''),
+}
+
+MEDIA_URL = '/media/'
+
+# Django 4.2+ STORAGES система - використовуємо Cloudinary і в development
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
+
 # Кешування вимкнено для розробки
 CACHES = {
     'default': {

@@ -61,15 +61,14 @@ STORAGES = {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
 
-# Whitenoise налаштування
+# Whitenoise також обслуговує media файли на production
 WHITENOISE_USE_FINDERS = True
-WHITENOISE_AUTOREFRESH = False  # Вимкнено на production для кращої продуктивності
-WHITENOISE_MAX_AGE = 31536000  # 1 рік кешування (з manifest hash)
-WHITENOISE_IMMUTABLE_FILE_TEST = lambda path, url: True  # Всі файли з хешем незмінні
+WHITENOISE_AUTOREFRESH = True
+WHITENOISE_MAX_AGE = 31536000  # 1 рік кешування для статичних файлів
 
 # Додаємо Whitenoise middleware після SecurityMiddleware
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
