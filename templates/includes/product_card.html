@@ -1,0 +1,118 @@
+{% load static %}
+<article class="product-card{% if card_class %} {{ card_class }}{% endif %}" 
+         {% if product.retail_price %}data-price="{{ product.retail_price }}"{% endif %}
+         {% if product.sale_price %}data-sale-price="{{ product.sale_price }}"{% endif %}
+         {% if product.is_in_stock %}data-in-stock="true"{% else %}data-in-stock="false"{% endif %}
+         {% if product.is_sale %}data-is-sale="true"{% endif %}
+         {% if product.is_new %}data-is-new="true"{% endif %}
+         {% if product.is_top %}data-is-top="true"{% endif %}
+         data-name="{{ product.name }}">
+    
+    <div class="product-card__media">
+        <a href="{{ product.get_absolute_url }}">
+            {% if product.images.first %}
+                <img 
+                    src="{{ product.images.first.image.url }}" 
+                    alt="{{ product.name }}" 
+                    class="product-card__image"
+                    loading="lazy"
+                    width="300"
+                    height="300"
+                >
+            {% elif product.main_image %}
+                <img 
+                    src="{{ product.main_image.image.url }}" 
+                    alt="{{ product.name }}" 
+                    class="product-card__image"
+                    loading="lazy"
+                    width="300"
+                    height="300"
+                >
+            {% else %}
+                <div class="product-card__placeholder" aria-label="Зображення товару відсутнє">
+                    📦
+                </div>
+            {% endif %}
+        </a>
+        
+        {% if show_wishlist %}
+        <button 
+            type="button"
+            class="product-card__wishlist{% if in_wishlist %} product-card__wishlist--active{% endif %}" 
+            data-product-id="{{ product.id }}" 
+            aria-label="{% if in_wishlist %}Видалити з обраного{% else %}Додати в обране{% endif %}"
+            title="{% if in_wishlist %}Видалити з обраного{% else %}Додати в обране{% endif %}"
+        >
+            <span class="product-card__wishlist-icon" aria-hidden="true">{% if in_wishlist %}♥{% else %}♡{% endif %}</span>
+        </button>
+        {% endif %}
+        
+        {% if product.get_stickers %}
+            <div class="product-card__badges">
+                {% for sticker in product.get_stickers %}
+                    <span class="product-badge product-badge--{{ sticker.type }}" aria-label="{{ sticker.text }}">
+                        {{ sticker.text }}
+                    </span>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="product-card__content">
+        <h3 class="product-card__name" title="{{ product.name }}">
+            <a href="{{ product.get_absolute_url }}" class="product-card__link">
+                {{ product.name }}
+            </a>
+        </h3>
+        
+        <div class="product-card__price">
+            {% if product.is_sale and product.sale_price %}
+                <span class="product-card__price-current" aria-label="Акційна ціна">
+                    {{ product.sale_price }} ₴
+                </span>
+                <span class="product-card__price-old" aria-label="Стара ціна">
+                    {{ product.retail_price }} ₴
+                </span>
+                {% if show_discount_badge %}
+                <span class="product-card__price-save" aria-label="Економія">
+                    -{{ product.get_discount_amount }} ₴
+                </span>
+                {% endif %}
+            {% else %}
+                <span class="product-card__price-current" aria-label="Ціна">
+                    {{ product.retail_price }} ₴
+                </span>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="product-card__actions">
+        {% if product.is_in_stock %}
+            <button 
+                type="button"
+                class="product-card__add-cart" 
+                data-product-id="{{ product.id }}"
+                data-product-name="{{ product.name }}"
+                aria-label="Додати {{ product.name }} до кошика"
+            >
+                До кошика
+            </button>
+        {% else %}
+            <button 
+                type="button"
+                class="product-card__add-cart product-card__add-cart--disabled" 
+                disabled
+                aria-label="Товар тимчасово відсутній"
+            >
+                Немає в наявності
+            </button>
+        {% endif %}
+    </div>
+    
+    {% if not product.is_in_stock %}
+        <div class="product-card__out-of-stock-label" aria-hidden="true">
+            Немає в наявності
+        </div>
+    {% endif %}
+</article>
+

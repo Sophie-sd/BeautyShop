@@ -90,50 +90,9 @@
                 </div>
             </div>
             
-            <!-- Products Grid - використовуємо структуру promo-card як на головній -->
             <div class="products-grid products-grid--sale">
                 {% for product in products %}
-                    <div class="promo-card">
-                        <div class="promo-image">
-                            <a href="{{ product.get_absolute_url }}">
-                                {% if product.images.first %}
-                                    <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" loading="lazy">
-                                {% else %}
-                                    <div class="product-placeholder">
-                                        <span class="placeholder-icon">📦</span>
-                                    </div>
-                                {% endif %}
-                                
-                                {% for sticker in product.get_stickers %}
-                                    {% if sticker.type == 'sale' %}
-                                        <div class="promo-badge">{{ sticker.text }}</div>
-                                    {% endif %}
-                                {% endfor %}
-                            </a>
-                        </div>
-                        
-                        <div class="promo-content">
-                            <h3 class="promo-name">
-                                <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
-                            </h3>
-                            
-                            <div class="promo-price">
-                                <span class="price-old">{{ product.retail_price }} ₴</span>
-                                <span class="price-new">{{ product.sale_price }} ₴</span>
-                            </div>
-                            
-                            <button class="btn btn-primary btn-sm add-to-cart" 
-                                    data-product-id="{{ product.id }}"
-                                    data-product-name="{{ product.name }}"
-                                    {% if not product.is_in_stock %}disabled{% endif %}>
-                                {% if product.is_in_stock %}
-                                    Купити
-                                {% else %}
-                                    Немає в наявності
-                                {% endif %}
-                            </button>
-                        </div>
-                    </div>
+                    {% include 'includes/promo_card.html' %}
                 {% endfor %}
             </div>
             

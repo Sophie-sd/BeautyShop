@@ -106,6 +106,40 @@
     gap: var(--spacing-xl);
 }
 
+/* Product Card Elements for Search */
+.search-results .product-category {
+    font-size: 0.85rem;
+    color: var(--color-gray-500);
+    margin-bottom: var(--spacing-sm);
+}
+
+.search-results .product-pricing {
+    margin-bottom: var(--spacing-md);
+}
+
+.search-results .price-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-xs);
+}
+
+.search-results .price-save {
+    font-size: 0.85rem;
+    color: var(--color-success);
+    font-weight: var(--font-weight-semibold);
+}
+
+.search-results .price-wholesale {
+    font-size: 0.9rem;
+    color: var(--color-secondary);
+    font-weight: var(--font-weight-semibold);
+}
+
+.search-results .cart-icon {
+    margin-right: var(--spacing-xs);
+}
+
 /* No Results Section */
 .no-results-section {
     text-align: center;
