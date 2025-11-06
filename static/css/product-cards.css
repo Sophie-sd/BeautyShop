@@ -230,23 +230,20 @@
 /*              КОНТЕНТ КАРТКИ                 */
 /* ============================================ */
 
-.product-card__content,
-.product-content {
+.product-card__content {
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding: var(--card-padding) var(--card-padding) var(--card-gap);
+  padding: var(--card-padding);
   gap: var(--card-gap);
 }
 
-.product-card__name,
-.product-name,
-.product-content h3 {
+.product-card__name {
   font-size: 14px;
   font-weight: var(--font-weight-medium);
   color: var(--color-gray-900);
   line-height: 1.3;
-  margin: 0 0 var(--card-gap) 0;
+  margin: 0;
   
   /* Обмеження до 2 рядків */
   display: -webkit-box;
@@ -272,12 +269,10 @@
 /*              ЦІНА ТОВАРУ                    */
 /* ============================================ */
 
-.product-card__price,
-.product-price {
+.product-card__price {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  margin-bottom: var(--card-gap);
   flex-wrap: wrap;
 }
 
@@ -320,17 +315,10 @@
 }
 
 /* ============================================ */
-/*              ДІЇ З ТОВАРОМ                  */
+/*              КНОПКА "ДО КОШИКА"             */
 /* ============================================ */
 
-.product-card__actions,
-.product-actions {
-  margin-top: auto;
-  padding: 0 var(--card-padding) var(--card-padding);
-}
-
-.product-card__add-cart,
-.btn-add-cart {
+.product-card__add-cart {
   width: 100%;
   padding: 10px var(--space-sm);
   background: var(--color-primary);
@@ -341,38 +329,22 @@
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: all var(--transition-fast);
-  margin-top: auto;
 }
 
-.product-card__add-cart:hover,
-.btn-add-cart:hover {
+.product-card__add-cart:hover:not(:disabled) {
   background: var(--color-primary-dark);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
 }
 
-.product-card__add-cart:active,
-.btn-add-cart:active {
+.product-card__add-cart:active {
   transform: translateY(0);
 }
 
-.product-card__add-cart--added,
-.btn-add-cart.added {
-  background: var(--color-success);
-  pointer-events: none;
-}
-
-.product-card__add-cart--disabled,
-.btn-add-cart:disabled {
+.product-card__add-cart:disabled {
   background: var(--color-gray-400);
   cursor: not-allowed;
   opacity: 0.6;
-}
-
-.product-card__add-cart--loading,
-.btn-add-cart.loading {
-  opacity: 0.7;
-  cursor: not-allowed;
 }
 
 /* ============================================ */
@@ -390,9 +362,7 @@
     --badge-font-size: 9px;
   }
   
-  .product-card__name,
-  .product-name,
-  .product-content h3 {
+  .product-card__name {
     font-size: 13px;
     min-height: 34px;
   }
@@ -422,9 +392,7 @@
     --badge-offset: -1px;
   }
   
-  .product-card__name,
-  .product-name,
-  .product-content h3 {
+  .product-card__name {
     font-size: 12px;
     min-height: 30px;
   }

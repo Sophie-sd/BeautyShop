@@ -182,7 +182,7 @@
         {% if products %}
             <div class="products-grid" id="productsGrid" role="main" aria-live="polite">
                 {% for product in products %}
-                    {% include 'includes/product_card.html' with show_wishlist=True show_discount_badge=True %}
+                    {% include 'includes/product_card.html' %}
                 {% endfor %}
             </div>
         {% else %}

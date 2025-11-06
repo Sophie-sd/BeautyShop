@@ -29,7 +29,7 @@
         <div class="wishlist-content">
             <div class="products-grid products-grid--cols-4">
                 {% for product in products %}
-                    {% include 'includes/product_card.html' with show_wishlist=True in_wishlist=True show_discount_badge=True %}
+                    {% include 'includes/product_card.html' with in_wishlist=True %}
                 {% endfor %}
             </div>
 

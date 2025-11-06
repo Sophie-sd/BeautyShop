@@ -145,7 +145,7 @@
             
             <div class="promotions-slider" id="promotionsSlider">
                 {% for product in promotion_products %}
-                    {% include 'includes/promo_card.html' %}
+                    {% include 'includes/product_card.html' %}
                 {% endfor %}
             </div>
             
@@ -190,7 +190,7 @@
             
             <div class="promotions-slider" id="promotionsSliderDesktop">
                 {% for product in promotion_products %}
-                    {% include 'includes/promo_card.html' %}
+                    {% include 'includes/product_card.html' %}
                 {% endfor %}
             </div>
             
@@ -273,7 +273,7 @@
             
             <div class="recommended-slider" id="recommendedSlider">
                 {% for product in new_products %}
-                    {% include 'includes/slider_product_card.html' %}
+                    {% include 'includes/product_card.html' %}
                 {% empty %}
                     <div class="text-center">
                         <p class="text-muted">Новинки завантажуються...</p>

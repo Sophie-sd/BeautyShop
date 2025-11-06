@@ -144,7 +144,7 @@
             <h2 class="section-title text-center">Схожі товари</h2>
             <div class="products-grid">
                 {% for item in similar %}
-                    {% include 'includes/similar_product_card.html' with product=item %}
+                    {% include 'includes/product_card.html' with product=item %}
                 {% endfor %}
             </div>
         </section>
