@@ -326,50 +326,74 @@ class Product(models.Model):
     
     def get_price_for_user(self, user=None, quantity=1):
         """
-        Повертає ціну для конкретного користувача з урахуванням:
-        - Оптового статусу
-        - Градації цін (3 шт, 5 шт)
-        - Кількісних знижок
-        - Акційних цін (з перевіркою періоду)
+        Повертає ціну для конкретного користувача згідно бізнес-логіки:
         
-        Пріоритет застосування (найвигідніша для клієнта):
-        1. Акційна ціна (якщо активна)
-        2. Ціна від 5 шт (якщо qty >= 5)
-        3. Ціна від 3 шт (якщо qty >= 3)
-        4. Оптова ціна (для зареєстрованих)
-        5. Базова роздрібна ціна
+        ДЛЯ НЕЗАЛОГІНЕНИХ КОРИСТУВАЧІВ:
+        - Повна роздрібна ціна
+        - Градація цін (від 3шт, від 5шт) застосовується
+        - Оптова ціна НЕ відображається
+        
+        ДЛЯ ЗАЛОГІНЕНИХ (ОПТОВИХ) КОРИСТУВАЧІВ:
+        - Оптова ціна (основна)
+        - Градація цін НЕ застосовується
+        - Завжди оптова ціна незалежно від кількості
         """
-        # Базова ціна
-        if user and user.is_authenticated and hasattr(user, 'is_wholesale') and user.is_wholesale and self.wholesale_price:
-            base_price = self.wholesale_price
-        else:
-            base_price = self.retail_price
+        # Перевірка чи є користувач оптовим клієнтом
+        is_wholesale_user = (
+            user and 
+            user.is_authenticated and 
+            hasattr(user, 'is_wholesale') and 
+            user.is_wholesale
+        )
         
-        # Акційна ціна (з перевіркою періоду)
-        if self.is_sale_active():
-            base_price = min(base_price, self.sale_price)
+        # Для оптових клієнтів - тільки оптова ціна (градація НЕ діє)
+        if is_wholesale_user and self.wholesale_price:
+            return self.wholesale_price
         
-        # Градація цін (нова система)
+        # Для незалогінених - роздрібна ціна з градацією
+        # Градація застосовується тільки якщо є відповідні ціни
         if quantity >= 5 and self.price_5_qty:
-            base_price = min(base_price, self.price_5_qty)
+            return self.price_5_qty
         elif quantity >= 3 and self.price_3_qty:
-            base_price = min(base_price, self.price_3_qty)
+            return self.price_3_qty
         
-        # Стара система кількісних знижок (для зворотної сумісності)
-        if quantity >= self.min_quantity_discount and self.quantity_discount_price:
-            base_price = min(base_price, self.quantity_discount_price)
-        
-        return base_price
+        # Базова роздрібна ціна
+        return self.retail_price
     
-    def get_all_prices(self):
-        """Повертає всі доступні ціни для відображення"""
-        prices = {
-            'retail': self.retail_price,
-            'wholesale': self.wholesale_price,
-            'sale': self.sale_price if self.is_sale_active() else None,
-            'qty_3': self.price_3_qty,
-            'qty_5': self.price_5_qty,
-        }
+    def get_all_prices(self, user=None):
+        """
+        Повертає всі доступні ціни для відображення залежно від користувача.
+        
+        ДЛЯ НЕЗАЛОГІНЕНИХ:
+        - retail (роздрібна/повна)
+        - qty_3 (від 3шт)
+        - qty_5 (від 5шт)
+        
+        ДЛЯ ЗАЛОГІНЕНИХ (ОПТОВИХ):
+        - wholesale (оптова - основна)
+        - retail (роздрібна - для інформації/примітки)
+        """
+        is_wholesale_user = (
+            user and 
+            user.is_authenticated and 
+            hasattr(user, 'is_wholesale') and 
+            user.is_wholesale
+        )
+        
+        if is_wholesale_user:
+            # Для оптових клієнтів: оптова + роздрібна (для порівняння)
+            prices = {
+                'wholesale': self.wholesale_price,
+                'retail': self.retail_price,  # для показу економії
+            }
+        else:
+            # Для незалогінених: роздрібна + градація
+            prices = {
+                'retail': self.retail_price,
+                'qty_3': self.price_3_qty,
+                'qty_5': self.price_5_qty,
+            }
+        
         return {k: v for k, v in prices.items() if v is not None}
     
     def get_stickers(self):

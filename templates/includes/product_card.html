@@ -65,10 +65,15 @@
         </h3>
         
         <div class="product-card__price">
-            {% if product.is_sale and product.sale_price %}
-                <span class="product-card__price-current">{{ product.sale_price }} ₴</span>
-                <span class="product-card__price-old">{{ product.retail_price }} ₴</span>
+            {% if user.is_authenticated and user.is_wholesale %}
+                <!-- Для оптових клієнтів -->
+                {% if product.wholesale_price %}
+                    <span class="product-card__price-current">{{ product.wholesale_price }} ₴</span>
+                {% else %}
+                    <span class="product-card__price-current">{{ product.retail_price }} ₴</span>
+                {% endif %}
             {% else %}
+                <!-- Для незалогінених клієнтів -->
                 <span class="product-card__price-current">{{ product.retail_price }} ₴</span>
             {% endif %}
         </div>

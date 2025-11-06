@@ -115,6 +115,23 @@
     margin-left: 10px;
 }
 
+.product-detail-price .price-wholesale-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: #666;
+    margin-top: 5px;
+}
+
+.product-detail-price .price-retail-note {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: #999;
+    text-decoration: line-through;
+    margin-top: 8px;
+}
+
 .product-description {
     line-height: 1.8;
     color: #666;

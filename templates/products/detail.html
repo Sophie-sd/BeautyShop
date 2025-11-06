@@ -61,27 +61,36 @@
                 
                 <!-- Ціна -->
                 <div class="product-detail-price">
-                    {% if product.is_sale and product.sale_price %}
-                        <span class="price-new">{{ product.sale_price }} ₴</span>
-                        <span class="price-old">{{ product.retail_price }} ₴</span>
+                    {% if user.is_authenticated and user.is_wholesale %}
+                        <!-- Для оптових клієнтів -->
+                        {% if product.wholesale_price %}
+                            <span class="price-current">{{ product.wholesale_price }} ₴</span>
+                            <span class="price-wholesale-label">Оптова ціна</span>
+                            <span class="price-retail-note">Роздрібна: {{ product.retail_price }} ₴</span>
+                        {% else %}
+                            <span class="price-current">{{ product.retail_price }} ₴</span>
+                        {% endif %}
                     {% else %}
+                        <!-- Для незалогінених клієнтів -->
                         <span class="price-current">{{ product.retail_price }} ₴</span>
                     {% endif %}
                 </div>
                 
-                <!-- Градація цін -->
-                {% if product.price_3_qty or product.price_5_qty %}
-                <div class="price-tiers">
-                    <h3>Вигідні ціни при покупці:</h3>
-                    <ul>
-                        {% if product.price_3_qty %}
-                        <li>Від 3 шт - {{ product.price_3_qty }} ₴</li>
-                        {% endif %}
-                        {% if product.price_5_qty %}
-                        <li>Від 5 шт - {{ product.price_5_qty }} ₴</li>
-                        {% endif %}
-                    </ul>
-                </div>
+                <!-- Градація цін (тільки для незалогінених) -->
+                {% if not user.is_authenticated or not user.is_wholesale %}
+                    {% if product.price_3_qty or product.price_5_qty %}
+                    <div class="price-tiers">
+                        <h3>Вигідні ціни при покупці:</h3>
+                        <ul>
+                            {% if product.price_3_qty %}
+                            <li>Від 3 шт - {{ product.price_3_qty }} ₴</li>
+                            {% endif %}
+                            {% if product.price_5_qty %}
+                            <li>Від 5 шт - {{ product.price_5_qty }} ₴</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    {% endif %}
                 {% endif %}
                 
                 <!-- Наявність -->
