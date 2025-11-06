@@ -26,20 +26,9 @@
 }
 
 .recommended-slider .product-card {
-    flex: 0 0 280px;
-    max-width: 280px;
-    min-width: 280px;
-    background: white;
-    border-radius: 15px;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
-    overflow: hidden;
-}
-
-.recommended-slider .product-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 15px 35px rgba(233, 30, 99, 0.15);
-    border-color: rgba(233, 30, 99, 0.3);
+    flex: 0 0 240px;
+    max-width: 240px;
+    min-width: 240px;
 }
 
 .slider-nav-btn {
@@ -99,126 +88,13 @@
     transform: translateY(-50%);
 }
 
-/* Product card стилі */
-.recommended-slider .product-image {
-    position: relative;
-    width: 100%;
-    height: 280px;
-    overflow: hidden;
-    background: #f8f9fa;
-}
-
-.recommended-slider .product-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.4s ease;
-}
-
-.recommended-slider .product-card:hover .product-image img {
-    transform: scale(1.08);
-}
-
-.recommended-slider .product-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-}
-
-.recommended-slider .placeholder-icon {
-    font-size: 4em;
-    opacity: 0.3;
-}
-
-.recommended-slider .product-content {
-    padding: 20px;
-}
-
-.recommended-slider .product-name {
-    font-size: 1em;
-    font-weight: 600;
-    margin: 0 0 15px 0;
-    line-height: 1.4;
-    min-height: 44px;
-}
-
-.recommended-slider .product-name a {
-    color: #333;
-    text-decoration: none;
-    transition: color 0.3s ease;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.recommended-slider .product-name a:hover {
-    color: #e91e63;
-}
-
-.recommended-slider .product-price {
-    margin-bottom: 15px;
-}
-
-.recommended-slider .product-actions {
-    display: flex;
-    gap: 10px;
-}
-
-.recommended-slider .add-to-cart {
-    flex: 1;
-}
-
-.recommended-slider .wishlist-btn {
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.recommended-slider .icon-heart {
-    font-size: 1.2em;
-}
 
 /* Адаптивність */
-@media (max-width: 1200px) {
-    .recommended-slider-container {
-        padding: 0 50px;
-    }
-    
-    .recommended-slider .product-card {
-        flex: 0 0 260px;
-        max-width: 260px;
-        min-width: 260px;
-    }
-}
-
 @media (max-width: 768px) {
-    .recommended-slider-container {
-        padding: 0 40px;
-    }
-    
-    .recommended-slider {
-        gap: 15px;
-    }
-    
     .recommended-slider .product-card {
-        flex: 0 0 220px;
-        max-width: 220px;
-        min-width: 220px;
-    }
-    
-    .recommended-slider .product-image {
-        height: 220px;
-    }
-    
-    .recommended-slider .product-content {
-        padding: 15px;
+        flex: 0 0 200px;
+        max-width: 200px;
+        min-width: 200px;
     }
     
     .slider-nav-btn {
@@ -228,31 +104,10 @@
 }
 
 @media (max-width: 480px) {
-    .recommended-slider-container {
-        padding: 0 35px;
-    }
-    
-    .recommended-slider {
-        gap: 12px;
-    }
-    
     .recommended-slider .product-card {
-        flex: 0 0 200px;
-        max-width: 200px;
-        min-width: 200px;
-    }
-    
-    .recommended-slider .product-image {
-        height: 200px;
-    }
-    
-    .recommended-slider .product-content {
-        padding: 12px;
-    }
-    
-    .recommended-slider .product-name {
-        font-size: 0.9em;
-        min-height: 40px;
+        flex: 0 0 180px;
+        max-width: 180px;
+        min-width: 180px;
     }
     
     .slider-nav-btn {
@@ -266,52 +121,4 @@
     }
 }
 
-/* Анімації */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.recommended-slider .product-card {
-    animation: fadeInUp 0.6s ease forwards;
-}
-
-.recommended-slider .product-card:nth-child(1) {
-    animation-delay: 0.1s;
-}
-
-.recommended-slider .product-card:nth-child(2) {
-    animation-delay: 0.15s;
-}
-
-.recommended-slider .product-card:nth-child(3) {
-    animation-delay: 0.2s;
-}
-
-.recommended-slider .product-card:nth-child(4) {
-    animation-delay: 0.25s;
-}
-
-.recommended-slider .product-card:nth-child(5) {
-    animation-delay: 0.3s;
-}
-
-/* iOS Safari оптимізація */
-@supports (-webkit-touch-callout: none) {
-    .recommended-slider .product-card {
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
-    }
-    
-    .recommended-slider .product-card:hover {
-        -webkit-transform: translateY(-8px) translateZ(0);
-        transform: translateY(-8px) translateZ(0);
-    }
-}
 
