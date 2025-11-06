@@ -12,11 +12,34 @@ class CategoryView(ListView):
     
     def get_queryset(self):
         self.category = get_object_or_404(Category, slug=self.kwargs['slug'])
-        return Product.objects.filter(category=self.category, is_active=True)
+        
+        # Отримуємо всі підкатегорії цієї категорії
+        subcategories = self.category.children.filter(is_active=True)
+        category_ids = [self.category.id] + list(subcategories.values_list('id', flat=True))
+        
+        # Базовий queryset - товари з категорії та її підкатегорій
+        queryset = Product.objects.filter(
+            category_id__in=category_ids,
+            is_active=True
+        ).select_related('category').prefetch_related('images')
+        
+        # Фільтр по підкатегоріях (якщо обрано)
+        selected_subcats = self.request.GET.getlist('subcategory')
+        if selected_subcats:
+            queryset = queryset.filter(category__slug__in=selected_subcats)
+        
+        return queryset.distinct()
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['category'] = self.category
+        
+        # Підкатегорії для фільтрів
+        context['subcategories'] = self.category.children.filter(is_active=True)
+        
+        # Обрані підкатегорії (для checkbox state)
+        context['selected_subcategories'] = self.request.GET.getlist('subcategory')
+        
         return context
 
 

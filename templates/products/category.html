@@ -22,7 +22,7 @@
     <div class="catalog-layout">
         <!-- Бокова панель фільтрів (desktop) -->
         <aside class="catalog-sidebar" id="catalogSidebar">
-            <div class="filters-panel">
+            <form method="get" action="" class="filters-panel" id="filtersForm">
                         <div class="filters-header">
                             <h3 class="filters-title">Фільтри</h3>
                             <button type="button" class="filters-close" id="mobileFiltersClose" aria-label="Закрити фільтри">
@@ -31,6 +31,26 @@
                         </div>
                         
                         <div class="filters-content">
+                            <!-- Фільтр за підкатегоріями -->
+                            {% if subcategories %}
+                            <div class="filter-section">
+                                <h4 class="filter-title">Підкатегорії</h4>
+                                <div class="filter-options" id="subcategoryFilters">
+                                    {% for subcat in subcategories %}
+                                        <label class="filter-checkbox">
+                                            <input 
+                                                type="checkbox" 
+                                                value="{{ subcat.slug }}" 
+                                                name="subcategory"
+                                                {% if subcat.slug in selected_subcategories %}checked{% endif %}
+                                            >
+                                            <span class="filter-label">{{ subcat.name }}</span>
+                                        </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            
                             <!-- Фільтр за ціною -->
                             <div class="filter-section">
                                 <h4 class="filter-title">Ціна (₴)</h4>
@@ -133,14 +153,14 @@
                         
                         <!-- Кнопка застосування фільтрів -->
                         <div class="filters-actions">
-                            <button type="button" class="filters-clear-btn" id="clearAllFilters">
+                            <a href="{{ request.path }}" class="filters-clear-btn" id="clearAllFilters">
                                 Очистити
-                            </button>
-                            <button type="button" class="filters-apply-btn" id="applyFiltersBtn">
+                            </a>
+                            <button type="submit" class="filters-apply-btn" id="applyFiltersBtn">
                                 Застосувати
                             </button>
                         </div>
-            </div>
+            </form>
         </aside>
         
         <!-- Основний контент -->
