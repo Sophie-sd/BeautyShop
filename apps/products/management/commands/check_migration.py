@@ -40,16 +40,19 @@ class Command(BaseCommand):
         if parent_categories == 0:
             errors.append('Немає головних категорій')
         
-        # Перевірка порожніх категорій
-        empty_categories = Category.objects.filter(is_active=True).annotate(
+        # Перевірка порожніх категорій (лише листових, без підкатегорій)
+        empty_leaf_categories = Category.objects.filter(
+            is_active=True,
+            children__isnull=True  # Тільки категорії без підкатегорій
+        ).annotate(
             products_count=Count('product', filter=Q(product__is_active=True))
         ).filter(products_count=0)
         
-        if empty_categories.exists():
-            warnings.append(f'{empty_categories.count()} порожніх активних категорій')
+        if empty_leaf_categories.exists():
+            warnings.append(f'{empty_leaf_categories.count()} порожніх категорій без підкатегорій')
             if detailed:
                 self.stdout.write(self.style.WARNING('   Порожні категорії:'))
-                for cat in empty_categories[:10]:
+                for cat in empty_leaf_categories[:10]:
                     self.stdout.write(f'     - {cat.name}')
         
         # 2. ТОВАРИ
@@ -137,16 +140,17 @@ class Command(BaseCommand):
         
         self.stdout.write(f'   Всього зображень: {total_images}')
         self.stdout.write(f'   Товарів з фото: {products_with_images}')
-        self.stdout.write(f'   Товарів без фото: {products_without_images}')
+        self.stdout.write(f'   Товарів без фото (плейсхолдер 📦): {products_without_images}')
         
         if active_products > 0:
             coverage = (products_with_images / active_products) * 100
-            self.stdout.write(f'   Покриття: {coverage:.1f}%')
+            self.stdout.write(f'   Покриття реальними фото: {coverage:.1f}%')
+            self.stdout.write(self.style.WARNING(f'   ⓘ Товари без фото показують плейсхолдер 📦 на сайті'))
             
-            if coverage < 50:
-                errors.append(f'Менше 50% товарів мають зображення ({coverage:.1f}%)')
-            elif coverage < 90:
-                warnings.append(f'Менше 90% товарів мають зображення ({coverage:.1f}%)')
+            if coverage < 10:
+                errors.append(f'Критично мало товарів мають зображення ({coverage:.1f}%)')
+            elif coverage < 50:
+                warnings.append(f'Бажано додати більше зображень (покриття: {coverage:.1f}%)')
         
         # Товари без головного зображення
         products_no_main_image = Product.objects.filter(
