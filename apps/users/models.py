@@ -69,9 +69,9 @@ class CustomUser(AbstractUser):
     def get_price_for_product(self, product):
         """
         Повертає ціну товару залежно від статусу користувача.
-        Зареєстровані користувачі бачать оптові ціни.
+        Зареєстровані оптові користувачі (НЕ адміністратори) бачать оптові ціни.
         """
-        if self.is_wholesale and product.wholesale_price:
+        if self.is_wholesale and product.wholesale_price and not self.is_staff and not self.is_superuser:
             return product.wholesale_price
         return product.retail_price
     

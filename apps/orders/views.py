@@ -14,9 +14,15 @@ def order_create(request):
         messages.error(request, 'Ваш кошик порожній')
         return redirect('cart:detail')
     
-    # Перевірка мінімальної суми для авторизованих користувачів (оптових клієнтів)
+    # Перевірка мінімальної суми для авторизованих користувачів (оптових клієнтів, НЕ адміністраторів)
     total_price = cart.get_total_price()
-    if request.user.is_authenticated and total_price < MINIMUM_WHOLESALE_ORDER:
+    is_wholesale_user = (
+        request.user.is_authenticated and 
+        not request.user.is_staff and 
+        not request.user.is_superuser
+    )
+    
+    if is_wholesale_user and total_price < MINIMUM_WHOLESALE_ORDER:
         messages.error(
             request, 
             f'Мінімальна сума замовлення для оптових клієнтів становить {MINIMUM_WHOLESALE_ORDER} грн. '
@@ -27,7 +33,7 @@ def order_create(request):
     
     if request.method == 'POST':
         # Повторна перевірка при POST запиті
-        if request.user.is_authenticated and total_price < MINIMUM_WHOLESALE_ORDER:
+        if is_wholesale_user and total_price < MINIMUM_WHOLESALE_ORDER:
             messages.error(
                 request, 
                 f'Мінімальна сума замовлення для оптових клієнтів становить {MINIMUM_WHOLESALE_ORDER} грн.'

@@ -235,7 +235,7 @@ class Product(models.Model):
         """
         Повертає ціну для конкретного користувача згідно бізнес-логіки:
         
-        ДЛЯ НЕЗАЛОГІНЕНИХ КОРИСТУВАЧІВ:
+        ДЛЯ НЕЗАЛОГІНЕНИХ КОРИСТУВАЧІВ ТА АДМІНІСТРАТОРІВ:
         - Повна роздрібна ціна
         - Градація цін (від 3шт, від 5шт) застосовується
         - Оптова ціна НЕ відображається
@@ -245,19 +245,21 @@ class Product(models.Model):
         - Градація цін НЕ застосовується
         - Завжди оптова ціна незалежно від кількості
         """
-        # Перевірка чи є користувач оптовим клієнтом
+        # Перевірка чи є користувач оптовим клієнтом (НЕ адміністратор)
         is_wholesale_user = (
             user and 
             user.is_authenticated and 
             hasattr(user, 'is_wholesale') and 
-            user.is_wholesale
+            user.is_wholesale and
+            not user.is_staff and
+            not user.is_superuser
         )
         
         # Для оптових клієнтів - тільки оптова ціна (градація НЕ діє)
         if is_wholesale_user and self.wholesale_price:
             return self.wholesale_price
         
-        # Для незалогінених - роздрібна ціна з градацією
+        # Для незалогінених та адміністраторів - роздрібна ціна з градацією
         # Градація застосовується тільки якщо є відповідні ціни
         if quantity >= 5 and self.price_5_qty:
             return self.price_5_qty
@@ -271,7 +273,7 @@ class Product(models.Model):
         """
         Повертає всі доступні ціни для відображення залежно від користувача.
         
-        ДЛЯ НЕЗАЛОГІНЕНИХ:
+        ДЛЯ НЕЗАЛОГІНЕНИХ ТА АДМІНІСТРАТОРІВ:
         - retail (роздрібна/повна)
         - qty_3 (від 3шт)
         - qty_5 (від 5шт)
@@ -284,17 +286,19 @@ class Product(models.Model):
             user and 
             user.is_authenticated and 
             hasattr(user, 'is_wholesale') and 
-            user.is_wholesale
+            user.is_wholesale and
+            not user.is_staff and
+            not user.is_superuser
         )
         
         if is_wholesale_user:
             # Для оптових клієнтів: оптова + роздрібна (для порівняння)
             prices = {
                 'wholesale': self.wholesale_price,
-                'retail': self.retail_price,  # для показу економії
+                'retail': self.retail_price,
             }
         else:
-            # Для незалогінених: роздрібна + градація
+            # Для незалогінених та адміністраторів: роздрібна + градація
             prices = {
                 'retail': self.retail_price,
                 'qty_3': self.price_3_qty,

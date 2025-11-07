@@ -61,7 +61,7 @@
                 
                 <!-- Ціна -->
                 <div class="product-detail-price">
-                    {% if user.is_authenticated and user.is_wholesale %}
+                    {% if user.is_authenticated and user.is_wholesale and not user.is_staff and not user.is_superuser %}
                         <!-- Для оптових клієнтів -->
                         {% if product.wholesale_price %}
                             <span class="price-current">{{ product.wholesale_price }} ₴</span>
@@ -71,13 +71,13 @@
                             <span class="price-current">{{ product.retail_price }} ₴</span>
                         {% endif %}
                     {% else %}
-                        <!-- Для незалогінених клієнтів -->
+                        <!-- Для незалогінених та адміністраторів -->
                         <span class="price-current">{{ product.retail_price }} ₴</span>
                     {% endif %}
                 </div>
                 
-                <!-- Градація цін (тільки для незалогінених) -->
-                {% if not user.is_authenticated or not user.is_wholesale %}
+                <!-- Градація цін (тільки для незалогінених та адміністраторів) -->
+                {% if not user.is_authenticated or not user.is_wholesale or user.is_staff or user.is_superuser %}
                     {% if product.price_3_qty or product.price_5_qty %}
                     <div class="price-tiers">
                         <h3>Вигідні ціни при покупці:</h3>

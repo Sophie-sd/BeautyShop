@@ -67,7 +67,7 @@
                 </a>
                 
                 <!-- User Account -->
-                {% if user.is_authenticated %}
+                {% if user.is_authenticated and not user.is_staff and not user.is_superuser %}
                     <div class="user-dropdown">
                         <button class="account-link" aria-label="Меню користувача" aria-expanded="false">
                             <svg class="action-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

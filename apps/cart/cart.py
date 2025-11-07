@@ -22,7 +22,11 @@ class Cart:
                 item['price'] = float(item['price'])
         
         self.cart = cart
-        self.user = request.user if request.user.is_authenticated else None
+        # Адміністратори НЕ є оптовими клієнтами
+        if request.user.is_authenticated and not request.user.is_staff and not request.user.is_superuser:
+            self.user = request.user
+        else:
+            self.user = None
     
     def add(self, product, quantity=1, override_quantity=False):
         """Додавання товару в кошик"""
