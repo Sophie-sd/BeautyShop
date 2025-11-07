@@ -11,6 +11,33 @@ import re
 class WholesaleRegistrationForm(UserCreationForm):
     """Форма реєстрації для оптових клієнтів"""
     
+    first_name = forms.CharField(
+        max_length=100, 
+        required=True, 
+        label="Ім'я",
+        widget=forms.TextInput(attrs={
+            'placeholder': "Ваше ім'я",
+            'autocomplete': 'given-name'
+        })
+    )
+    last_name = forms.CharField(
+        max_length=100, 
+        required=True, 
+        label="Прізвище",
+        widget=forms.TextInput(attrs={
+            'placeholder': "Ваше прізвище",
+            'autocomplete': 'family-name'
+        })
+    )
+    middle_name = forms.CharField(
+        max_length=100, 
+        required=False, 
+        label="По-батькові (необов'язково)",
+        widget=forms.TextInput(attrs={
+            'placeholder': "По-батькові",
+            'autocomplete': 'additional-name'
+        })
+    )
     email = forms.EmailField(
         required=True, 
         label='Email',
@@ -30,19 +57,10 @@ class WholesaleRegistrationForm(UserCreationForm):
         }),
         help_text='Формат: +380XXXXXXXXX'
     )
-    first_name = forms.CharField(
-        max_length=100, 
-        required=True, 
-        label="Повне ім'я",
-        widget=forms.TextInput(attrs={
-            'placeholder': "Ваше повне ім'я",
-            'autocomplete': 'name'
-        })
-    )
     
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'phone', 'email', 'password1', 'password2']
+        fields = ['first_name', 'last_name', 'middle_name', 'email', 'phone', 'password1', 'password2']
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -91,9 +109,10 @@ class WholesaleRegistrationForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
-        user.phone = self.cleaned_data.get('phone', '')
         user.first_name = self.cleaned_data['first_name']
-        user.last_name = ''
+        user.last_name = self.cleaned_data['last_name']
+        user.middle_name = self.cleaned_data.get('middle_name', '')
+        user.phone = self.cleaned_data.get('phone', '')
         
         # Генеруємо унікальний username з email
         if not user.username:
@@ -123,14 +142,14 @@ class WholesaleRegistrationForm(UserCreationForm):
 
 
 class CustomLoginForm(AuthenticationForm):
-    """Покращена форма входу з валідацією"""
+    """Покращена форма входу з валідацією - ТІЛЬКИ через email"""
     
-    username = forms.CharField(
-        label='Email або номер телефону',
-        widget=forms.TextInput(attrs={
+    username = forms.EmailField(
+        label='Email',
+        widget=forms.EmailInput(attrs={
             'class': 'form-control',
-            'placeholder': 'example@email.com або +380991234567',
-            'autocomplete': 'username'
+            'placeholder': 'example@email.com',
+            'autocomplete': 'email'
         })
     )
     password = forms.CharField(
@@ -172,18 +191,40 @@ class ProfileEditForm(forms.ModelForm):
     first_name = forms.CharField(
         max_length=100,
         required=True,
-        label="Повне ім'я",
+        label="Ім'я",
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': "Ваше повне ім'я",
-            'autocomplete': 'name'
+            'placeholder': "Ваше ім'я",
+            'autocomplete': 'given-name'
+        })
+    )
+    
+    last_name = forms.CharField(
+        max_length=100,
+        required=True,
+        label="Прізвище",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': "Ваше прізвище",
+            'autocomplete': 'family-name'
+        })
+    )
+    
+    middle_name = forms.CharField(
+        max_length=100,
+        required=False,
+        label="По-батькові",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': "По-батькові (необов'язково)",
+            'autocomplete': 'additional-name'
         })
     )
     
     phone = forms.CharField(
         max_length=13,
-        required=True,
-        label='Телефон',
+        required=False,
+        label='Телефон (необов\'язково)',
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': '+380991234567',
@@ -206,7 +247,7 @@ class ProfileEditForm(forms.ModelForm):
     
     class Meta:
         model = CustomUser
-        fields = ['first_name', 'phone', 'email']
+        fields = ['first_name', 'last_name', 'middle_name', 'phone', 'email']
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -215,6 +256,10 @@ class ProfileEditForm(forms.ModelForm):
     def clean_phone(self):
         """Валідація телефону"""
         phone = self.cleaned_data.get('phone')
+        
+        # Якщо телефон не вказано, повертаємо порожнє значення
+        if not phone:
+            return ''
         
         if not re.match(r'^\+380\d{9}$', phone):
             raise ValidationError(

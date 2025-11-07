@@ -195,13 +195,12 @@ class CustomLoginView(DjangoLoginView):
         if user is None:
             # Перевіряємо чому не вдалося ввійти
             try:
-                found_user = CustomUser.objects.filter(email=username).first() or \
-                             CustomUser.objects.filter(phone=username).first()
+                found_user = CustomUser.objects.filter(email=username).first()
                 
                 if not found_user:
                     messages.error(
                         self.request,
-                        'Користувача з таким email або телефоном не зареєстровано. Будь ласка, зареєструйтеся.'
+                        'Користувача з таким email не зареєстровано. Будь ласка, зареєструйтеся.'
                     )
                 elif found_user.is_staff or found_user.is_superuser:
                     messages.error(
@@ -233,7 +232,7 @@ class CustomLoginView(DjangoLoginView):
     def form_invalid(self, form):
         # Якщо форма невалідна (не заповнені поля)
         if not form.data.get('username'):
-            messages.error(self.request, 'Будь ласка, введіть email або номер телефону.')
+            messages.error(self.request, 'Будь ласка, введіть email.')
         elif not form.data.get('password'):
             messages.error(self.request, 'Будь ласка, введіть пароль.')
         

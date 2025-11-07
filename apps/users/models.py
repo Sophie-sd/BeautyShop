@@ -17,6 +17,12 @@ class CustomUser(AbstractUser):
         message='Невірний формат телефону. Використовуйте формат +380XXXXXXXXX'
     )
     
+    middle_name = models.CharField(
+        'По-батькові',
+        max_length=100,
+        blank=True,
+        help_text='Необов\'язкове поле'
+    )
     phone = models.CharField(
         'Телефон', 
         max_length=20, 

@@ -22,13 +22,19 @@
                 </div>
                 <div class="card-body">
                     <div class="info-row">
-                        <span class="info-label">Повне ім'я:</span>
+                        <span class="info-label">Ім'я:</span>
                         <span class="info-value">{{ user.first_name }}</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Телефон:</span>
-                        <span class="info-value">{{ user.phone }}</span>
+                        <span class="info-label">Прізвище:</span>
+                        <span class="info-value">{{ user.last_name }}</span>
                     </div>
+                    {% if user.middle_name %}
+                    <div class="info-row">
+                        <span class="info-label">По-батькові:</span>
+                        <span class="info-value">{{ user.middle_name }}</span>
+                    </div>
+                    {% endif %}
                     <div class="info-row">
                         <span class="info-label">Email:</span>
                         <span class="info-value">
@@ -40,6 +46,12 @@
                             {% endif %}
                         </span>
                     </div>
+                    {% if user.phone %}
+                    <div class="info-row">
+                        <span class="info-label">Телефон:</span>
+                        <span class="info-value">{{ user.phone }}</span>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
 

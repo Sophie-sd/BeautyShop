@@ -8,7 +8,7 @@ from .models import CustomUser
 class WholesaleClientBackend(ModelBackend):
     """
     Backend для ОСОБИСТОГО КАБІНЕТУ оптових клієнтів
-    - Дозволяє вхід ТІЛЬКИ через email або телефон (НЕ username)
+    - Дозволяє вхід ТІЛЬКИ через email (НЕ username, НЕ телефон)
     - ЗАБОРОНЯЄ вхід адміністраторам (is_staff=True або is_superuser=True)
     - Призначений виключно для звичайних оптових клієнтів
     """
@@ -19,18 +19,11 @@ class WholesaleClientBackend(ModelBackend):
         
         user = None
         
-        # Спробуємо знайти користувача за email
+        # Шукаємо користувача ТІЛЬКИ за email
         try:
             user = CustomUser.objects.get(email=username)
         except CustomUser.DoesNotExist:
-            pass
-        
-        # Якщо не email, спробуємо телефон
-        if not user:
-            try:
-                user = CustomUser.objects.get(phone=username)
-            except CustomUser.DoesNotExist:
-                return None
+            return None
         
         # ВАЖЛИВО: Перевіряємо що це НЕ адміністратор
         if user and (user.is_staff or user.is_superuser):
