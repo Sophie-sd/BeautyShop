@@ -1,7 +1,7 @@
 from django.views.generic import ListView, DetailView
 from django.shortcuts import get_object_or_404
 from django.db.models import Count, Min, Max, Q
-from .models import Product, Category, Brand, ProductGroup, ProductPurpose
+from .models import Product, Category
 
 
 class CategoryView(ListView):
@@ -22,27 +22,12 @@ class CategoryView(ListView):
         queryset = Product.objects.filter(
             category_id__in=category_ids,
             is_active=True
-        ).select_related('category', 'brand', 'product_group', 'purpose').prefetch_related('images')
+        ).select_related('category').prefetch_related('images')
         
         # Фільтр по підкатегоріях
         selected_subcats = self.request.GET.getlist('subcategory')
         if selected_subcats:
             queryset = queryset.filter(category__slug__in=selected_subcats)
-        
-        # Фільтр по бренду
-        selected_brands = self.request.GET.getlist('brand')
-        if selected_brands:
-            queryset = queryset.filter(brand__slug__in=selected_brands)
-        
-        # Фільтр по групі товарів
-        selected_groups = self.request.GET.getlist('group')
-        if selected_groups:
-            queryset = queryset.filter(product_group__slug__in=selected_groups)
-        
-        # Фільтр по призначенню
-        selected_purposes = self.request.GET.getlist('purpose')
-        if selected_purposes:
-            queryset = queryset.filter(purpose__slug__in=selected_purposes)
         
         # Фільтр по ціні
         price_min = self.request.GET.get('price_min')
@@ -119,33 +104,6 @@ class CategoryView(ListView):
             is_active=True
         )
         
-        # Бренди з кількістю товарів (тільки якщо показувати)
-        if not filter_config or filter_config.show_brand_filter:
-            context['brands'] = Brand.objects.filter(
-                products__in=base_queryset,
-                is_active=True
-            ).annotate(
-                products_count=Count('products', filter=Q(products__in=base_queryset))
-            ).filter(products_count__gt=0).order_by('sort_order', 'name')
-        
-        # Групи товарів з кількістю (тільки якщо показувати)
-        if not filter_config or filter_config.show_group_filter:
-            context['product_groups'] = ProductGroup.objects.filter(
-                products__in=base_queryset,
-                is_active=True
-            ).annotate(
-                products_count=Count('products', filter=Q(products__in=base_queryset))
-            ).filter(products_count__gt=0).order_by('sort_order', 'name')
-        
-        # Призначення з кількістю (тільки якщо показувати)
-        if not filter_config or filter_config.show_purpose_filter:
-            context['purposes'] = ProductPurpose.objects.filter(
-                products__in=base_queryset,
-                is_active=True
-            ).annotate(
-                products_count=Count('products', filter=Q(products__in=base_queryset))
-            ).filter(products_count__gt=0).order_by('sort_order', 'name')
-        
         # Діапазон цін
         if not filter_config or filter_config.show_price_filter:
             price_range = base_queryset.aggregate(
@@ -156,9 +114,6 @@ class CategoryView(ListView):
         
         # Обрані фільтри (для збереження стану)
         context['selected_subcategories'] = self.request.GET.getlist('subcategory')
-        context['selected_brands'] = self.request.GET.getlist('brand')
-        context['selected_groups'] = self.request.GET.getlist('group')
-        context['selected_purposes'] = self.request.GET.getlist('purpose')
         context['selected_availability'] = self.request.GET.getlist('availability')
         context['selected_types'] = self.request.GET.getlist('type')
         context['selected_price_min'] = self.request.GET.get('price_min', '')

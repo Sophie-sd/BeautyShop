@@ -147,14 +147,9 @@
                 
                 <!-- Характеристики -->
                 <div class="product-tab-panel" data-panel="characteristics">
-                    {% if product.attributes.all %}
-                        <div class="product-attributes">
-                            {% for attr in product.attributes.all %}
-                            <div class="attribute-row">
-                                <span class="attribute-name">{{ attr.name }}</span>
-                                <span class="attribute-value">{{ attr.value }}</span>
-                            </div>
-                            {% endfor %}
+                    {% if product.characteristics %}
+                        <div class="product-characteristics">
+                            {{ product.characteristics|safe }}
                         </div>
                     {% else %}
                         <p class="empty-state-text">Характеристики товару відсутні</p>

@@ -17,6 +17,13 @@ class ProductAdminForm(forms.ModelForm):
         help_text='Детальний опис товару. Буде відображатися у вкладці "Опис" на сторінці товару'
     )
     
+    characteristics = forms.CharField(
+        label='Характеристики товару',
+        widget=CKEditorWidget(),
+        required=False,
+        help_text='Характеристики товару (виробник, об\'єм, склад тощо). Буде відображатися у вкладці "Характеристики"'
+    )
+    
     class Meta:
         model = Product
         fields = '__all__'

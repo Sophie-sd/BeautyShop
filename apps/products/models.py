@@ -10,79 +10,6 @@ import os
 import time
 
 
-class Brand(models.Model):
-    """Бренди товарів"""
-    
-    name = models.CharField('Назва бренду', max_length=100, unique=True)
-    slug = models.SlugField('URL', max_length=100, unique=True, blank=True)
-    logo = models.ImageField('Логотип', upload_to='brands/', blank=True)
-    description = models.TextField('Опис', blank=True)
-    is_active = models.BooleanField('Активний', default=True)
-    sort_order = models.PositiveIntegerField('Порядок сортування', default=0)
-    created_at = models.DateTimeField('Створено', auto_now_add=True)
-    
-    class Meta:
-        verbose_name = 'Бренд'
-        verbose_name_plural = 'Бренди'
-        ordering = ['sort_order', 'name']
-    
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-    
-    def __str__(self):
-        return self.name
-
-
-class ProductGroup(models.Model):
-    """Групи товарів для фільтрації"""
-    
-    name = models.CharField('Назва групи', max_length=100, unique=True)
-    slug = models.SlugField('URL', max_length=100, unique=True, blank=True)
-    description = models.TextField('Опис', blank=True)
-    is_active = models.BooleanField('Активна', default=True)
-    sort_order = models.PositiveIntegerField('Порядок сортування', default=0)
-    created_at = models.DateTimeField('Створено', auto_now_add=True)
-    
-    class Meta:
-        verbose_name = 'Група товарів'
-        verbose_name_plural = 'Групи товарів'
-        ordering = ['sort_order', 'name']
-    
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-    
-    def __str__(self):
-        return self.name
-
-
-class ProductPurpose(models.Model):
-    """Призначення товарів"""
-    
-    name = models.CharField('Призначення', max_length=100, unique=True)
-    slug = models.SlugField('URL', max_length=100, unique=True, blank=True)
-    description = models.TextField('Опис', blank=True)
-    is_active = models.BooleanField('Активне', default=True)
-    sort_order = models.PositiveIntegerField('Порядок сортування', default=0)
-    created_at = models.DateTimeField('Створено', auto_now_add=True)
-    
-    class Meta:
-        verbose_name = 'Призначення товару'
-        verbose_name_plural = 'Призначення товарів'
-        ordering = ['sort_order', 'name']
-    
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-    
-    def __str__(self):
-        return self.name
-
-
 class Category(models.Model):
     """Категорії товарів з підтримкою ієрархії"""
     
@@ -140,31 +67,7 @@ class Product(models.Model):
     slug = models.SlugField('URL', max_length=200, unique=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name='Категорія')
     description = models.TextField('Опис', blank=True)
-    
-    brand = models.ForeignKey(
-        Brand, 
-        on_delete=models.SET_NULL, 
-        null=True, 
-        blank=True, 
-        verbose_name='Бренд',
-        related_name='products'
-    )
-    product_group = models.ForeignKey(
-        ProductGroup, 
-        on_delete=models.SET_NULL, 
-        null=True, 
-        blank=True, 
-        verbose_name='Група товару',
-        related_name='products'
-    )
-    purpose = models.ForeignKey(
-        ProductPurpose, 
-        on_delete=models.SET_NULL, 
-        null=True, 
-        blank=True, 
-        verbose_name='Призначення',
-        related_name='products'
-    )
+    characteristics = models.TextField('Характеристики', blank=True, help_text='Характеристики товару (виробник, об\'єм, тип тощо)')
     
     # Ціни
     retail_price = models.DecimalField('Роздрібна ціна', max_digits=10, decimal_places=2)
@@ -275,9 +178,6 @@ class Product(models.Model):
             models.Index(fields=['sku']),
             models.Index(fields=['slug']),
             models.Index(fields=['created_at']),
-            models.Index(fields=['brand', 'is_active']),
-            models.Index(fields=['product_group', 'is_active']),
-            models.Index(fields=['purpose', 'is_active']),
             models.Index(fields=['retail_price']),
             models.Index(fields=['stock']),
         ]
@@ -537,23 +437,6 @@ class ProductTag(models.Model):
         return self.name
 
 
-class ProductAttribute(models.Model):
-    """Характеристики товарів"""
-    
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='attributes')
-    name = models.CharField('Назва характеристики', max_length=100)
-    value = models.CharField('Значення', max_length=200)
-    sort_order = models.PositiveIntegerField('Порядок', default=0)
-    
-    class Meta:
-        verbose_name = 'Характеристика товару'
-        verbose_name_plural = 'Характеристики товарів'
-        ordering = ['sort_order', 'name']
-    
-    def __str__(self):
-        return f"{self.name}: {self.value}"
-
-
 class NewProduct(models.Model):
     """Новинки на головній сторінці"""
     
@@ -604,9 +487,6 @@ class CategoryFilterConfig(models.Model):
     )
     
     # Активні фільтри для цієї категорії
-    show_brand_filter = models.BooleanField('Показувати фільтр Бренд', default=True)
-    show_group_filter = models.BooleanField('Показувати фільтр Група', default=True)
-    show_purpose_filter = models.BooleanField('Показувати фільтр Призначення', default=True)
     show_price_filter = models.BooleanField('Показувати фільтр Ціна', default=True)
     show_availability_filter = models.BooleanField('Показувати фільтр Наявність', default=True)
     

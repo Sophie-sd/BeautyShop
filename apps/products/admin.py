@@ -12,8 +12,8 @@ from django.utils.safestring import mark_safe
 from decimal import Decimal
 
 from .models import (
-    Category, Product, ProductImage, ProductAttribute, 
-    NewProduct, CategoryFilterConfig, Brand, ProductGroup, ProductPurpose
+    Category, Product, ProductImage,
+    NewProduct, CategoryFilterConfig
 )
 from .forms import ProductAdminForm
 
@@ -42,15 +42,6 @@ class ProductImageInline(admin.TabularInline):
     get_image_preview.short_description = 'Превью'
 
 
-class ProductAttributeInline(admin.TabularInline):
-    model = ProductAttribute
-    extra = 1
-    fields = ['name', 'value', 'sort_order']
-    classes = ['collapse']
-    verbose_name = 'Характеристика'
-    verbose_name_plural = '📝 Характеристики товару (об\'єм, бренд, тип тощо)'
-
-
 class CategoryFilterConfigInline(admin.StackedInline):
     """Inline для конфігурації фільтрів категорії"""
     model = CategoryFilterConfig
@@ -61,9 +52,7 @@ class CategoryFilterConfigInline(admin.StackedInline):
     fieldsets = (
         ('Які фільтри показувати на сайті для цієї категорії', {
             'fields': (
-                ('show_brand_filter', 'show_group_filter'),
-                ('show_purpose_filter', 'show_price_filter'),
-                'show_availability_filter',
+                ('show_price_filter', 'show_availability_filter'),
             ),
             'description': 'Вкажіть які фільтри будуть доступні користувачам при перегляді товарів цієї категорії'
         }),
@@ -123,14 +112,10 @@ class CategoryAdmin(admin.ModelAdmin):
         try:
             config = obj.filter_config
             filters = []
-            if config.show_brand_filter:
-                filters.append('Бренд')
-            if config.show_group_filter:
-                filters.append('Група')
-            if config.show_purpose_filter:
-                filters.append('Призначення')
             if config.show_price_filter:
                 filters.append('Ціна')
+            if config.show_availability_filter:
+                filters.append('Наявність')
             
             if filters:
                 return format_html('<span class="filter-tags">{}</span>', ', '.join(filters))
@@ -241,11 +226,9 @@ class ProductAdmin(admin.ModelAdmin):
     save_on_top = True
     list_select_related = ['category']
     
-    # Autocomplete для швидкого пошуку
-    autocomplete_fields = ['brand']
     search_help_text = "Пошук по назві, артикулу або опису товару"
     
-    inlines = [ProductImageInline, ProductAttributeInline]
+    inlines = [ProductImageInline]
     
     fieldsets = (
         ('📋 Основна інформація', {
@@ -257,21 +240,12 @@ class ProductAdmin(admin.ModelAdmin):
             ),
             'description': 'Назва, категорія та артикул товару'
         }),
-        ('📝 Опис товару', {
-            'fields': ('description',),
+        ('📝 Опис та характеристики товару', {
+            'fields': ('description', 'characteristics'),
             'description': mark_safe('''
                 <strong>Опис товару</strong> — детальний текстовий опис що відображається у вкладці "Опис".<br>
-                <strong>Характеристики</strong> додаються нижче в окремій секції (таблиця name/value)
+                <strong>Характеристики</strong> — опис характеристик товару що відображається у вкладці "Характеристики" (виробник, об\'єм, склад тощо)
             ''')
-        }),
-        ('🏷️ Класифікація та фільтри', {
-            'fields': (
-                'brand',
-                'product_group',
-                'purpose',
-            ),
-            'description': 'Бренд, група товару та призначення (для фільтрації на сайті)',
-            'classes': ('collapse',),
         }),
         ('💰 Ціноутворення', {
             'fields': (
@@ -514,7 +488,7 @@ class ProductAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         """Оптимізуємо запити"""
         qs = super().get_queryset(request)
-        return qs.select_related('category', 'brand', 'product_group', 'purpose').prefetch_related('images')
+        return qs.select_related('category').prefetch_related('images')
     
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         """Налаштування падаючого списку для категорій"""
@@ -580,101 +554,6 @@ class NewProductAdmin(admin.ModelAdmin):
         js = ('admin/js/custom_admin.js',)
 
 # ============================================
-#       ФІЛЬТРИ ТОВАРІВ (БРЕНДИ, ГРУПИ, ПРИЗНАЧЕННЯ)
-# ============================================
-
-@admin.register(Brand)
-class BrandAdmin(admin.ModelAdmin):
-    """Адміністрування брендів"""
-    
-    list_display = ['get_brand_logo', 'name', 'get_products_count', 'is_active', 'sort_order']
-    list_display_links = ['get_brand_logo', 'name']
-    list_filter = ['is_active']
-    search_fields = ['name', 'description']
-    prepopulated_fields = {'slug': ('name',)}
-    list_editable = ['is_active', 'sort_order']
-    ordering = ['sort_order', 'name']
-    
-    fieldsets = (
-        ('Інформація про бренд', {
-            'fields': ('name', 'slug', 'logo', 'description')
-        }),
-        ('Налаштування', {
-            'fields': (('is_active', 'sort_order'),)
-        }),
-    )
-    
-    def get_brand_logo(self, obj):
-        """Логотип бренду"""
-        if obj.logo:
-            return format_html('<img src="{}" class="admin-thumbnail-small" />', obj.logo.url)
-        return format_html('<div class="admin-icon-placeholder">🏷️</div>')
-    get_brand_logo.short_description = 'Лого'
-    
-    def get_products_count(self, obj):
-        """Кількість товарів бренду"""
-        count = obj.products.filter(is_active=True).count()
-        return format_html('<span class="badge badge-info">{}</span>', count)
-    get_products_count.short_description = 'Товарів'
-
-
-@admin.register(ProductGroup)
-class ProductGroupAdmin(admin.ModelAdmin):
-    """Адміністрування груп товарів"""
-    
-    list_display = ['name', 'get_products_count', 'is_active', 'sort_order']
-    list_display_links = ['name']
-    list_filter = ['is_active']
-    search_fields = ['name', 'description']
-    prepopulated_fields = {'slug': ('name',)}
-    list_editable = ['is_active', 'sort_order']
-    ordering = ['sort_order', 'name']
-    
-    fieldsets = (
-        ('Інформація про групу', {
-            'fields': ('name', 'slug', 'description')
-        }),
-        ('Налаштування', {
-            'fields': (('is_active', 'sort_order'),)
-        }),
-    )
-    
-    def get_products_count(self, obj):
-        """Кількість товарів у групі"""
-        count = obj.products.filter(is_active=True).count()
-        return format_html('<span class="badge badge-info">{}</span>', count)
-    get_products_count.short_description = 'Товарів'
-
-
-@admin.register(ProductPurpose)
-class ProductPurposeAdmin(admin.ModelAdmin):
-    """Адміністрування призначень товарів"""
-    
-    list_display = ['name', 'get_products_count', 'is_active', 'sort_order']
-    list_display_links = ['name']
-    list_filter = ['is_active']
-    search_fields = ['name', 'description']
-    prepopulated_fields = {'slug': ('name',)}
-    list_editable = ['is_active', 'sort_order']
-    ordering = ['sort_order', 'name']
-    
-    fieldsets = (
-        ('Інформація про призначення', {
-            'fields': ('name', 'slug', 'description')
-        }),
-        ('Налаштування', {
-            'fields': (('is_active', 'sort_order'),)
-        }),
-    )
-    
-    def get_products_count(self, obj):
-        """Кількість товарів з цим призначенням"""
-        count = obj.products.filter(is_active=True).count()
-        return format_html('<span class="badge badge-info">{}</span>', count)
-    get_products_count.short_description = 'Товарів'
-
-
-# ============================================
 #       НАЛАШТУВАННЯ ГРУПУВАННЯ В АДМІНЦІ
 # ============================================
 
@@ -688,12 +567,3 @@ Category._meta.verbose_name_plural = "📂 Категорії"
 
 NewProduct._meta.verbose_name = "Новинка"
 NewProduct._meta.verbose_name_plural = "✨ Новинки"
-
-Brand._meta.verbose_name = "Бренд"
-Brand._meta.verbose_name_plural = "🏷️ Бренди"
-
-ProductGroup._meta.verbose_name = "Група товарів"
-ProductGroup._meta.verbose_name_plural = "📋 Групи товарів"
-
-ProductPurpose._meta.verbose_name = "Призначення"
-ProductPurpose._meta.verbose_name_plural = "🎯 Призначення товарів"
