@@ -3,11 +3,19 @@
 """
 from django import forms
 from django.core.exceptions import ValidationError
+from ckeditor.widgets import CKEditorWidget
 from .models import Product
 
 
 class ProductAdminForm(forms.ModelForm):
     """Форма додавання/редагування товару з валідацією"""
+    
+    description = forms.CharField(
+        label='Опис товару',
+        widget=CKEditorWidget(),
+        required=False,
+        help_text='Детальний опис товару. Буде відображатися у вкладці "Опис" на сторінці товару'
+    )
     
     class Meta:
         model = Product
