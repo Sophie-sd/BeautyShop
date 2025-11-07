@@ -1,6 +1,7 @@
 from django.views.generic import ListView, DetailView
 from django.shortcuts import get_object_or_404
-from .models import Product, Category
+from django.db.models import Count, Min, Max, Q
+from .models import Product, Category, Brand, ProductGroup, ProductPurpose
 
 
 class CategoryView(ListView):
@@ -21,12 +22,76 @@ class CategoryView(ListView):
         queryset = Product.objects.filter(
             category_id__in=category_ids,
             is_active=True
-        ).select_related('category').prefetch_related('images')
+        ).select_related('category', 'brand', 'product_group', 'purpose').prefetch_related('images')
         
-        # Фільтр по підкатегоріях (якщо обрано)
+        # Фільтр по підкатегоріях
         selected_subcats = self.request.GET.getlist('subcategory')
         if selected_subcats:
             queryset = queryset.filter(category__slug__in=selected_subcats)
+        
+        # Фільтр по бренду
+        selected_brands = self.request.GET.getlist('brand')
+        if selected_brands:
+            queryset = queryset.filter(brand__slug__in=selected_brands)
+        
+        # Фільтр по групі товарів
+        selected_groups = self.request.GET.getlist('group')
+        if selected_groups:
+            queryset = queryset.filter(product_group__slug__in=selected_groups)
+        
+        # Фільтр по призначенню
+        selected_purposes = self.request.GET.getlist('purpose')
+        if selected_purposes:
+            queryset = queryset.filter(purpose__slug__in=selected_purposes)
+        
+        # Фільтр по ціні
+        price_min = self.request.GET.get('price_min')
+        price_max = self.request.GET.get('price_max')
+        if price_min:
+            try:
+                queryset = queryset.filter(retail_price__gte=float(price_min))
+            except ValueError:
+                pass
+        if price_max:
+            try:
+                queryset = queryset.filter(retail_price__lte=float(price_max))
+            except ValueError:
+                pass
+        
+        # Фільтр по наявності
+        availability = self.request.GET.getlist('availability')
+        if 'in_stock' in availability and 'out_of_stock' not in availability:
+            queryset = queryset.filter(stock__gt=0)
+        elif 'out_of_stock' in availability and 'in_stock' not in availability:
+            queryset = queryset.filter(stock=0)
+        
+        # Фільтр по типу товару
+        product_types = self.request.GET.getlist('type')
+        if product_types:
+            type_filter = Q()
+            if 'new' in product_types:
+                type_filter |= Q(is_new=True)
+            if 'sale' in product_types:
+                type_filter |= Q(is_sale=True)
+            if 'top' in product_types:
+                type_filter |= Q(is_top=True)
+            if type_filter:
+                queryset = queryset.filter(type_filter)
+        
+        # Сортування
+        sort = self.request.GET.get('sort', 'default')
+        if sort == 'price_asc':
+            queryset = queryset.order_by('retail_price')
+        elif sort == 'price_desc':
+            queryset = queryset.order_by('-retail_price')
+        elif sort == 'name':
+            queryset = queryset.order_by('name')
+        elif sort == 'new':
+            queryset = queryset.order_by('-created_at')
+        elif sort == 'popular':
+            queryset = queryset.order_by('-is_top', '-created_at')
+        else:
+            queryset = queryset.order_by('sort_order', '-created_at')
         
         return queryset.distinct()
     
@@ -37,8 +102,68 @@ class CategoryView(ListView):
         # Підкатегорії для фільтрів
         context['subcategories'] = self.category.children.filter(is_active=True)
         
-        # Обрані підкатегорії (для checkbox state)
+        # Отримуємо конфігурацію фільтрів для категорії
+        try:
+            filter_config = self.category.filter_config
+        except:
+            filter_config = None
+        
+        context['filter_config'] = filter_config
+        
+        # Базовий queryset для підрахунку доступних фільтрів
+        base_category_ids = [self.category.id] + list(
+            self.category.children.filter(is_active=True).values_list('id', flat=True)
+        )
+        base_queryset = Product.objects.filter(
+            category_id__in=base_category_ids,
+            is_active=True
+        )
+        
+        # Бренди з кількістю товарів (тільки якщо показувати)
+        if not filter_config or filter_config.show_brand_filter:
+            context['brands'] = Brand.objects.filter(
+                products__in=base_queryset,
+                is_active=True
+            ).annotate(
+                products_count=Count('products', filter=Q(products__in=base_queryset))
+            ).filter(products_count__gt=0).order_by('sort_order', 'name')
+        
+        # Групи товарів з кількістю (тільки якщо показувати)
+        if not filter_config or filter_config.show_group_filter:
+            context['product_groups'] = ProductGroup.objects.filter(
+                products__in=base_queryset,
+                is_active=True
+            ).annotate(
+                products_count=Count('products', filter=Q(products__in=base_queryset))
+            ).filter(products_count__gt=0).order_by('sort_order', 'name')
+        
+        # Призначення з кількістю (тільки якщо показувати)
+        if not filter_config or filter_config.show_purpose_filter:
+            context['purposes'] = ProductPurpose.objects.filter(
+                products__in=base_queryset,
+                is_active=True
+            ).annotate(
+                products_count=Count('products', filter=Q(products__in=base_queryset))
+            ).filter(products_count__gt=0).order_by('sort_order', 'name')
+        
+        # Діапазон цін
+        if not filter_config or filter_config.show_price_filter:
+            price_range = base_queryset.aggregate(
+                min_price=Min('retail_price'),
+                max_price=Max('retail_price')
+            )
+            context['price_range'] = price_range
+        
+        # Обрані фільтри (для збереження стану)
         context['selected_subcategories'] = self.request.GET.getlist('subcategory')
+        context['selected_brands'] = self.request.GET.getlist('brand')
+        context['selected_groups'] = self.request.GET.getlist('group')
+        context['selected_purposes'] = self.request.GET.getlist('purpose')
+        context['selected_availability'] = self.request.GET.getlist('availability')
+        context['selected_types'] = self.request.GET.getlist('type')
+        context['selected_price_min'] = self.request.GET.get('price_min', '')
+        context['selected_price_max'] = self.request.GET.get('price_max', '')
+        context['selected_sort'] = self.request.GET.get('sort', 'default')
         
         return context
 

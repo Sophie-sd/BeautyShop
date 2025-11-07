@@ -51,100 +51,169 @@
                             </div>
                             {% endif %}
                             
-                            <!-- Фільтр за ціною -->
-                            <div class="filter-section">
-                                <h4 class="filter-title">Ціна (₴)</h4>
-                                <div class="price-range-filter">
-                                    <input 
-                                        type="number" 
-                                        class="price-input" 
-                                        id="priceMin" 
-                                        placeholder="Від" 
-                                        min="0"
-                                    >
-                                    <span class="price-separator">—</span>
-                                    <input 
-                                        type="number" 
-                                        class="price-input" 
-                                        id="priceMax" 
-                                        placeholder="До" 
-                                        min="0"
-                                    >
-                                </div>
-                            </div>
-                            
-                            <!-- ТИМЧАСОВО ЗАКОМЕНТОВАНО - додамо після міграції
                             <!-- Фільтр за брендом -->
-                            <!--<div class="filter-section">
+                            {% if brands and brands|length > 0 %}
+                            {% if not filter_config or filter_config.show_brand_filter %}
+                            <div class="filter-section">
                                 <h4 class="filter-title">Бренд</h4>
                                 <div class="filter-options" id="brandFilters">
                                     {% for brand in brands %}
                                         <label class="filter-checkbox">
-                                            <input type="checkbox" value="{{ brand.slug }}" name="brand">
+                                            <input 
+                                                type="checkbox" 
+                                                value="{{ brand.slug }}" 
+                                                name="brand"
+                                                {% if brand.slug in selected_brands %}checked{% endif %}
+                                            >
                                             <span class="filter-label">{{ brand.name }}</span>
                                             <span class="filter-count">({{ brand.products_count }})</span>
                                         </label>
                                     {% endfor %}
                                 </div>
                             </div>
+                            {% endif %}
+                            {% endif %}
                             
                             <!-- Фільтр за групою товарів -->
-                            <!--<div class="filter-section">
+                            {% if product_groups and product_groups|length > 0 %}
+                            {% if not filter_config or filter_config.show_group_filter %}
+                            <div class="filter-section">
                                 <h4 class="filter-title">Група товарів</h4>
                                 <div class="filter-options" id="groupFilters">
                                     {% for group in product_groups %}
                                         <label class="filter-checkbox">
-                                            <input type="checkbox" value="{{ group.slug }}" name="group">
+                                            <input 
+                                                type="checkbox" 
+                                                value="{{ group.slug }}" 
+                                                name="group"
+                                                {% if group.slug in selected_groups %}checked{% endif %}
+                                            >
                                             <span class="filter-label">{{ group.name }}</span>
                                             <span class="filter-count">({{ group.products_count }})</span>
                                         </label>
                                     {% endfor %}
                                 </div>
                             </div>
+                            {% endif %}
+                            {% endif %}
                             
                             <!-- Фільтр за призначенням -->
-                            <!--<div class="filter-section">
+                            {% if purposes and purposes|length > 0 %}
+                            {% if not filter_config or filter_config.show_purpose_filter %}
+                            <div class="filter-section">
                                 <h4 class="filter-title">Призначення</h4>
                                 <div class="filter-options" id="purposeFilters">
                                     {% for purpose in purposes %}
                                         <label class="filter-checkbox">
-                                            <input type="checkbox" value="{{ purpose.slug }}" name="purpose">
+                                            <input 
+                                                type="checkbox" 
+                                                value="{{ purpose.slug }}" 
+                                                name="purpose"
+                                                {% if purpose.slug in selected_purposes %}checked{% endif %}
+                                            >
                                             <span class="filter-label">{{ purpose.name }}</span>
                                             <span class="filter-count">({{ purpose.products_count }})</span>
                                         </label>
                                     {% endfor %}
                                 </div>
-                            </div>-->
+                            </div>
+                            {% endif %}
+                            {% endif %}
+                            
+                            <!-- Фільтр за ціною -->
+                            {% if not filter_config or filter_config.show_price_filter %}
+                            <div class="filter-section">
+                                <h4 class="filter-title">Ціна (₴)</h4>
+                                <div class="price-range-filter">
+                                    <input 
+                                        type="number" 
+                                        class="price-input" 
+                                        name="price_min"
+                                        id="priceMin" 
+                                        placeholder="Від" 
+                                        min="0"
+                                        value="{{ selected_price_min }}"
+                                    >
+                                    <span class="price-separator">—</span>
+                                    <input 
+                                        type="number" 
+                                        class="price-input" 
+                                        name="price_max"
+                                        id="priceMax" 
+                                        placeholder="До" 
+                                        min="0"
+                                        value="{{ selected_price_max }}"
+                                    >
+                                </div>
+                                {% if price_range %}
+                                <div class="price-range-hint">
+                                    {{ price_range.min_price|floatformat:0 }} ₴ — {{ price_range.max_price|floatformat:0 }} ₴
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
                             
                             <!-- Фільтр за наявністю -->
+                            {% if not filter_config or filter_config.show_availability_filter %}
                             <div class="filter-section">
                                 <h4 class="filter-title">Наявність</h4>
                                 <div class="filter-options">
                                     <label class="filter-checkbox">
-                                        <input type="checkbox" value="in_stock" name="availability" id="availabilityInStock">
+                                        <input 
+                                            type="checkbox" 
+                                            value="in_stock" 
+                                            name="availability" 
+                                            id="availabilityInStock"
+                                            {% if 'in_stock' in selected_availability %}checked{% endif %}
+                                        >
                                         <span class="filter-label">В наявності</span>
                                     </label>
                                     <label class="filter-checkbox">
-                                        <input type="checkbox" value="out_of_stock" name="availability" id="availabilityOutOfStock">
+                                        <input 
+                                            type="checkbox" 
+                                            value="out_of_stock" 
+                                            name="availability" 
+                                            id="availabilityOutOfStock"
+                                            {% if 'out_of_stock' in selected_availability %}checked{% endif %}
+                                        >
                                         <span class="filter-label">Під замовлення</span>
                                     </label>
                                 </div>
                             </div>
+                            {% endif %}
                             
                             <!-- Фільтр за типом -->
                             <div class="filter-section">
                                 <h4 class="filter-title">Тип товару</h4>
                                 <div class="filter-options">
                                     <label class="filter-checkbox">
-                                        <input type="checkbox" value="new" name="type" id="typeNew">
+                                        <input 
+                                            type="checkbox" 
+                                            value="new" 
+                                            name="type" 
+                                            id="typeNew"
+                                            {% if 'new' in selected_types %}checked{% endif %}
+                                        >
                                         <span class="filter-label">Новинки</span>
                                     </label>
                                     <label class="filter-checkbox">
-                                        <input type="checkbox" value="sale" name="type" id="typeSale">
+                                        <input 
+                                            type="checkbox" 
+                                            value="sale" 
+                                            name="type" 
+                                            id="typeSale"
+                                            {% if 'sale' in selected_types %}checked{% endif %}
+                                        >
                                         <span class="filter-label">Акційні</span>
                                     </label>
                                     <label class="filter-checkbox">
-                                        <input type="checkbox" value="top" name="type" id="typeTop">
+                                        <input 
+                                            type="checkbox" 
+                                            value="top" 
+                                            name="type" 
+                                            id="typeTop"
+                                            {% if 'top' in selected_types %}checked{% endif %}
+                                        >
                                         <span class="filter-label">Хіти продажу</span>
                                     </label>
                                 </div>
@@ -240,12 +309,13 @@
         
         <!-- Пагінація -->
         {% if is_paginated %}
+            {% url 'products:category' category.slug as base_url %}
             <nav class="pagination" role="navigation" aria-label="Навігація по сторінках">
                 {% if page_obj.has_previous %}
-                    <a href="?page=1" class="pagination__link" aria-label="Перша сторінка">
+                    <a href="?{{ request.GET.urlencode }}&page=1" class="pagination__link" aria-label="Перша сторінка">
                         ⟨⟨
                     </a>
-                    <a href="?page={{ page_obj.previous_page_number }}" class="pagination__link" aria-label="Попередня сторінка">
+                    <a href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}" class="pagination__link" aria-label="Попередня сторінка">
                         ⟨ Попередня
                     </a>
                 {% else %}
@@ -262,10 +332,10 @@
                 </span>
                 
                 {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}" class="pagination__link" aria-label="Наступна сторінка">
+                    <a href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}" class="pagination__link" aria-label="Наступна сторінка">
                         Наступна ⟩
                     </a>
-                    <a href="?page={{ page_obj.paginator.num_pages }}" class="pagination__link" aria-label="Остання сторінка">
+                    <a href="?{{ request.GET.urlencode }}&page={{ page_obj.paginator.num_pages }}" class="pagination__link" aria-label="Остання сторінка">
                         ⟩⟩
                     </a>
                 {% else %}

@@ -108,6 +108,33 @@ class CatalogManager {
         // Симулюємо завантаження (якщо потрібно)
         this.showSkeleton(false);
         this.updateResultsCount(this.productCards.length, this.productCards.length);
+        
+        // Встановлюємо активне сортування з URL
+        this.setActiveSortFromURL();
+    }
+    
+    setActiveSortFromURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const sortValue = urlParams.get('sort') || 'default';
+        
+        if (this.sortDropdown) {
+            // Знаходимо та активуємо відповідну опцію
+            const sortOption = this.sortDropdown.querySelector(`[data-value="${sortValue}"]`);
+            if (sortOption) {
+                this.sortDropdown.querySelectorAll('.sort-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                sortOption.classList.add('selected');
+                
+                // Оновлюємо текст кнопки
+                const textSpan = this.sortSelectBtn?.querySelector('.sort-select-text');
+                if (textSpan && sortValue !== 'default') {
+                    textSpan.textContent = sortOption.textContent;
+                }
+            }
+        }
+        
+        this.currentSort = sortValue;
     }
     
     applyFilters() {
@@ -405,11 +432,16 @@ class CatalogManager {
             selectedOption.classList.add('selected');
         }
         
-        // Зберігаємо поточне сортування
-        this.currentSort = value;
+        // Додаємо сортування до URL та перезавантажуємо сторінку
+        const url = new URL(window.location);
+        if (value && value !== 'default') {
+            url.searchParams.set('sort', value);
+        } else {
+            url.searchParams.delete('sort');
+        }
+        url.searchParams.delete('page'); // Скидаємо пагінацію при зміні сортування
         
-        // Застосовуємо фільтри
-        this.applyFilters();
+        window.location.href = url.toString();
         
         // Закриваємо dropdown
         this.closeSortDropdown();

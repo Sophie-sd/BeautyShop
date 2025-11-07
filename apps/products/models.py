@@ -141,28 +141,30 @@ class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name='Категорія')
     description = models.TextField('Опис', blank=True)
     
-    # ТИМЧАСОВО ЗАКОМЕНТОВАНО - додамо після міграції
-    # brand = models.ForeignKey(
-    #     Brand, 
-    #     on_delete=models.SET_NULL, 
-    #     null=True, 
-    #     blank=True, 
-    #     verbose_name='Бренд'
-    # )
-    # product_group = models.ForeignKey(
-    #     ProductGroup, 
-    #     on_delete=models.SET_NULL, 
-    #     null=True, 
-    #     blank=True, 
-    #     verbose_name='Група товару'
-    # )
-    # purpose = models.ForeignKey(
-    #     ProductPurpose, 
-    #     on_delete=models.SET_NULL, 
-    #     null=True, 
-    #     blank=True, 
-    #     verbose_name='Призначення'
-    # )
+    brand = models.ForeignKey(
+        Brand, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        verbose_name='Бренд',
+        related_name='products'
+    )
+    product_group = models.ForeignKey(
+        ProductGroup, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        verbose_name='Група товару',
+        related_name='products'
+    )
+    purpose = models.ForeignKey(
+        ProductPurpose, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        verbose_name='Призначення',
+        related_name='products'
+    )
     
     # Ціни
     retail_price = models.DecimalField('Роздрібна ціна', max_digits=10, decimal_places=2)
@@ -273,6 +275,11 @@ class Product(models.Model):
             models.Index(fields=['sku']),
             models.Index(fields=['slug']),
             models.Index(fields=['created_at']),
+            models.Index(fields=['brand', 'is_active']),
+            models.Index(fields=['product_group', 'is_active']),
+            models.Index(fields=['purpose', 'is_active']),
+            models.Index(fields=['retail_price']),
+            models.Index(fields=['stock']),
         ]
     
     def save(self, *args, **kwargs):
