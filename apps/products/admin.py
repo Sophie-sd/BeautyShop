@@ -161,6 +161,34 @@ class CategoryAdmin(admin.ModelAdmin):
 #              ТОВАРИ (ГОЛОВНИЙ РОЗДІЛ)
 # ============================================
 
+class CategoryFilter(admin.SimpleListFilter):
+    """Кастомний фільтр по категоріях з підкатегоріями"""
+    title = 'Категорія'
+    parameter_name = 'category'
+    
+    def lookups(self, request, model_admin):
+        categories = Category.objects.filter(parent__isnull=True, is_active=True).order_by('sort_order', 'name')
+        choices = []
+        for category in categories:
+            choices.append((f'main_{category.id}', f'📁 {category.name}'))
+            subcategories = category.children.filter(is_active=True).order_by('sort_order', 'name')
+            for subcat in subcategories:
+                choices.append((f'sub_{subcat.id}', f'  └─ {subcat.name}'))
+        return choices
+    
+    def queryset(self, request, queryset):
+        if self.value():
+            if self.value().startswith('main_'):
+                cat_id = int(self.value().replace('main_', ''))
+                category = Category.objects.get(id=cat_id)
+                subcategories = category.children.values_list('id', flat=True)
+                return queryset.filter(category_id__in=[cat_id] + list(subcategories))
+            elif self.value().startswith('sub_'):
+                cat_id = int(self.value().replace('sub_', ''))
+                return queryset.filter(category_id=cat_id)
+        return queryset
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     """Адміністрування товарів з розширеним функціоналом"""
@@ -175,7 +203,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_display_links = ['get_product_image', 'name']
     list_filter = [
         'is_active',
-        'category',
+        CategoryFilter,
         'is_sale',
         'is_top',
         'is_new',
@@ -188,7 +216,8 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = ['stock']
     ordering = ['sort_order', '-created_at']
     date_hierarchy = 'created_at'
-    list_per_page = 50
+    list_per_page = 100
+    list_max_show_all = 500
     save_on_top = True
     
     # Autocomplete для швидкого пошуку
@@ -295,18 +324,23 @@ class ProductAdmin(admin.ModelAdmin):
     def get_price_display(self, obj):
         """Відображення цін"""
         prices = []
-        prices.append(f"<strong>{obj.retail_price} ₴</strong>")
         
+        prices.append(f'<div style="margin-bottom:4px;"><strong style="font-size:14px;color:#2d3748;">{obj.retail_price} ₴</strong></div>')
+        
+        price_parts = []
         if obj.wholesale_price:
-            prices.append(f"Опт: {obj.wholesale_price} ₴")
+            price_parts.append(f'Опт: {obj.wholesale_price} ₴')
         
         if obj.price_3_qty:
-            prices.append(f"3+: {obj.price_3_qty} ₴")
+            price_parts.append(f'3+: {obj.price_3_qty} ₴')
         
         if obj.price_5_qty:
-            prices.append(f"5+: {obj.price_5_qty} ₴")
+            price_parts.append(f'5+: {obj.price_5_qty} ₴')
         
-        return format_html('<div class="price-stack">{}</div>', '<br>'.join(prices))
+        if price_parts:
+            prices.append(f'<div style="font-size:12px;color:#718096;line-height:1.6;">{" • ".join(price_parts)}</div>')
+        
+        return format_html(''.join(prices))
     get_price_display.short_description = 'Ціни'
     
     def get_sale_status(self, obj):
