@@ -189,6 +189,28 @@ class CategoryFilter(admin.SimpleListFilter):
         return queryset
 
 
+class StockFilter(admin.SimpleListFilter):
+    """Фільтр по наявності товару"""
+    title = 'Наявність'
+    parameter_name = 'stock_status'
+    
+    def lookups(self, request, model_admin):
+        return [
+            ('in_stock', '✓ В наявності (є на складі)'),
+            ('out_of_stock', '✕ Немає на складі'),
+            ('low_stock', '⚠ Мало на складі (< 10 шт)'),
+        ]
+    
+    def queryset(self, request, queryset):
+        if self.value() == 'in_stock':
+            return queryset.filter(stock__gt=0)
+        elif self.value() == 'out_of_stock':
+            return queryset.filter(stock=0)
+        elif self.value() == 'low_stock':
+            return queryset.filter(stock__gt=0, stock__lt=10)
+        return queryset
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     """Адміністрування товарів з розширеним функціоналом"""
@@ -204,21 +226,20 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter = [
         'is_active',
         CategoryFilter,
+        StockFilter,
         'is_sale',
         'is_top',
         'is_new',
         'is_featured',
-        'created_at',
-        'updated_at'
     ]
     search_fields = ['name', 'sku', 'description']
     prepopulated_fields = {'slug': ('name',)}
     list_editable = ['stock']
     ordering = ['sort_order', '-created_at']
-    date_hierarchy = 'created_at'
     list_per_page = 100
     list_max_show_all = 500
     save_on_top = True
+    list_select_related = ['category']
     
     # Autocomplete для швидкого пошуку
     autocomplete_fields = []
@@ -322,25 +343,22 @@ class ProductAdmin(admin.ModelAdmin):
     get_product_image.short_description = 'Фото'
     
     def get_price_display(self, obj):
-        """Відображення цін"""
-        prices = []
-        
-        prices.append(f'<div style="margin-bottom:4px;"><strong style="font-size:14px;color:#2d3748;">{obj.retail_price} ₴</strong></div>')
+        """Відображення цін у компактному форматі"""
+        html = f'<div class="price-display-compact"><strong>{obj.retail_price} ₴</strong><br>'
         
         price_parts = []
         if obj.wholesale_price:
             price_parts.append(f'Опт: {obj.wholesale_price} ₴')
-        
         if obj.price_3_qty:
             price_parts.append(f'3+: {obj.price_3_qty} ₴')
-        
         if obj.price_5_qty:
             price_parts.append(f'5+: {obj.price_5_qty} ₴')
         
         if price_parts:
-            prices.append(f'<div style="font-size:12px;color:#718096;line-height:1.6;">{" • ".join(price_parts)}</div>')
+            html += '<span class="price-secondary">' + ' • '.join(price_parts) + '</span>'
         
-        return format_html(''.join(prices))
+        html += '</div>'
+        return format_html(html)
     get_price_display.short_description = 'Ціни'
     
     def get_sale_status(self, obj):

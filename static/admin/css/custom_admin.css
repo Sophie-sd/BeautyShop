@@ -212,13 +212,28 @@ input[type="submit"].default:hover,
     font-weight: 600;
 }
 
-.price-stack {
-    line-height: 1.6;
+.price-display-compact {
+    min-width: 180px;
+    line-height: 1.5;
 }
 
-.price-stack strong {
+.price-display-compact strong {
     font-size: 14px;
     color: #2d3748;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.price-display-compact .price-secondary {
+    font-size: 11px;
+    color: #718096;
+    line-height: 1.4;
+    display: block;
+}
+
+#result_list .column-get_price_display {
+    min-width: 200px;
+    width: 200px;
 }
 
 .pricing-help,
