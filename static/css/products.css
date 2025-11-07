@@ -132,16 +132,6 @@
     margin-top: 8px;
 }
 
-.product-description {
-    line-height: 1.8;
-    color: #666;
-    margin: 20px 0;
-}
-
-.product-attributes {
-    margin: 20px 0;
-}
-
 .attribute-row {
     display: flex;
     padding: 10px 0;
@@ -157,6 +147,83 @@
 
 .attribute-value {
     color: #666;
+}
+
+/* Вкладки товару */
+.product-tabs {
+    margin: 40px 0;
+    border-top: 1px solid #e0e0e0;
+}
+
+.product-tabs-nav {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.product-tab-btn {
+    padding: 15px 30px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    bottom: -2px;
+}
+
+.product-tab-btn:hover {
+    color: #e91e63;
+    background: #fafafa;
+}
+
+.product-tab-btn.active {
+    color: #e91e63;
+    border-bottom-color: #e91e63;
+    font-weight: 600;
+}
+
+.product-tabs-content {
+    padding: 30px 0;
+}
+
+.product-tab-panel {
+    display: none;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.product-tab-panel.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.product-tab-panel .product-description {
+    line-height: 1.8;
+    color: #666;
+    font-size: 1rem;
+}
+
+.product-tab-panel .product-attributes {
+    max-width: 800px;
+}
+
+.product-tab-panel .empty-state-text {
+    color: #999;
+    font-style: italic;
+    padding: 20px 0;
 }
 
 /* Адаптивність для детальної сторінки */
@@ -182,5 +249,27 @@
     
     .product-detail-price {
         font-size: 1.5rem;
+    }
+    
+    .product-tabs {
+        margin: 30px 0;
+    }
+    
+    .product-tab-btn {
+        padding: 12px 20px;
+        font-size: 0.9rem;
+    }
+    
+    .product-tabs-content {
+        padding: 20px 0;
+    }
+    
+    .attribute-name {
+        width: 120px;
+        font-size: 0.9rem;
+    }
+    
+    .attribute-value {
+        font-size: 0.9rem;
     }
 }

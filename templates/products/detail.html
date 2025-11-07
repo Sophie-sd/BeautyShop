@@ -102,26 +102,6 @@
                     {% endif %}
                 </div>
                 
-                <!-- Опис -->
-                {% if product.description %}
-                <div class="product-description">
-                    {{ product.description|safe }}
-                </div>
-                {% endif %}
-                
-                <!-- Характеристики -->
-                {% if product.attributes.all %}
-                <div class="product-attributes">
-                    <h3>Характеристики:</h3>
-                    {% for attr in product.attributes.all %}
-                    <div class="attribute-row">
-                        <span class="attribute-name">{{ attr.name }}:</span>
-                        <span class="attribute-value">{{ attr.value }}</span>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                
                 <!-- Дії -->
                 {% if product.is_in_stock %}
                 <div class="product-detail-actions">
@@ -142,6 +122,43 @@
                 <!-- Категорія -->
                 <div class="product-category-link">
                     <a href="{{ product.category.get_absolute_url }}">← Повернутися до категорії "{{ product.category.name }}"</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Вкладки з описом та характеристиками -->
+        <div class="product-tabs">
+            <div class="product-tabs-nav">
+                <button class="product-tab-btn active" data-tab="description">Опис</button>
+                <button class="product-tab-btn" data-tab="characteristics">Характеристики</button>
+            </div>
+            
+            <div class="product-tabs-content">
+                <!-- Опис -->
+                <div class="product-tab-panel active" data-panel="description">
+                    {% if product.description %}
+                        <div class="product-description">
+                            {{ product.description|safe }}
+                        </div>
+                    {% else %}
+                        <p class="empty-state-text">Опис товару відсутній</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Характеристики -->
+                <div class="product-tab-panel" data-panel="characteristics">
+                    {% if product.attributes.all %}
+                        <div class="product-attributes">
+                            {% for attr in product.attributes.all %}
+                            <div class="attribute-row">
+                                <span class="attribute-name">{{ attr.name }}</span>
+                                <span class="attribute-value">{{ attr.value }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="empty-state-text">Характеристики товару відсутні</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -167,6 +184,27 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Перемикання вкладок
+    const tabBtns = document.querySelectorAll('.product-tab-btn');
+    const tabPanels = document.querySelectorAll('.product-tab-panel');
+    
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const targetTab = this.dataset.tab;
+            
+            // Знімаємо active з усіх кнопок та панелей
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabPanels.forEach(p => p.classList.remove('active'));
+            
+            // Додаємо active до поточної кнопки та відповідної панелі
+            this.classList.add('active');
+            const targetPanel = document.querySelector(`[data-panel="${targetTab}"]`);
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+            }
+        });
+    });
+    
     // Перемикання зображень
     const thumbnails = document.querySelectorAll('.thumbnail');
     const currentImage = document.getElementById('currentImage');
