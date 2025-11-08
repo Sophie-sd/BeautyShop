@@ -154,9 +154,22 @@ class EmailSubscriber(models.Model):
     
     @classmethod
     def add_subscriber(cls, email, source, name='', is_wholesale=False):
-        """Додати або оновити підписника"""
+        """Додати або оновити підписника (виключаючи адміністраторські пошти)"""
+        email_lower = email.lower()
+        
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        
+        admin_user = User.objects.filter(email__iexact=email_lower, is_staff=True).first()
+        if admin_user:
+            return None
+        
+        admin_user_super = User.objects.filter(email__iexact=email_lower, is_superuser=True).first()
+        if admin_user_super:
+            return None
+        
         subscriber, created = cls.objects.get_or_create(
-            email=email.lower(),
+            email=email_lower,
             defaults={
                 'name': name,
                 'source': source,

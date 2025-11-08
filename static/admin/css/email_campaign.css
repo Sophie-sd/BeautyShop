@@ -1,37 +1,26 @@
 .email-campaign-recipients {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 10px;
-    background: #f9f9f9;
-    border-radius: 5px;
+    gap: 8px;
 }
 
-.email-campaign-recipients label {
+.email-campaign-recipients .recipient-option {
     display: flex;
     align-items: center;
-    padding: 10px;
-    background: white;
-    border: 2px solid #ddd;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.email-campaign-recipients label:hover {
-    border-color: #667eea;
-    background: #f0f2ff;
-}
-
-.email-campaign-recipients input[type="checkbox"]:checked + label {
-    border-color: #667eea;
-    background: #e8eaff;
+    gap: 8px;
 }
 
 .email-campaign-recipients input[type="checkbox"] {
-    margin-right: 10px;
     width: 18px;
     height: 18px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.email-campaign-recipients label {
+    margin: 0;
+    cursor: pointer;
+    font-size: 14px;
 }
 
 .email-campaign-status {
