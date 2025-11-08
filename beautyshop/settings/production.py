@@ -188,10 +188,9 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
 # Обмеження для QuerySet
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
 
-# Session налаштування (економія пам'яті)
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Зберігаємо в БД, а не в пам'яті
-SESSION_COOKIE_AGE = 1209600  # 2 тижні
-SESSION_SAVE_EVERY_REQUEST = False  # Не зберігаємо сесію на кожен запит
+# Session налаштування для production (не перезаписуємо base.py)
+# SESSION_ENGINE вже налаштовано в base.py
+# SESSION_SAVE_EVERY_REQUEST = True в base.py - важливо для iOS Safari
 
 # Додаткові налаштування для Render
 SECURE_REFERRER_POLICY = 'same-origin'

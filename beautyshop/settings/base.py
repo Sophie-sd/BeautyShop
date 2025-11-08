@@ -164,12 +164,14 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 # DEFAULT_FROM_EMAIL буде налаштовано в specific settings
 
 # Session settings
-SESSION_COOKIE_AGE = 60 * 60 * 24 * 7  # 7 днів (замість 30 для безпеки)
-SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 14  # 14 днів
+SESSION_SAVE_EVERY_REQUEST = True  # Важливо для iOS Safari
 SESSION_COOKIE_SECURE = not DEBUG  # HTTPS only в production
 SESSION_COOKIE_HTTPONLY = True  # Захист від XSS
-SESSION_COOKIE_SAMESITE = 'Lax'  # Захист від CSRF
+SESSION_COOKIE_SAMESITE = 'Lax'  # Захист від CSRF, сумісно з iOS Safari
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Сесія зберігається після закриття браузера
+SESSION_COOKIE_NAME = 'beautyshop_sessionid'  # Унікальна назва для запобігання конфліктів
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Зберігаємо в БД
 
 # Окремі налаштування для адмінки
 # Адмін сесія коротша для безпеки
@@ -193,6 +195,8 @@ SECURE_HSTS_PRELOAD = True
 CSRF_COOKIE_HTTPONLY = False
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_NAME = 'beautyshop_csrftoken'
 
 # Storage settings для Django 4.2+
 STORAGES = {

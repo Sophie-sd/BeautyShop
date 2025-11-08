@@ -443,18 +443,27 @@
         }
     }
     
-    /* Mobile Bottom Navigation - Фіксація до низу екрана */
+    /* Mobile Bottom Navigation - Фіксація до низу екрана для iOS Safari */
     .mobile-bottom-nav {
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
+        width: 100%;
         -webkit-transform: translate3d(0, 0, 0);
         transform: translate3d(0, 0, 0);
         -webkit-backface-visibility: hidden;
         backface-visibility: hidden;
         will-change: transform;
         pointer-events: auto;
+        z-index: 9999;
+    }
+    
+    /* Забороняємо батьківським елементам мати transform для iOS Safari */
+    .profile-page body,
+    .auth-page body {
+        -webkit-transform: none;
+        transform: none;
     }
     
     /* Mobile Menu Optimizations */

@@ -541,27 +541,11 @@
     }
 }
 
-/* Фіксація меню знизу для сторінок авторизації */
+/* Відступ знизу для контенту на мобільних сторінках */
 @media (max-width: 768px) {
-    .auth-page .mobile-menu,
-    .profile-page .mobile-menu {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        top: auto;
-        transform: none;
-        z-index: 1000;
-    }
-    
-    .auth-page .mobile-menu.open,
-    .profile-page .mobile-menu.open {
-        transform: translateY(0);
-    }
-    
-    .auth-page .main-content,
-    .profile-page .main-content {
-        padding-bottom: 80px;
+    .auth-page main,
+    .profile-page main {
+        padding-bottom: calc(70px + env(safe-area-inset-bottom));
     }
 }
 
