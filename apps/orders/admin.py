@@ -483,20 +483,21 @@ class EmailCampaignAdmin(admin.ModelAdmin):
         if not change:
             obj.created_by = request.user
         
-        send_type = form.cleaned_data.get('send_type')
+        send_type = form.cleaned_data.get('send_type', 'now')
+        scheduled_at = form.cleaned_data.get('scheduled_at')
         
         super().save_model(request, obj, form, change)
         
-        if send_type == 'now' and obj.status == 'draft':
+        if send_type == 'now' and not scheduled_at and obj.status == 'draft':
             success = obj.send_campaign()
             if success:
-                messages.success(request, f'Розсилку "{obj.name}" успішно відправлено!')
+                messages.success(request, f'Розсилку "{obj.name}" успішно відправлено! Відправлено: {obj.sent_count}, помилок: {obj.failed_count}')
             else:
                 messages.error(request, 'Помилка при відправці розсилки')
-        elif send_type == 'scheduled' and obj.scheduled_at:
+        elif send_type == 'scheduled' and scheduled_at:
             obj.status = 'scheduled'
             obj.save(update_fields=['status'])
-            messages.info(request, f'Розсилку заплановано на {obj.scheduled_at.strftime("%d.%m.%Y %H:%M")}')
+            messages.info(request, f'Розсилку заплановано на {scheduled_at.strftime("%d.%m.%Y %H:%M")}')
     
     def has_delete_permission(self, request, obj=None):
         """Дозволити видалення тільки чернеток"""

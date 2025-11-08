@@ -67,3 +67,23 @@
     margin-top: 10px;
 }
 
+.field-send_type ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.field-send_type li {
+    margin: 10px 0;
+}
+
+.field-send_type input[type="radio"] {
+    margin-right: 8px;
+}
+
+.field-send_type label {
+    display: inline;
+    font-weight: normal;
+    cursor: pointer;
+}
+
