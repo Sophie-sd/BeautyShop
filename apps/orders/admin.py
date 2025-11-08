@@ -501,9 +501,11 @@ class EmailCampaignAdmin(admin.ModelAdmin):
     
     def has_delete_permission(self, request, obj=None):
         """Дозволити видалення тільки чернеток"""
+        if not request.user.is_superuser and not request.user.is_staff:
+            return False
         if obj and obj.status == 'sent':
             return False
-        return super().has_delete_permission(request, obj)
+        return True
     
     def duplicate_campaign(self, request, queryset):
         """Дублювати розсилку"""
