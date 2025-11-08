@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ campaign.subject }}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Arial', sans-serif; background-color: #f5f5f5;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 20px 0;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 40px; text-align: center;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">BEAUTY SHOP</h1>
+                            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 14px;">Професійна косметика та обладнання</p>
+                        </td>
+                    </tr>
+                    
+                    {% if campaign.image %}
+                    <tr>
+                        <td style="padding: 0;">
+                            <img src="{{ campaign.image.url }}" alt="{{ campaign.name }}" style="width: 100%; height: auto; display: block;">
+                        </td>
+                    </tr>
+                    {% endif %}
+                    
+                    <tr>
+                        <td style="padding: 40px;">
+                            <h2 style="color: #333333; margin: 0 0 20px 0; font-size: 24px; font-weight: 600;">{{ campaign.subject }}</h2>
+                            
+                            <div style="color: #555555; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+                                {{ campaign.content|linebreaks }}
+                            </div>
+                            
+                            <div style="text-align: center; margin: 30px 0;">
+                                <a href="https://beautyshop.com" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; padding: 15px 40px; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
+                                    Перейти до каталогу
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="background-color: #f9f9f9; padding: 30px 40px; border-top: 1px solid #eeeeee;">
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td style="padding-bottom: 15px;">
+                                        <h3 style="color: #333333; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">Контактна інформація</h3>
+                                        <p style="color: #666666; margin: 5px 0; font-size: 14px;">📞 +38 (068) 175-26-54</p>
+                                        <p style="color: #666666; margin: 5px 0; font-size: 14px;">📧 beauty_shop_monte@ukr.net</p>
+                                        <p style="color: #666666; margin: 5px 0; font-size: 14px;">🕐 Пн-Пт: 09:00-18:00</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-top: 15px; text-align: center;">
+                                        <a href="#" style="display: inline-block; margin: 0 10px;">
+                                            <img src="https://via.placeholder.com/30x30/667eea/ffffff?text=FB" alt="Facebook" style="width: 30px; height: 30px; border-radius: 50%;">
+                                        </a>
+                                        <a href="#" style="display: inline-block; margin: 0 10px;">
+                                            <img src="https://via.placeholder.com/30x30/667eea/ffffff?text=IG" alt="Instagram" style="width: 30px; height: 30px; border-radius: 50%;">
+                                        </a>
+                                        <a href="#" style="display: inline-block; margin: 0 10px;">
+                                            <img src="https://via.placeholder.com/30x30/667eea/ffffff?text=TT" alt="TikTok" style="width: 30px; height: 30px; border-radius: 50%;">
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td style="padding: 20px 40px; text-align: center; background-color: #f0f0f0;">
+                            <p style="color: #999999; margin: 0; font-size: 12px;">
+                                Ви отримали цей лист, тому що підписалися на розсилку BEAUTY SHOP.
+                            </p>
+                            <p style="color: #999999; margin: 10px 0 0 0; font-size: 12px;">
+                                © 2020-2024 BEAUTY SHOP. Всі права захищені.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+

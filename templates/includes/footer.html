@@ -71,7 +71,7 @@
                 <div class="footer-section">
                     <p class="footer-subscribe-title">Першими дізнавайтеся про нові товари та акції</p>
                     
-                    <form class="footer-subscribe-form" id="desktopSubscribeForm">
+                    <form class="footer-subscribe-form" id="desktopSubscribeForm" action="{% url 'orders:newsletter_subscribe' %}" method="post">
                         {% csrf_token %}
                         <div class="form-group">
                             <input type="text" 
@@ -103,6 +103,8 @@
                         <button type="submit" class="btn btn-subscribe">
                             Підписатися
                         </button>
+                        
+                        <div class="subscribe-message" style="display: none; margin-top: 10px;"></div>
                     </form>
                 </div>
             </div>

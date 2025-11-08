@@ -4,8 +4,13 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django.db.models import Q, Count, Max
+from django.shortcuts import redirect
+from django.contrib import messages
+from django.urls import path, reverse
+from django.utils.safestring import mark_safe
 from datetime import datetime, timedelta
-from .models import Order, OrderItem, RetailClient
+from .models import Order, OrderItem, RetailClient, EmailSubscriber, EmailCampaign
+from .admin_filters import RecipientTypeFilter
 
 
 class OrderItemInline(admin.TabularInline):
@@ -306,6 +311,256 @@ class RetailClientAdmin(admin.ModelAdmin):
         return super().changelist_view(request, extra_context)
 
 
+@admin.register(EmailSubscriber)
+class EmailSubscriberAdmin(admin.ModelAdmin):
+    """Адміністрування email адрес"""
+    
+    list_display = ['email', 'name', 'get_source_badge', 'get_type_badge', 'is_active', 'created_at']
+    list_filter = [RecipientTypeFilter, 'source', 'is_wholesale', 'is_active', ('created_at', admin.DateFieldListFilter)]
+    search_fields = ['email', 'name']
+    ordering = ['-created_at']
+    list_per_page = 50
+    readonly_fields = ['created_at', 'updated_at']
+    actions = ['activate_subscribers', 'deactivate_subscribers', 'export_to_csv']
+    
+    fieldsets = (
+        ('Основна інформація', {
+            'fields': ('email', 'name', 'source', 'is_active', 'is_wholesale')
+        }),
+        ('Дати', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_source_badge(self, obj):
+        """Джерело з бейджем"""
+        colors = {
+            'newsletter': 'info',
+            'registered': 'success',
+            'order': 'warning',
+        }
+        color = colors.get(obj.source, 'secondary')
+        return format_html(
+            '<span class="badge badge-{}">{}</span>',
+            color,
+            obj.get_source_display()
+        )
+    get_source_badge.short_description = 'Джерело'
+    
+    def get_type_badge(self, obj):
+        """Тип клієнта"""
+        if obj.is_wholesale:
+            return format_html('<span class="badge badge-primary">Оптовий</span>')
+        return format_html('<span class="badge badge-secondary">Роздрібний</span>')
+    get_type_badge.short_description = 'Тип'
+    
+    def activate_subscribers(self, request, queryset):
+        """Активувати підписників"""
+        updated = queryset.update(is_active=True)
+        messages.success(request, f'Активовано {updated} підписників')
+    activate_subscribers.short_description = 'Активувати вибрані email адреси'
+    
+    def deactivate_subscribers(self, request, queryset):
+        """Деактивувати підписників"""
+        updated = queryset.update(is_active=False)
+        messages.success(request, f'Деактивовано {updated} підписників')
+    deactivate_subscribers.short_description = 'Деактивувати вибрані email адреси'
+    
+    def export_to_csv(self, request, queryset):
+        """Експорт в CSV"""
+        import csv
+        from django.http import HttpResponse
+        
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="email_subscribers.csv"'
+        response.write('\ufeff'.encode('utf8'))
+        
+        writer = csv.writer(response)
+        writer.writerow(['Email', 'Ім\'я', 'Джерело', 'Тип', 'Активний', 'Дата додавання'])
+        
+        for subscriber in queryset:
+            writer.writerow([
+                subscriber.email,
+                subscriber.name,
+                subscriber.get_source_display(),
+                'Оптовий' if subscriber.is_wholesale else 'Роздрібний',
+                'Так' if subscriber.is_active else 'Ні',
+                subscriber.created_at.strftime('%d.%m.%Y %H:%M')
+            ])
+        
+        return response
+    export_to_csv.short_description = 'Експортувати в CSV'
+
+
+@admin.register(EmailCampaign)
+class EmailCampaignAdmin(admin.ModelAdmin):
+    """Адміністрування email розсилок"""
+    
+    from .forms import EmailCampaignForm
+    form = EmailCampaignForm
+    
+    list_display = ['name', 'subject', 'get_status_badge', 'get_recipients_display', 'sent_count', 'failed_count', 'created_at', 'get_actions_display']
+    list_filter = ['status', ('created_at', admin.DateFieldListFilter), ('sent_at', admin.DateFieldListFilter)]
+    search_fields = ['name', 'subject', 'content']
+    ordering = ['-created_at']
+    list_per_page = 30
+    readonly_fields = ['sent_count', 'failed_count', 'created_at', 'updated_at', 'sent_at', 'created_by', 'get_recipients_count']
+    actions = ['duplicate_campaign', 'mark_as_draft']
+    
+    fieldsets = (
+        ('Основна інформація', {
+            'fields': ('name', 'subject', 'status', 'created_by')
+        }),
+        ('Контент', {
+            'fields': ('content', 'image')
+        }),
+        ('Отримувачі', {
+            'fields': ('recipients', 'get_recipients_count')
+        }),
+        ('Налаштування відправки', {
+            'fields': ('scheduled_at',)
+        }),
+        ('Статистика', {
+            'fields': ('sent_count', 'failed_count', 'created_at', 'updated_at', 'sent_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_urls(self):
+        """Додаємо URL для відправки розсилки"""
+        urls = super().get_urls()
+        custom_urls = [
+            path('<int:campaign_id>/send/', self.admin_site.admin_view(self.send_campaign_view), name='orders_emailcampaign_send'),
+        ]
+        return custom_urls + urls
+    
+    def get_status_badge(self, obj):
+        """Статус з бейджем"""
+        colors = {
+            'draft': 'secondary',
+            'scheduled': 'info',
+            'sending': 'warning',
+            'sent': 'success',
+            'failed': 'danger',
+        }
+        color = colors.get(obj.status, 'secondary')
+        return format_html(
+            '<span class="badge badge-{}">{}</span>',
+            color,
+            obj.get_status_display()
+        )
+    get_status_badge.short_description = 'Статус'
+    
+    def get_recipients_display(self, obj):
+        """Відображення отримувачів"""
+        if not obj.recipients:
+            return 'Не вибрано'
+        
+        recipient_labels = {
+            'newsletter': 'Підписники',
+            'registered': 'Зареєстровані',
+            'order_clients': 'Клієнти',
+            'wholesale': 'Оптові',
+            'retail': 'Роздрібні',
+            'all': 'Всі',
+        }
+        
+        labels = [recipient_labels.get(r, r) for r in obj.recipients]
+        return ', '.join(labels)
+    get_recipients_display.short_description = 'Отримувачі'
+    
+    def get_recipients_count(self, obj):
+        """Кількість отримувачів"""
+        if obj.pk:
+            count = len(obj.get_recipients_list())
+            return format_html(
+                '<strong style="color: green;">{} адрес</strong>',
+                count
+            )
+        return 'Збережіть розсилку для підрахунку'
+    get_recipients_count.short_description = 'Кількість отримувачів'
+    
+    def get_actions_display(self, obj):
+        """Кнопки дій"""
+        if obj.status in ['draft', 'scheduled']:
+            url = reverse('admin:orders_emailcampaign_send', args=[obj.pk])
+            return format_html(
+                '<a class="button" href="{}" style="background: #4CAF50; color: white; padding: 5px 15px; border-radius: 3px; text-decoration: none;">✉️ Відправити</a>',
+                url
+            )
+        elif obj.status == 'sent':
+            return format_html('<span style="color: green;">✓ Відправлено</span>')
+        return '-'
+    get_actions_display.short_description = 'Дії'
+    
+    def send_campaign_view(self, request, campaign_id):
+        """View для відправки розсилки"""
+        from django.template.response import TemplateResponse
+        
+        campaign = EmailCampaign.objects.get(pk=campaign_id)
+        
+        if request.method == 'POST':
+            success = campaign.send_campaign()
+            if success:
+                messages.success(request, f'Розсилку "{campaign.name}" успішно відправлено!')
+            else:
+                messages.error(request, 'Помилка при відправці розсилки')
+            return redirect('admin:orders_emailcampaign_changelist')
+        
+        recipients_count = len(campaign.get_recipients_list())
+        
+        context = {
+            'campaign': campaign,
+            'recipients_count': recipients_count,
+            'opts': self.model._meta,
+            'has_view_permission': self.has_view_permission(request),
+            'site_header': self.admin_site.site_header,
+            'site_title': self.admin_site.site_title,
+        }
+        
+        return TemplateResponse(request, 'admin/orders/email_campaign_send_confirm.html', context)
+    
+    def save_model(self, request, obj, form, change):
+        """Зберігаємо автора розсилки"""
+        if not change:
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)
+    
+    def has_delete_permission(self, request, obj=None):
+        """Дозволити видалення тільки чернеток"""
+        if obj and obj.status == 'sent':
+            return False
+        return super().has_delete_permission(request, obj)
+    
+    def duplicate_campaign(self, request, queryset):
+        """Дублювати розсилку"""
+        for campaign in queryset:
+            campaign.pk = None
+            campaign.id = None
+            campaign.name = f"{campaign.name} (Копія)"
+            campaign.status = 'draft'
+            campaign.sent_count = 0
+            campaign.failed_count = 0
+            campaign.sent_at = None
+            campaign.created_by = request.user
+            campaign.save()
+        
+        messages.success(request, f'Продубльовано {queryset.count()} розсилок')
+    duplicate_campaign.short_description = 'Дублювати вибрані розсилки'
+    
+    def mark_as_draft(self, request, queryset):
+        """Повернути в чернетки"""
+        updated = queryset.exclude(status='sent').update(status='draft')
+        messages.success(request, f'Переведено в чернетки {updated} розсилок')
+    mark_as_draft.short_description = 'Перевести в чернетки'
+    
+    class Media:
+        css = {
+            'all': ('admin/css/email_campaign.css',)
+        }
+
+
 # Налаштування відображення в адмінці
 Order._meta.verbose_name = "Замовлення"
 Order._meta.verbose_name_plural = "📦 Замовлення"
@@ -313,3 +568,9 @@ Order._meta.verbose_name_plural = "📦 Замовлення"
 RetailClient._meta.verbose_name = 'Роздрібний клієнт'
 RetailClient._meta.verbose_name_plural = '🛒 Роздрібні клієнти'
 RetailClient._meta.app_label = 'users'
+
+EmailSubscriber._meta.verbose_name = 'Email адреса'
+EmailSubscriber._meta.verbose_name_plural = '📧 Email адреси'
+
+EmailCampaign._meta.verbose_name = 'Email розсилка'
+EmailCampaign._meta.verbose_name_plural = '✉️ Email розсилки'

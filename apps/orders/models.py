@@ -4,6 +4,7 @@
 from django.db import models
 from django.conf import settings
 from decimal import Decimal
+from django.utils import timezone
 from apps.products.models import Product
 
 
@@ -122,8 +123,54 @@ class OrderItem(models.Model):
         return f"{self.product.name} x{self.quantity}"
 
 
+class EmailSubscriber(models.Model):
+    """Збір всіх email адрес на сайті"""
+    
+    SOURCE_CHOICES = [
+        ('newsletter', 'Підписка на розсилку'),
+        ('registered', 'Зареєстрований користувач'),
+        ('order', 'Замовлення без реєстрації'),
+    ]
+    
+    email = models.EmailField('Email', unique=True, db_index=True)
+    name = models.CharField('Ім\'я', max_length=200, blank=True)
+    source = models.CharField('Джерело', max_length=20, choices=SOURCE_CHOICES)
+    is_active = models.BooleanField('Активний', default=True)
+    is_wholesale = models.BooleanField('Оптовий клієнт', default=False)
+    created_at = models.DateTimeField('Дата додавання', auto_now_add=True)
+    updated_at = models.DateTimeField('Оновлено', auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Email адреса'
+        verbose_name_plural = 'Email адреси'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['email', 'source']),
+            models.Index(fields=['is_active', 'source']),
+        ]
+    
+    def __str__(self):
+        return f"{self.email} ({self.get_source_display()})"
+    
+    @classmethod
+    def add_subscriber(cls, email, source, name='', is_wholesale=False):
+        """Додати або оновити підписника"""
+        subscriber, created = cls.objects.get_or_create(
+            email=email.lower(),
+            defaults={
+                'name': name,
+                'source': source,
+                'is_wholesale': is_wholesale,
+            }
+        )
+        if not created and source == 'newsletter':
+            subscriber.is_active = True
+            subscriber.save(update_fields=['is_active'])
+        return subscriber
+
+
 class Newsletter(models.Model):
-    """Підписка на розсилку"""
+    """Підписка на розсилку (deprecated, використовуємо EmailSubscriber)"""
     
     email = models.EmailField('Email', unique=True)
     is_active = models.BooleanField('Активна підписка', default=True)
@@ -203,3 +250,149 @@ class RetailClient(Order):
         proxy = True
         verbose_name = 'Роздрібний клієнт'
         verbose_name_plural = 'Роздрібні клієнти'
+
+
+class EmailCampaign(models.Model):
+    """Email розсилка"""
+    
+    STATUS_CHOICES = [
+        ('draft', 'Чернетка'),
+        ('scheduled', 'Заплановано'),
+        ('sending', 'Відправляється'),
+        ('sent', 'Відправлено'),
+        ('failed', 'Помилка'),
+    ]
+    
+    RECIPIENT_CHOICES = [
+        ('newsletter', 'Підписники розсилки'),
+        ('registered', 'Зареєстровані користувачі'),
+        ('order_clients', 'Клієнти без реєстрації'),
+        ('wholesale', 'Оптові клієнти'),
+        ('retail', 'Роздрібні клієнти'),
+        ('all', 'Всі'),
+    ]
+    
+    name = models.CharField('Назва розсилки', max_length=255)
+    subject = models.CharField('Тема листа', max_length=255)
+    content = models.TextField('Контент листа')
+    image = models.ImageField('Зображення', upload_to='email_campaigns/', blank=True, null=True)
+    
+    recipients = models.JSONField('Отримувачі', default=list, help_text='Список типів отримувачів')
+    
+    status = models.CharField('Статус', max_length=20, choices=STATUS_CHOICES, default='draft')
+    scheduled_at = models.DateTimeField('Час відправки', null=True, blank=True)
+    
+    sent_count = models.PositiveIntegerField('Відправлено', default=0)
+    failed_count = models.PositiveIntegerField('Помилок', default=0)
+    
+    created_at = models.DateTimeField('Створено', auto_now_add=True)
+    updated_at = models.DateTimeField('Оновлено', auto_now=True)
+    sent_at = models.DateTimeField('Відправлено', null=True, blank=True)
+    
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name='Створив'
+    )
+    
+    class Meta:
+        verbose_name = 'Email розсилка'
+        verbose_name_plural = 'Email розсилки'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.name} ({self.get_status_display()})"
+    
+    def get_recipients_list(self):
+        """Отримати список email адрес для відправки"""
+        emails = set()
+        
+        for recipient_type in self.recipients:
+            if recipient_type == 'newsletter':
+                emails.update(
+                    EmailSubscriber.objects.filter(
+                        source='newsletter',
+                        is_active=True
+                    ).values_list('email', flat=True)
+                )
+            elif recipient_type == 'registered':
+                emails.update(
+                    EmailSubscriber.objects.filter(
+                        source='registered',
+                        is_active=True
+                    ).values_list('email', flat=True)
+                )
+            elif recipient_type == 'order_clients':
+                emails.update(
+                    EmailSubscriber.objects.filter(
+                        source='order',
+                        is_active=True
+                    ).values_list('email', flat=True)
+                )
+            elif recipient_type == 'wholesale':
+                emails.update(
+                    EmailSubscriber.objects.filter(
+                        is_wholesale=True,
+                        is_active=True
+                    ).values_list('email', flat=True)
+                )
+            elif recipient_type == 'retail':
+                emails.update(
+                    EmailSubscriber.objects.filter(
+                        is_wholesale=False,
+                        is_active=True
+                    ).values_list('email', flat=True)
+                )
+            elif recipient_type == 'all':
+                emails.update(
+                    EmailSubscriber.objects.filter(
+                        is_active=True
+                    ).values_list('email', flat=True)
+                )
+        
+        return list(emails)
+    
+    def send_campaign(self):
+        """Відправка розсилки"""
+        from django.core.mail import EmailMultiAlternatives
+        from django.template.loader import render_to_string
+        from django.conf import settings
+        
+        if self.status not in ['draft', 'scheduled']:
+            return False
+        
+        self.status = 'sending'
+        self.save(update_fields=['status'])
+        
+        recipients = self.get_recipients_list()
+        sent = 0
+        failed = 0
+        
+        for email in recipients:
+            try:
+                html_content = render_to_string('emails/campaign.html', {
+                    'campaign': self,
+                    'email': email,
+                })
+                
+                msg = EmailMultiAlternatives(
+                    subject=self.subject,
+                    body=self.content,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[email]
+                )
+                msg.attach_alternative(html_content, "text/html")
+                msg.send()
+                sent += 1
+            except Exception as e:
+                failed += 1
+                print(f"Помилка відправки на {email}: {e}")
+        
+        self.sent_count = sent
+        self.failed_count = failed
+        self.status = 'sent'
+        self.sent_at = timezone.now()
+        self.save(update_fields=['sent_count', 'failed_count', 'status', 'sent_at'])
+        
+        return True

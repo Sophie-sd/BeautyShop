@@ -1,0 +1,77 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Відправка розсилки{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Головна</a>
+    &rsaquo; <a href="{% url 'admin:orders_emailcampaign_changelist' %}">Email розсилки</a>
+    &rsaquo; Відправка розсилки
+</div>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto; padding: 30px;">
+    <h1 style="color: #333; margin-bottom: 30px;">Підтвердження відправки розсилки</h1>
+    
+    <div style="background: #f9f9f9; border-left: 4px solid #667eea; padding: 20px; margin-bottom: 30px; border-radius: 5px;">
+        <h2 style="margin: 0 0 15px 0; color: #667eea;">{{ campaign.name }}</h2>
+        <p style="margin: 5px 0;"><strong>Тема листа:</strong> {{ campaign.subject }}</p>
+        <p style="margin: 5px 0;"><strong>Кількість отримувачів:</strong> <span style="color: #667eea; font-weight: bold;">{{ recipients_count }}</span></p>
+        
+        {% if campaign.recipients %}
+        <div style="margin-top: 15px;">
+            <strong>Групи отримувачів:</strong>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                {% for recipient_type in campaign.recipients %}
+                    {% if recipient_type == 'newsletter' %}
+                        <li>Підписники розсилки</li>
+                    {% elif recipient_type == 'registered' %}
+                        <li>Зареєстровані користувачі</li>
+                    {% elif recipient_type == 'order_clients' %}
+                        <li>Клієнти без реєстрації</li>
+                    {% elif recipient_type == 'wholesale' %}
+                        <li>Оптові клієнти</li>
+                    {% elif recipient_type == 'retail' %}
+                        <li>Роздрібні клієнти</li>
+                    {% elif recipient_type == 'all' %}
+                        <li>Всі клієнти</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 20px; margin-bottom: 30px; border-radius: 5px;">
+        <h3 style="margin: 0 0 10px 0; color: #856404;">⚠️ Увага!</h3>
+        <p style="margin: 0; color: #856404;">
+            Ви збираєтеся відправити email розсилку на <strong>{{ recipients_count }}</strong> адрес.
+            Цю дію неможливо відмінити. Переконайтеся, що контент листа правильний.
+        </p>
+    </div>
+    
+    <div style="background: white; border: 1px solid #ddd; padding: 20px; margin-bottom: 30px; border-radius: 5px;">
+        <h3 style="margin: 0 0 15px 0; color: #333;">Попередній перегляд контенту:</h3>
+        <div style="color: #555; line-height: 1.6; white-space: pre-wrap;">{{ campaign.content }}</div>
+        
+        {% if campaign.image %}
+        <div style="margin-top: 20px;">
+            <img src="{{ campaign.image.url }}" alt="Зображення розсилки" style="max-width: 100%; height: auto; border-radius: 5px;">
+        </div>
+        {% endif %}
+    </div>
+    
+    <form method="post" style="display: flex; gap: 15px; justify-content: center;">
+        {% csrf_token %}
+        <button type="submit" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; border: none; border-radius: 5px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+            ✉️ Відправити розсилку
+        </button>
+        <a href="{% url 'admin:orders_emailcampaign_changelist' %}" style="background: #6c757d; color: white; padding: 12px 30px; border: none; border-radius: 5px; font-size: 16px; font-weight: 600; text-decoration: none; display: inline-block;">
+            Скасувати
+        </a>
+    </form>
+</div>
+{% endblock %}
+

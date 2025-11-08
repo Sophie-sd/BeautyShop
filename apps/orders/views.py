@@ -1,7 +1,11 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 from apps.cart.cart import Cart
 from decimal import Decimal
+from .models import EmailSubscriber
 
 
 MINIMUM_WHOLESALE_ORDER = Decimal('5000.00')
@@ -52,3 +56,34 @@ def order_create(request):
 def order_success(request):
     """Сторінка успішного замовлення"""
     return render(request, 'orders/success.html')
+
+
+@require_POST
+def newsletter_subscribe(request):
+    """Підписка на розсилку"""
+    try:
+        email = request.POST.get('email', '').strip().lower()
+        name = request.POST.get('name', '').strip()
+        
+        if not email:
+            return JsonResponse({
+                'success': False,
+                'message': 'Email обов\'язковий'
+            })
+        
+        subscriber = EmailSubscriber.add_subscriber(
+            email=email,
+            source='newsletter',
+            name=name
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Дякуємо! Ви успішно підписалися на розсилку.'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'Помилка при підписці. Спробуйте пізніше.'
+        })

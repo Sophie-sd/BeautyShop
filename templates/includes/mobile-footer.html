@@ -6,7 +6,7 @@
     <div class="mobile-subscribe">
         <p class="mobile-subscribe-title">Першими дізнавайтеся про нові товари та акції</p>
         
-        <form class="subscribe-form" id="mobileSubscribeForm">
+        <form class="subscribe-form" id="mobileSubscribeForm" action="{% url 'orders:newsletter_subscribe' %}" method="post">
             {% csrf_token %}
             <div class="form-group">
                 <label for="subscribeName">Ваше ім'я<span class="required">*</span></label>
@@ -30,6 +30,8 @@
             </div>
             
             <button type="submit" class="btn btn-subscribe">Підписатися</button>
+            
+            <div class="subscribe-message" style="display: none; margin-top: 10px;"></div>
         </form>
     </div>
     

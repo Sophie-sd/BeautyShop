@@ -51,43 +51,30 @@ function handleSubscribe(e) {
     submitBtn.textContent = 'Відправка...';
     submitBtn.disabled = true;
     
-    // Симуляція відправки (заміни на реальний API endpoint)
-    setTimeout(() => {
-        // Тут має бути реальний запит на сервер
-        // fetch('/api/subscribe/', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //         'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-        //     },
-        //     body: JSON.stringify({
-        //         name: name,
-        //         email: email
-        //     })
-        // })
-        // .then(response => response.json())
-        // .then(data => {
-        //     if (data.success) {
-        //         showMessage(form, 'Дякуємо за підписку! Перевірте свою пошту.', 'success');
-        //         form.reset();
-        //     } else {
-        //         showMessage(form, data.message || 'Виникла помилка', 'error');
-        //     }
-        // })
-        // .catch(error => {
-        //     showMessage(form, 'Помилка з\'єднання з сервером', 'error');
-        // })
-        // .finally(() => {
-        //     submitBtn.textContent = originalText;
-        //     submitBtn.disabled = false;
-        // });
-        
-        // Симуляція успішної відправки
-        showMessage(form, 'Дякуємо за підписку! Перевірте свою пошту.', 'success');
-        form.reset();
+    // Відправка на сервер
+    fetch(form.action, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage(form, data.message || 'Дякуємо за підписку!', 'success');
+            form.reset();
+        } else {
+            showMessage(form, data.message || 'Виникла помилка', 'error');
+        }
+    })
+    .catch(error => {
+        showMessage(form, 'Помилка з\'єднання з сервером', 'error');
+    })
+    .finally(() => {
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
-    }, 1500);
+    });
 }
 
 function showMessage(form, message, type) {
