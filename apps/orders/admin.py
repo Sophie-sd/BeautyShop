@@ -9,8 +9,7 @@ from django.contrib import messages
 from django.urls import path, reverse
 from django.utils.safestring import mark_safe
 from datetime import datetime, timedelta
-from .models import Order, OrderItem, RetailClient, EmailSubscriber, EmailCampaign
-from .admin_filters import RecipientTypeFilter
+from .models import Order, OrderItem, RetailClient, EmailCampaign, Newsletter
 
 
 class OrderItemInline(admin.TabularInline):
@@ -311,86 +310,39 @@ class RetailClientAdmin(admin.ModelAdmin):
         return super().changelist_view(request, extra_context)
 
 
-@admin.register(EmailSubscriber)
-class EmailSubscriberAdmin(admin.ModelAdmin):
-    """Адміністрування email адрес"""
+@admin.register(Newsletter)
+class NewsletterAdmin(admin.ModelAdmin):
+    """Адміністрування підписників розсилки"""
     
-    list_display = ['email', 'name', 'get_source_badge', 'get_type_badge', 'is_active', 'created_at']
-    list_filter = [RecipientTypeFilter, 'source', 'is_wholesale', 'is_active', ('created_at', admin.DateFieldListFilter)]
+    list_display = ['email', 'name', 'is_active', 'created_at']
+    list_filter = ['is_active', ('created_at', admin.DateFieldListFilter)]
     search_fields = ['email', 'name']
     ordering = ['-created_at']
     list_per_page = 50
-    readonly_fields = ['created_at', 'updated_at']
-    actions = ['activate_subscribers', 'deactivate_subscribers', 'export_to_csv']
+    readonly_fields = ['created_at']
+    actions = ['activate_subscribers', 'deactivate_subscribers']
     
     fieldsets = (
         ('Основна інформація', {
-            'fields': ('email', 'name', 'source', 'is_active', 'is_wholesale')
+            'fields': ('email', 'name', 'is_active')
         }),
-        ('Дати', {
-            'fields': ('created_at', 'updated_at'),
+        ('Дата підписки', {
+            'fields': ('created_at',),
             'classes': ('collapse',)
         }),
     )
-    
-    def get_source_badge(self, obj):
-        """Джерело з бейджем"""
-        colors = {
-            'newsletter': 'info',
-            'registered': 'success',
-            'order': 'warning',
-        }
-        color = colors.get(obj.source, 'secondary')
-        return format_html(
-            '<span class="badge badge-{}">{}</span>',
-            color,
-            obj.get_source_display()
-        )
-    get_source_badge.short_description = 'Джерело'
-    
-    def get_type_badge(self, obj):
-        """Тип клієнта"""
-        if obj.is_wholesale:
-            return format_html('<span class="badge badge-primary">Оптовий</span>')
-        return format_html('<span class="badge badge-secondary">Роздрібний</span>')
-    get_type_badge.short_description = 'Тип'
     
     def activate_subscribers(self, request, queryset):
         """Активувати підписників"""
         updated = queryset.update(is_active=True)
         messages.success(request, f'Активовано {updated} підписників')
-    activate_subscribers.short_description = 'Активувати вибрані email адреси'
+    activate_subscribers.short_description = 'Активувати вибрані підписки'
     
     def deactivate_subscribers(self, request, queryset):
         """Деактивувати підписників"""
         updated = queryset.update(is_active=False)
         messages.success(request, f'Деактивовано {updated} підписників')
-    deactivate_subscribers.short_description = 'Деактивувати вибрані email адреси'
-    
-    def export_to_csv(self, request, queryset):
-        """Експорт в CSV"""
-        import csv
-        from django.http import HttpResponse
-        
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="email_subscribers.csv"'
-        response.write('\ufeff'.encode('utf8'))
-        
-        writer = csv.writer(response)
-        writer.writerow(['Email', 'Ім\'я', 'Джерело', 'Тип', 'Активний', 'Дата додавання'])
-        
-        for subscriber in queryset:
-            writer.writerow([
-                subscriber.email,
-                subscriber.name,
-                subscriber.get_source_display(),
-                'Оптовий' if subscriber.is_wholesale else 'Роздрібний',
-                'Так' if subscriber.is_active else 'Ні',
-                subscriber.created_at.strftime('%d.%m.%Y %H:%M')
-            ])
-        
-        return response
-    export_to_csv.short_description = 'Експортувати в CSV'
+    deactivate_subscribers.short_description = 'Деактивувати вибрані підписки'
 
 
 @admin.register(EmailCampaign)
@@ -527,10 +479,24 @@ class EmailCampaignAdmin(admin.ModelAdmin):
         return TemplateResponse(request, 'admin/orders/email_campaign_send_confirm.html', context)
     
     def save_model(self, request, obj, form, change):
-        """Зберігаємо автора розсилки"""
+        """Зберігаємо та відправляємо розсилку"""
         if not change:
             obj.created_by = request.user
+        
+        send_type = form.cleaned_data.get('send_type')
+        
         super().save_model(request, obj, form, change)
+        
+        if send_type == 'now' and obj.status == 'draft':
+            success = obj.send_campaign()
+            if success:
+                messages.success(request, f'Розсилку "{obj.name}" успішно відправлено!')
+            else:
+                messages.error(request, 'Помилка при відправці розсилки')
+        elif send_type == 'scheduled' and obj.scheduled_at:
+            obj.status = 'scheduled'
+            obj.save(update_fields=['status'])
+            messages.info(request, f'Розсилку заплановано на {obj.scheduled_at.strftime("%d.%m.%Y %H:%M")}')
     
     def has_delete_permission(self, request, obj=None):
         """Дозволити видалення тільки чернеток"""
@@ -574,8 +540,9 @@ RetailClient._meta.verbose_name = 'Роздрібний клієнт'
 RetailClient._meta.verbose_name_plural = '🛒 Роздрібні клієнти'
 RetailClient._meta.app_label = 'users'
 
-EmailSubscriber._meta.verbose_name = 'Email адреса'
-EmailSubscriber._meta.verbose_name_plural = '📧 Email адреси'
+Newsletter._meta.verbose_name = 'Підписка на розсилку'
+Newsletter._meta.verbose_name_plural = '📧 Підписка на розсилку'
+Newsletter._meta.app_label = 'users'
 
 EmailCampaign._meta.verbose_name = 'Email розсилка'
 EmailCampaign._meta.verbose_name_plural = '✉️ Email розсилки'

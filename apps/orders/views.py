@@ -2,10 +2,9 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
 from apps.cart.cart import Cart
 from decimal import Decimal
-from .models import EmailSubscriber
+from .models import Newsletter
 
 
 MINIMUM_WHOLESALE_ORDER = Decimal('5000.00')
@@ -71,11 +70,29 @@ def newsletter_subscribe(request):
                 'message': 'Email обов\'язковий'
             })
         
-        subscriber = EmailSubscriber.add_subscriber(
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        
+        if User.objects.filter(email__iexact=email, is_staff=True).exists():
+            return JsonResponse({
+                'success': False,
+                'message': 'Некоректна email адреса'
+            })
+        
+        if User.objects.filter(email__iexact=email, is_superuser=True).exists():
+            return JsonResponse({
+                'success': False,
+                'message': 'Некоректна email адреса'
+            })
+        
+        newsletter, created = Newsletter.objects.get_or_create(
             email=email,
-            source='newsletter',
-            name=name
+            defaults={'name': name, 'is_active': True}
         )
+        
+        if not created:
+            newsletter.is_active = True
+            newsletter.save(update_fields=['is_active'])
         
         return JsonResponse({
             'success': True,

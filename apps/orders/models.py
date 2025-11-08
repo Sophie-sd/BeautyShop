@@ -123,69 +123,11 @@ class OrderItem(models.Model):
         return f"{self.product.name} x{self.quantity}"
 
 
-class EmailSubscriber(models.Model):
-    """Збір всіх email адрес на сайті"""
-    
-    SOURCE_CHOICES = [
-        ('newsletter', 'Підписка на розсилку'),
-        ('registered', 'Зареєстрований користувач'),
-        ('order', 'Замовлення без реєстрації'),
-    ]
-    
-    email = models.EmailField('Email', unique=True, db_index=True)
-    name = models.CharField('Ім\'я', max_length=200, blank=True)
-    source = models.CharField('Джерело', max_length=20, choices=SOURCE_CHOICES)
-    is_active = models.BooleanField('Активний', default=True)
-    is_wholesale = models.BooleanField('Оптовий клієнт', default=False)
-    created_at = models.DateTimeField('Дата додавання', auto_now_add=True)
-    updated_at = models.DateTimeField('Оновлено', auto_now=True)
-    
-    class Meta:
-        verbose_name = 'Email адреса'
-        verbose_name_plural = 'Email адреси'
-        ordering = ['-created_at']
-        indexes = [
-            models.Index(fields=['email', 'source']),
-            models.Index(fields=['is_active', 'source']),
-        ]
-    
-    def __str__(self):
-        return f"{self.email} ({self.get_source_display()})"
-    
-    @classmethod
-    def add_subscriber(cls, email, source, name='', is_wholesale=False):
-        """Додати або оновити підписника (виключаючи адміністраторські пошти)"""
-        email_lower = email.lower()
-        
-        from django.contrib.auth import get_user_model
-        User = get_user_model()
-        
-        admin_user = User.objects.filter(email__iexact=email_lower, is_staff=True).first()
-        if admin_user:
-            return None
-        
-        admin_user_super = User.objects.filter(email__iexact=email_lower, is_superuser=True).first()
-        if admin_user_super:
-            return None
-        
-        subscriber, created = cls.objects.get_or_create(
-            email=email_lower,
-            defaults={
-                'name': name,
-                'source': source,
-                'is_wholesale': is_wholesale,
-            }
-        )
-        if not created and source == 'newsletter':
-            subscriber.is_active = True
-            subscriber.save(update_fields=['is_active'])
-        return subscriber
-
-
 class Newsletter(models.Model):
-    """Підписка на розсилку (deprecated, використовуємо EmailSubscriber)"""
+    """Підписка на розсилку"""
     
     email = models.EmailField('Email', unique=True)
+    name = models.CharField('Ім\'я', max_length=200, blank=True)
     is_active = models.BooleanField('Активна підписка', default=True)
     created_at = models.DateTimeField('Дата підписки', auto_now_add=True)
     
@@ -315,31 +257,49 @@ class EmailCampaign(models.Model):
         return f"{self.name} ({self.get_status_display()})"
     
     def get_recipients_list(self):
-        """Отримати список email адрес для відправки"""
+        """Отримати список email адрес для відправки (унікальні, без дублювання)"""
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        
         emails = set()
         
         for recipient_type in self.recipients:
             if recipient_type == 'newsletter':
                 emails.update(
-                    EmailSubscriber.objects.filter(
-                        source='newsletter',
-                        is_active=True
-                    ).values_list('email', flat=True)
+                    Newsletter.objects.filter(
+                        is_active=True,
+                        email__isnull=False
+                    ).exclude(email='').values_list('email', flat=True)
                 )
             elif recipient_type == 'wholesale':
                 emails.update(
-                    EmailSubscriber.objects.filter(
+                    User.objects.filter(
                         is_wholesale=True,
-                        is_active=True
-                    ).values_list('email', flat=True)
+                        email_verified=True,
+                        is_staff=False,
+                        is_superuser=False,
+                        email__isnull=False
+                    ).exclude(email='').values_list('email', flat=True)
                 )
             elif recipient_type == 'retail':
                 emails.update(
-                    EmailSubscriber.objects.filter(
-                        is_wholesale=False,
-                        is_active=True
-                    ).values_list('email', flat=True)
+                    Order.objects.filter(
+                        user__isnull=True,
+                        email__isnull=False
+                    ).exclude(email='').values_list('email', flat=True).distinct()
                 )
+        
+        admin_emails = set(
+            User.objects.filter(
+                is_staff=True
+            ).values_list('email', flat=True)
+        ) | set(
+            User.objects.filter(
+                is_superuser=True
+            ).values_list('email', flat=True)
+        )
+        
+        emails = emails - admin_emails
         
         return list(emails)
     
