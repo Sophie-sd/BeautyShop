@@ -27,16 +27,10 @@
                 {% for recipient_type in campaign.recipients %}
                     {% if recipient_type == 'newsletter' %}
                         <li>Підписники розсилки</li>
-                    {% elif recipient_type == 'registered' %}
-                        <li>Зареєстровані користувачі</li>
-                    {% elif recipient_type == 'order_clients' %}
-                        <li>Клієнти без реєстрації</li>
                     {% elif recipient_type == 'wholesale' %}
                         <li>Оптові клієнти</li>
                     {% elif recipient_type == 'retail' %}
                         <li>Роздрібні клієнти</li>
-                    {% elif recipient_type == 'all' %}
-                        <li>Всі клієнти</li>
                     {% endif %}
                 {% endfor %}
             </ul>

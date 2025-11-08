@@ -405,27 +405,35 @@ class EmailCampaignAdmin(admin.ModelAdmin):
     search_fields = ['name', 'subject', 'content']
     ordering = ['-created_at']
     list_per_page = 30
-    readonly_fields = ['sent_count', 'failed_count', 'created_at', 'updated_at', 'sent_at', 'created_by', 'get_recipients_count']
+    readonly_fields = ['status', 'sent_count', 'failed_count', 'created_at', 'updated_at', 'sent_at', 'created_by', 'get_recipients_count']
     actions = ['duplicate_campaign', 'mark_as_draft']
     
-    fieldsets = (
-        ('Основна інформація', {
-            'fields': ('name', 'subject', 'status', 'created_by')
-        }),
-        ('Контент', {
-            'fields': ('content', 'image')
-        }),
-        ('Отримувачі', {
-            'fields': ('recipients', 'get_recipients_count')
-        }),
-        ('Налаштування відправки', {
-            'fields': ('scheduled_at',)
-        }),
-        ('Статистика', {
-            'fields': ('sent_count', 'failed_count', 'created_at', 'updated_at', 'sent_at'),
-            'classes': ('collapse',)
-        }),
-    )
+    def get_fieldsets(self, request, obj=None):
+        """Динамічні fieldsets в залежності від наявності об'єкта"""
+        fieldsets = [
+            ('Основна інформація', {
+                'fields': ('name', 'subject')
+            }),
+            ('Контент', {
+                'fields': ('content', 'image')
+            }),
+            ('Отримувачі', {
+                'fields': ('recipients', 'get_recipients_count')
+            }),
+            ('Налаштування відправки', {
+                'fields': ('scheduled_at',)
+            }),
+        ]
+        
+        if obj and obj.pk:
+            fieldsets.append(
+                ('Статистика', {
+                    'fields': ('status', 'sent_count', 'failed_count', 'created_at', 'updated_at', 'sent_at', 'created_by'),
+                    'classes': ('collapse',)
+                })
+            )
+        
+        return fieldsets
     
     def get_urls(self):
         """Додаємо URL для відправки розсилки"""
@@ -458,12 +466,9 @@ class EmailCampaignAdmin(admin.ModelAdmin):
             return 'Не вибрано'
         
         recipient_labels = {
-            'newsletter': 'Підписники',
-            'registered': 'Зареєстровані',
-            'order_clients': 'Клієнти',
-            'wholesale': 'Оптові',
-            'retail': 'Роздрібні',
-            'all': 'Всі',
+            'newsletter': 'Підписники розсилки',
+            'wholesale': 'Оптові клієнти',
+            'retail': 'Роздрібні клієнти',
         }
         
         labels = [recipient_labels.get(r, r) for r in obj.recipients]

@@ -22,7 +22,7 @@ class EmailCampaignForm(forms.ModelForm):
     
     class Meta:
         model = EmailCampaign
-        fields = ['name', 'subject', 'content', 'image', 'recipients', 'scheduled_at', 'status']
+        fields = ['name', 'subject', 'content', 'image', 'recipients', 'scheduled_at']
         widgets = {
             'scheduled_at': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         }

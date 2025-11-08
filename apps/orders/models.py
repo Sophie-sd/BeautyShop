@@ -265,11 +265,8 @@ class EmailCampaign(models.Model):
     
     RECIPIENT_CHOICES = [
         ('newsletter', 'Підписники розсилки'),
-        ('registered', 'Зареєстровані користувачі'),
-        ('order_clients', 'Клієнти без реєстрації'),
         ('wholesale', 'Оптові клієнти'),
         ('retail', 'Роздрібні клієнти'),
-        ('all', 'Всі'),
     ]
     
     name = models.CharField('Назва розсилки', max_length=255)
@@ -316,20 +313,6 @@ class EmailCampaign(models.Model):
                         is_active=True
                     ).values_list('email', flat=True)
                 )
-            elif recipient_type == 'registered':
-                emails.update(
-                    EmailSubscriber.objects.filter(
-                        source='registered',
-                        is_active=True
-                    ).values_list('email', flat=True)
-                )
-            elif recipient_type == 'order_clients':
-                emails.update(
-                    EmailSubscriber.objects.filter(
-                        source='order',
-                        is_active=True
-                    ).values_list('email', flat=True)
-                )
             elif recipient_type == 'wholesale':
                 emails.update(
                     EmailSubscriber.objects.filter(
@@ -341,12 +324,6 @@ class EmailCampaign(models.Model):
                 emails.update(
                     EmailSubscriber.objects.filter(
                         is_wholesale=False,
-                        is_active=True
-                    ).values_list('email', flat=True)
-                )
-            elif recipient_type == 'all':
-                emails.update(
-                    EmailSubscriber.objects.filter(
                         is_active=True
                     ).values_list('email', flat=True)
                 )

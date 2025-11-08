@@ -14,17 +14,19 @@ class Command(BaseCommand):
         
         synced_count = 0
         
-        self.stdout.write('1. Синхронізація зареєстрованих користувачів...')
-        for user in User.objects.filter(email__isnull=False).exclude(email=''):
-            EmailSubscriber.add_subscriber(
-                email=user.email,
-                source='registered',
-                name=f"{user.first_name} {user.last_name}" if user.first_name else user.username,
-                is_wholesale=getattr(user, 'is_wholesale', False)
-            )
-            synced_count += 1
+        self.stdout.write('1. Синхронізація зареєстрованих користувачів (тільки оптових)...')
+        for user in User.objects.filter(email__isnull=False, is_staff=False, is_superuser=False).exclude(email=''):
+            is_wholesale = getattr(user, 'is_wholesale', False)
+            if is_wholesale:
+                EmailSubscriber.add_subscriber(
+                    email=user.email,
+                    source='registered',
+                    name=f"{user.first_name} {user.last_name}" if user.first_name else user.username,
+                    is_wholesale=True
+                )
+                synced_count += 1
         
-        self.stdout.write(self.style.SUCCESS(f'  ✓ Синхронізовано {synced_count} користувачів'))
+        self.stdout.write(self.style.SUCCESS(f'  ✓ Синхронізовано {synced_count} оптових користувачів'))
         
         self.stdout.write('\n2. Синхронізація замовлень без реєстрації...')
         order_emails = Order.objects.filter(
