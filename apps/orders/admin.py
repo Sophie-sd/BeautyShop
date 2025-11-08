@@ -3,9 +3,9 @@
 """
 from django.contrib import admin
 from django.utils.html import format_html
-from django.db.models import Q
+from django.db.models import Q, Count, Max
 from datetime import datetime, timedelta
-from .models import Order, OrderItem
+from .models import Order, OrderItem, RetailClient
 
 
 class OrderItemInline(admin.TabularInline):
@@ -63,7 +63,7 @@ class OrderAdmin(admin.ModelAdmin):
             'description': 'Товари в замовленні'
         }),
         ('👤 Клієнт', {
-            'fields': ('first_name', 'last_name', 'email', 'phone', 'get_customer_info')
+            'fields': ('first_name', 'last_name', 'middle_name', 'email', 'phone', 'get_customer_info')
         }),
         ('🚚 Доставка', {
             'fields': (
@@ -229,6 +229,113 @@ class OrderAdmin(admin.ModelAdmin):
         js = ('admin/js/custom_admin.js',)
 
 
+@admin.register(RetailClient)
+class RetailClientAdmin(admin.ModelAdmin):
+    """Адміністрування роздрібних клієнтів (гості без реєстрації)"""
+    
+    list_display = [
+        'get_full_name_display', 'email', 'get_phone_display',
+        'get_orders_count', 'get_last_order_date'
+    ]
+    list_filter = [
+        ('created_at', admin.DateFieldListFilter),
+    ]
+    search_fields = [
+        'first_name', 'last_name', 'middle_name', 'email', 'phone'
+    ]
+    ordering = ['-created_at']
+    list_per_page = 50
+    
+    def get_queryset(self, request):
+        """Показуємо тільки замовлення без користувача (гості)"""
+        from django.db.models import Count, Max
+        qs = super().get_queryset(request)
+        
+        unique_clients = {}
+        for order in qs.filter(user__isnull=True).select_related().order_by('email', '-created_at'):
+            key = order.email.lower()
+            if key not in unique_clients:
+                unique_clients[key] = {
+                    'order': order,
+                    'count': 0,
+                    'last_date': order.created_at
+                }
+        
+        for order in qs.filter(user__isnull=True):
+            key = order.email.lower()
+            if key in unique_clients:
+                unique_clients[key]['count'] += 1
+                if order.created_at > unique_clients[key]['last_date']:
+                    unique_clients[key]['last_date'] = order.created_at
+        
+        result_orders = []
+        for data in unique_clients.values():
+            order = data['order']
+            order._orders_count = data['count']
+            order._last_order_date = data['last_date']
+            result_orders.append(order)
+        
+        return result_orders
+    
+    def get_full_name_display(self, obj):
+        """Повне ім'я з по-батькові"""
+        parts = []
+        if obj.last_name:
+            parts.append(obj.last_name)
+        if obj.first_name:
+            parts.append(obj.first_name)
+        if obj.middle_name:
+            parts.append(obj.middle_name)
+        return ' '.join(parts) if parts else 'не вказано'
+    get_full_name_display.short_description = 'ПІБ'
+    
+    def get_phone_display(self, obj):
+        """Телефон"""
+        return obj.phone if obj.phone else 'не вказано'
+    get_phone_display.short_description = 'Телефон'
+    
+    def get_orders_count(self, obj):
+        """Кількість замовлень клієнта"""
+        if hasattr(obj, '_orders_count'):
+            return obj._orders_count
+        return Order.objects.filter(user__isnull=True, email=obj.email).count()
+    get_orders_count.short_description = 'Кількість замовлень'
+    
+    def get_last_order_date(self, obj):
+        """Дата останнього замовлення"""
+        if hasattr(obj, '_last_order_date'):
+            return obj._last_order_date.strftime('%d.%m.%Y %H:%M')
+        last_order = Order.objects.filter(user__isnull=True, email=obj.email).order_by('-created_at').first()
+        if last_order:
+            return last_order.created_at.strftime('%d.%m.%Y %H:%M')
+        return 'немає замовлень'
+    get_last_order_date.short_description = 'Дата останнього замовлення'
+    
+    def has_add_permission(self, request):
+        """Заборона створення через цей розділ"""
+        return False
+    
+    def has_delete_permission(self, request, obj=None):
+        """Заборона видалення"""
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        """Дозвіл тільки на перегляд"""
+        return True
+    
+    fieldsets = (
+        ('Інформація про клієнта', {
+            'fields': ('first_name', 'last_name', 'middle_name', 'email', 'phone')
+        }),
+    )
+    
+    readonly_fields = ['first_name', 'last_name', 'middle_name', 'email', 'phone']
+
+
 # Налаштування відображення в адмінці
 Order._meta.verbose_name = "Замовлення"
 Order._meta.verbose_name_plural = "📦 Замовлення"
+
+RetailClient._meta.verbose_name = 'Роздрібний клієнт'
+RetailClient._meta.verbose_name_plural = '🛒 Роздрібні клієнти'
+RetailClient._meta.app_label = 'users'

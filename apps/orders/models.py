@@ -48,6 +48,7 @@ class Order(models.Model):
     # Контактні дані
     first_name = models.CharField('Ім\'я', max_length=100)
     last_name = models.CharField('Прізвище', max_length=100)
+    middle_name = models.CharField('По-батькові', max_length=100, blank=True, default='')
     email = models.EmailField('Email')
     phone = models.CharField('Телефон', max_length=20)
     
@@ -195,3 +196,10 @@ class Promotion(models.Model):
         return self.name
 
 
+class RetailClient(Order):
+    """Proxy модель для роздрібних клієнтів (гостьові замовлення)"""
+    
+    class Meta:
+        proxy = True
+        verbose_name = 'Роздрібний клієнт'
+        verbose_name_plural = 'Роздрібні клієнти'
