@@ -184,3 +184,12 @@ class UserProfile(models.Model):
     
     def __str__(self):
         return f"Профіль {self.user.username}"
+
+
+class WholesaleClient(CustomUser):
+    """Proxy модель для оптових клієнтів"""
+    
+    class Meta:
+        proxy = True
+        verbose_name = 'Оптовий клієнт'
+        verbose_name_plural = 'Оптові клієнти'
