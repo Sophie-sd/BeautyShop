@@ -364,12 +364,11 @@ class CustomPasswordResetView(FormView):
                 return self.form_invalid(form)
         else:
             logger.warning(f"⚠️ No active user found with email: {email}")
-            # Для безпеки показуємо те саме повідомлення
-            messages.success(
+            messages.error(
                 self.request,
-                'Якщо користувач з таким email існує, код для відновлення паролю буде відправлено.'
+                'Користувача з таким email не зареєстровано. Будь ласка, зареєструйтеся.'
             )
-            return redirect('users:login')
+            return self.form_invalid(form)
 
 
 class PasswordResetCodeView(FormView):

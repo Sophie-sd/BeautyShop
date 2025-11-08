@@ -18,14 +18,6 @@
                 <p>Особистий кабінет призначений виключно для оптових покупців. Після входу вам стануть доступні спеціальні оптові ціни на всі товари. <strong>Мінімальна сума замовлення становить 5000 грн.</strong></p>
             </div>
 
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-
             <form method="post" class="auth-form">
                 {% csrf_token %}
 
