@@ -22,14 +22,18 @@ def collect_order_email(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def collect_user_email(sender, instance, created, **kwargs):
-    """Збирати email адреси зареєстрованих користувачів (тільки оптових, не адмінів)"""
-    if instance.email and not instance.is_staff and not instance.is_superuser:
-        is_wholesale = getattr(instance, 'is_wholesale', False)
-        if is_wholesale:
-            EmailSubscriber.add_subscriber(
-                email=instance.email,
-                source='registered',
-                name=f"{instance.first_name} {instance.last_name}" if instance.first_name else instance.username,
-                is_wholesale=True
-            )
+    """Збирати email адреси зареєстрованих користувачів після верифікації"""
+    if not instance.email:
+        return
+    
+    if instance.is_staff or instance.is_superuser:
+        return
+    
+    if instance.is_wholesale and instance.email_verified:
+        EmailSubscriber.add_subscriber(
+            email=instance.email,
+            source='registered',
+            name=f"{instance.first_name} {instance.last_name}" if instance.first_name else instance.username,
+            is_wholesale=True
+        )
 
