@@ -110,6 +110,8 @@ class EmailVerificationCodeView(FormView):
                 
                 # Логінимо користувача
                 login(self.request, user, backend='apps.users.backends.WholesaleClientBackend')
+                # Оновлюємо сесію для iOS Safari
+                self.request.session.modified = True
                 
                 messages.success(self.request, message)
                 return redirect('users:profile')
@@ -318,6 +320,10 @@ class CustomLoginView(DjangoLoginView):
         
         # Якщо аутентифікація успішна - логінимо користувача
         login(self.request, user, backend='apps.users.backends.WholesaleClientBackend')
+        
+        # Оновлюємо сесію для iOS Safari
+        self.request.session.modified = True
+        
         return super().form_valid(form)
     
     def form_invalid(self, form):
