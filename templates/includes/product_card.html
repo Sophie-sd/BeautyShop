@@ -66,15 +66,19 @@
         
         <div class="product-card__price">
             {% if user.is_authenticated and user.is_wholesale and not user.is_staff and not user.is_superuser %}
-                <!-- Для оптових клієнтів -->
+                <!-- Для оптових клієнтів: оптова + перекреслена роздрібна -->
                 {% if product.wholesale_price %}
                     <span class="product-card__price-current">{{ product.wholesale_price }} ₴</span>
+                    <span class="product-card__price-old">{{ product.retail_price }} ₴</span>
                 {% else %}
                     <span class="product-card__price-current">{{ product.retail_price }} ₴</span>
                 {% endif %}
             {% else %}
-                <!-- Для незалогінених та адміністраторів -->
+                <!-- Для незалогінених та адміністраторів: роздрібна + інфо про градацію -->
                 <span class="product-card__price-current">{{ product.retail_price }} ₴</span>
+                {% if product.price_3_qty or product.price_5_qty %}
+                    <span class="product-card__price-tiers">від {{ product.price_5_qty|default:product.price_3_qty }} ₴</span>
+                {% endif %}
             {% endif %}
         </div>
         

@@ -108,28 +108,41 @@
     font-weight: 700;
     color: #e91e63;
     margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.product-detail-price .price-current {
+    color: #e91e63;
 }
 
 .product-detail-price .price-old {
-    font-size: 1.5rem;
-    margin-left: 10px;
-}
-
-.product-detail-price .price-wholesale-label {
-    display: block;
-    font-size: 0.8rem;
-    font-weight: 400;
-    color: #666;
-    margin-top: 5px;
-}
-
-.product-detail-price .price-retail-note {
-    display: block;
-    font-size: 0.9rem;
+    font-size: 1.2rem;
     font-weight: 400;
     color: #999;
     text-decoration: line-through;
-    margin-top: 8px;
+}
+
+.product-detail-price .price-wholesale-label {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: #666;
+}
+
+.product-card__price-old {
+    font-size: 0.9rem;
+    color: #999;
+    text-decoration: line-through;
+    margin-left: 8px;
+}
+
+.product-card__price-tiers {
+    display: block;
+    font-size: 0.85rem;
+    color: #27ae60;
+    font-weight: 500;
+    margin-top: 4px;
 }
 
 .attribute-row {
