@@ -586,19 +586,22 @@
     }
     
     .card-header {
-        flex-direction: column;
+        flex-direction: row;
+        justify-content: space-between;
         align-items: center;
         gap: 12px;
-        text-align: center;
+        padding: 14px 16px;
     }
     
     .card-header h2 {
-        width: 100%;
+        font-size: 16px;
+        margin: 0;
     }
     
     .card-header .btn-sm {
-        padding: 6px 14px;
-        font-size: 13px;
+        padding: 6px 12px;
+        font-size: 12px;
+        white-space: nowrap;
     }
     
     .card-body {
