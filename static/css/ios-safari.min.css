@@ -460,10 +460,26 @@
     }
     
     /* Забороняємо батьківським елементам мати transform для iOS Safari */
+    .profile-page,
     .profile-page body,
-    .auth-page body {
+    .profile-page main,
+    .profile-page .profile-container,
+    .auth-page,
+    .auth-page body,
+    .auth-page main {
         -webkit-transform: none;
         transform: none;
+        overflow-x: visible;
+        overflow-y: visible;
+    }
+    
+    /* Гарантуємо що mobile-bottom-nav завжди на місці */
+    body.profile-page .mobile-bottom-nav,
+    body.auth-page .mobile-bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
     }
     
     /* Mobile Menu Optimizations */
