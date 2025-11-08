@@ -195,9 +195,14 @@ class ProfileView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         
+        # Отримуємо останні 3 замовлення для відображення в профілі
+        from apps.orders.models import Order
+        recent_orders = Order.objects.filter(user=user).order_by('-created_at')[:3]
+        
         context.update({
             'user': user,
             'is_wholesale': user.is_wholesale,
+            'recent_orders': recent_orders,
         })
         return context
 

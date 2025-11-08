@@ -73,16 +73,6 @@
                         </div>
                     </div>
                     
-                    <div class="wholesale-benefits">
-                        <h4>Ваші переваги:</h4>
-                        <ul>
-                            <li>Доступ до оптових цін на всі товари</li>
-                            <li>Додаткові знижки від кількості (від 3 шт, від 5 шт)</li>
-                            <li>Персональні акції та пропозиції</li>
-                            <li>Пріоритетна обробка замовлень</li>
-                        </ul>
-                    </div>
-                    
                     <div class="wholesale-note">
                         <p>Для замовлення без оптових цін та без обмеження мінімальної суми вийдіть з особистого кабінету.</p>
                     </div>
@@ -97,7 +87,24 @@
                 <a href="{% url 'users:orders' %}" class="btn btn-sm btn-outline">Всі замовлення</a>
             </div>
             <div class="card-body">
-                <p class="text-center text-muted">Історія замовлень буде доступна незабаром</p>
+                {% if recent_orders %}
+                    <div class="recent-orders">
+                        {% for order in recent_orders %}
+                            <div class="order-row">
+                                <div class="order-info">
+                                    <strong>Замовлення #{{ order.order_number }}</strong>
+                                    <span class="order-date">{{ order.created_at|date:"d.m.Y" }}</span>
+                                </div>
+                                <div class="order-details">
+                                    <span class="order-status status-{{ order.status }}">{{ order.get_status_display }}</span>
+                                    <span class="order-total">{{ order.total }} ₴</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-center text-muted">У вас поки немає замовлень</p>
+                {% endif %}
             </div>
         </div>
 
