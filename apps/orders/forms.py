@@ -17,7 +17,7 @@ class EmailCampaignForm(forms.ModelForm):
         choices=SEND_TYPE_CHOICES,
         widget=forms.RadioSelect,
         initial='now',
-        required=True
+        required=False
     )
     
     recipients = forms.MultipleChoiceField(
@@ -37,7 +37,7 @@ class EmailCampaignForm(forms.ModelForm):
         label='Дата та час відправки',
         widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         required=False,
-        help_text='Залиште порожнім для відправки зараз'
+        help_text='Вкажіть дату для запланованої відправки або залиште порожнім для негайної відправки'
     )
     
     class Meta:
@@ -51,19 +51,8 @@ class EmailCampaignForm(forms.ModelForm):
         
         if self.instance and self.instance.pk and self.instance.scheduled_at:
             self.initial['send_type'] = 'scheduled'
-    
-    def clean(self):
-        cleaned_data = super().clean()
-        send_type = cleaned_data.get('send_type')
-        scheduled_at = cleaned_data.get('scheduled_at')
-        
-        if send_type == 'scheduled' and not scheduled_at:
-            raise forms.ValidationError('Вкажіть дату та час для запланованої відправки')
-        
-        if send_type == 'now':
-            cleaned_data['scheduled_at'] = None
-        
-        return cleaned_data
+        else:
+            self.initial['send_type'] = 'now'
     
     def clean_recipients(self):
         """Конвертуємо вибрані значення в список"""

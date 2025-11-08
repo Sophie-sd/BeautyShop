@@ -373,7 +373,7 @@ class EmailCampaignAdmin(admin.ModelAdmin):
                 'fields': ('recipients', 'get_recipients_count')
             }),
             ('Налаштування відправки', {
-                'fields': ('scheduled_at',)
+                'fields': ('send_type', 'scheduled_at')
             }),
         ]
         
@@ -483,10 +483,10 @@ class EmailCampaignAdmin(admin.ModelAdmin):
         if not change:
             obj.created_by = request.user
         
-        send_type = form.cleaned_data.get('send_type', 'now')
-        scheduled_at = form.cleaned_data.get('scheduled_at')
-        
         super().save_model(request, obj, form, change)
+        
+        send_type = request.POST.get('send_type', 'now')
+        scheduled_at = obj.scheduled_at
         
         if send_type == 'now' and not scheduled_at and obj.status == 'draft':
             success = obj.send_campaign()
@@ -531,6 +531,7 @@ class EmailCampaignAdmin(admin.ModelAdmin):
         css = {
             'all': ('admin/css/email_campaign.css',)
         }
+        js = ('admin/js/email_campaign.js',)
 
 
 # Налаштування відображення в адмінці
