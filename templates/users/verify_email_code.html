@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Підтвердження e-mail - BeautyShop{% endblock %}
+
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="verification-icon">
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                </div>
+                <h1>Підтвердження e-mail</h1>
+                <p class="auth-subtitle">Введіть код підтвердження</p>
+            </div>
+
+            <div class="code-info">
+                <p>Ми надіслали 6-значний код підтвердження на:</p>
+                <p class="email-display"><strong>{{ email }}</strong></p>
+                <p class="timer-text">Код дійсний протягом 15 хвилин</p>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" class="auth-form code-form" id="codeForm">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="{{ form.code.id_for_label }}">Код підтвердження</label>
+                    {{ form.code }}
+                    {% if form.code.errors %}
+                        <div class="error-message">{{ form.code.errors.0 }}</div>
+                    {% endif %}
+                    <small class="form-text">6 цифр без пробілів</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full">
+                    Підтвердити
+                </button>
+            </form>
+
+            <div class="resend-section">
+                <p class="resend-text">
+                    Не отримали код? 
+                    <button type="button" id="resendBtn" class="btn-link">Надіслати повторно</button>
+                </p>
+                <p id="resendTimer" class="timer-countdown"></p>
+            </div>
+
+            <div class="auth-footer">
+                <p><a href="{% url 'users:login' %}">Повернутися до входу</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/verification-code.js' %}"></script>
+{% endblock %}
+

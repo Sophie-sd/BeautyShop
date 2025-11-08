@@ -8,9 +8,13 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView as DjangoLoginView, PasswordResetView
 from django.contrib import messages
 from django.urls import reverse_lazy
+from django.http import JsonResponse
 from .models import CustomUser
-from .forms import WholesaleRegistrationForm, CustomLoginForm, CustomPasswordResetForm, ProfileEditForm
-from .utils import send_verification_email
+from .forms import (
+    WholesaleRegistrationForm, CustomLoginForm, CustomPasswordResetForm, 
+    ProfileEditForm, EmailVerificationCodeForm, PasswordResetCodeForm, CustomSetPasswordForm
+)
+from .utils import send_verification_email, send_verification_code_email, send_password_reset_code_email
 import logging
 
 logger = logging.getLogger(__name__)
@@ -29,21 +33,24 @@ class WholesaleRegisterView(CreateView):
             user = form.save()
             logger.info(f"📝 New user registered: {user.email} (username: {user.username})")
             
-            # Надсилаємо лист з підтвердженням
-            if send_verification_email(user, self.request):
-                logger.info(f"✅ Verification email sent successfully to: {user.email}")
+            # Зберігаємо email в сесії для верифікації
+            self.request.session['pending_verification_email'] = user.email
+            
+            # Надсилаємо лист з кодом підтвердження
+            if send_verification_code_email(user, self.request):
+                logger.info(f"✅ Verification code sent successfully to: {user.email}")
                 messages.success(
                     self.request, 
-                    'Ви успішно зареєструвалися! Перевірте вашу пошту для підтвердження email.'
+                    'Ви успішно зареєструвалися! Перевірте вашу пошту та введіть код підтвердження.'
                 )
             else:
-                logger.error(f"❌ Failed to send verification email to: {user.email}")
+                logger.error(f"❌ Failed to send verification code to: {user.email}")
                 messages.warning(
                     self.request,
-                    'Реєстрація успішна, але виникла помилка при надсиланні листа. Зверніться до підтримки.'
+                    'Реєстрація успішна, але виникла помилка при надсиланні коду. Зверніться до підтримки.'
                 )
             
-            return redirect('users:registration_pending')
+            return redirect('users:verify_email_code')
             
         except Exception as e:
             logger.error(f"❌ Registration error: {str(e)}", exc_info=True)
@@ -59,34 +66,113 @@ class WholesaleRegisterView(CreateView):
 
 
 class RegistrationPendingView(TemplateView):
-    """Сторінка після реєстрації - очікування підтвердження email"""
-    template_name = 'users/registration_pending.html'
+    """Сторінка після реєстрації - перенаправлення на введення коду"""
+    
+    def get(self, request, *args, **kwargs):
+        # Отримуємо email з сесії (якщо є)
+        email = request.session.get('pending_verification_email')
+        if not email:
+            messages.error(request, 'Сесія верифікації закінчилась. Будь ласка, увійдіть або зареєструйтесь знову.')
+            return redirect('users:register')
+        
+        return redirect('users:verify_email_code')
+
+
+class EmailVerificationCodeView(FormView):
+    """Введення коду підтвердження email"""
+    
+    template_name = 'users/verify_email_code.html'
+    form_class = EmailVerificationCodeForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        # Перевіряємо чи є email в сесії
+        if not request.session.get('pending_verification_email'):
+            messages.error(request, 'Сесія верифікації закінчилась. Будь ласка, зареєструйтесь знову.')
+            return redirect('users:register')
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['email'] = self.request.session.get('pending_verification_email')
+        return context
+    
+    def form_valid(self, form):
+        email = self.request.session.get('pending_verification_email')
+        code = form.cleaned_data['code']
+        
+        try:
+            user = CustomUser.objects.get(email=email)
+            success, message = user.verify_email_code(code)
+            
+            if success:
+                # Очищаємо сесію
+                del self.request.session['pending_verification_email']
+                
+                # Логінимо користувача
+                login(self.request, user, backend='apps.users.backends.WholesaleClientBackend')
+                
+                messages.success(self.request, message)
+                return redirect('users:profile')
+            else:
+                messages.error(self.request, message)
+                return self.form_invalid(form)
+                
+        except CustomUser.DoesNotExist:
+            messages.error(self.request, 'Користувача не знайдено.')
+            return redirect('users:register')
+
+
+class ResendVerificationCodeView(View):
+    """Повторна відправка коду верифікації"""
+    
+    def post(self, request):
+        email = request.session.get('pending_verification_email')
+        
+        if not email:
+            return JsonResponse({
+                'success': False,
+                'message': 'Сесія верифікації закінчилась.'
+            })
+        
+        try:
+            user = CustomUser.objects.get(email=email)
+            
+            if send_verification_code_email(user, request):
+                logger.info(f"Verification code resent to {email}")
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Код відправлено повторно!'
+                })
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Помилка при відправці коду.'
+                })
+                
+        except CustomUser.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Користувача не знайдено.'
+            })
 
 
 class EmailVerificationView(View):
-    """Підтвердження email через токен"""
+    """Підтвердження email через токен (старий метод)"""
     
     def get(self, request, token):
-        # Шукаємо користувача з таким токеном
         try:
             user = CustomUser.objects.get(email_verification_token=token)
             
-            # Верифікуємо email
             if user.verify_email(token):
-                # Логінимо користувача
                 login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-                
-                messages.success(
-                    request,
-                    'Email успішно підтверджено! Тепер вам доступні оптові ціни після входу.'
-                )
+                messages.success(request, 'Email успішно підтверджено!')
                 return redirect('users:profile')
             else:
                 messages.error(request, 'Невірний токен верифікації.')
                 return redirect('users:login')
                 
         except CustomUser.DoesNotExist:
-            messages.error(request, 'Невірний токен верифікації або токен вже використано.')
+            messages.error(request, 'Невірний токен верифікації.')
             return redirect('users:login')
 
 
@@ -239,14 +325,11 @@ class CustomLoginView(DjangoLoginView):
         return super().form_invalid(form)
 
 
-class CustomPasswordResetView(PasswordResetView):
-    """Кастомний view для відновлення паролю з детальним логуванням"""
+class CustomPasswordResetView(FormView):
+    """Кастомний view для відновлення паролю через код"""
     
     form_class = CustomPasswordResetForm
     template_name = 'users/password_reset.html'
-    email_template_name = 'registration/password_reset_email.html'
-    subject_template_name = 'registration/password_reset_subject.txt'
-    success_url = '/users/password/reset/done/'
     
     def form_valid(self, form):
         email = form.cleaned_data['email']
@@ -255,18 +338,143 @@ class CustomPasswordResetView(PasswordResetView):
         # Перевіряємо чи існує користувач
         users = CustomUser.objects.filter(email__iexact=email, is_active=True)
         if users.exists():
-            logger.info(f"✅ User found: {users.first().username}")
+            user = users.first()
+            logger.info(f"✅ User found: {user.username}")
+            
+            # Зберігаємо email в сесії
+            self.request.session['password_reset_email'] = email
+            
+            # Відправляємо код
+            if send_password_reset_code_email(user):
+                messages.success(
+                    self.request,
+                    'Код для відновлення паролю відправлено на вашу пошту.'
+                )
+                return redirect('users:password_reset_code')
+            else:
+                messages.error(
+                    self.request,
+                    'Виникла помилка при відправці коду. Спробуйте ще раз.'
+                )
+                return self.form_invalid(form)
         else:
             logger.warning(f"⚠️ No active user found with email: {email}")
+            # Для безпеки показуємо те саме повідомлення
+            messages.success(
+                self.request,
+                'Якщо користувач з таким email існує, код для відновлення паролю буде відправлено.'
+            )
+            return redirect('users:login')
+
+
+class PasswordResetCodeView(FormView):
+    """Введення коду відновлення паролю"""
+    
+    template_name = 'users/password_reset_code.html'
+    form_class = PasswordResetCodeForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        # Перевіряємо чи є email в сесії
+        if not request.session.get('password_reset_email'):
+            messages.error(request, 'Сесія відновлення паролю закінчилась. Спробуйте ще раз.')
+            return redirect('users:password_reset')
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['email'] = self.request.session.get('password_reset_email')
+        return context
+    
+    def form_valid(self, form):
+        email = self.request.session.get('password_reset_email')
+        code = form.cleaned_data['code']
         
         try:
-            response = super().form_valid(form)
-            logger.info(f"📧 Password reset email should be sent to: {email}")
-            return response
-        except Exception as e:
-            logger.error(f"❌ Error in password reset: {str(e)}", exc_info=True)
-            messages.error(
-                self.request,
-                f'Виникла помилка при відправці email: {str(e)}'
-            )
-            return self.form_invalid(form)
+            user = CustomUser.objects.get(email=email, is_active=True)
+            success, message = user.verify_password_reset_code(code)
+            
+            if success:
+                # Зберігаємо user_id для наступного кроку
+                self.request.session['password_reset_user_id'] = user.id
+                messages.success(self.request, message)
+                return redirect('users:password_reset_new_password')
+            else:
+                messages.error(self.request, message)
+                return self.form_invalid(form)
+                
+        except CustomUser.DoesNotExist:
+            messages.error(self.request, 'Користувача не знайдено.')
+            return redirect('users:password_reset')
+
+
+class PasswordResetNewPasswordView(FormView):
+    """Встановлення нового паролю після підтвердження коду"""
+    
+    template_name = 'users/password_reset_new_password.html'
+    form_class = CustomSetPasswordForm
+    
+    def dispatch(self, request, *args, **kwargs):
+        # Перевіряємо чи є user_id в сесії
+        if not request.session.get('password_reset_user_id'):
+            messages.error(request, 'Сесія відновлення паролю закінчилась. Спробуйте ще раз.')
+            return redirect('users:password_reset')
+        return super().dispatch(request, *args, **kwargs)
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        user_id = self.request.session.get('password_reset_user_id')
+        try:
+            user = CustomUser.objects.get(id=user_id)
+            kwargs['user'] = user
+        except CustomUser.DoesNotExist:
+            pass
+        return kwargs
+    
+    def form_valid(self, form):
+        user = form.save()
+        
+        # Очищаємо код відновлення
+        user.clear_password_reset_code()
+        
+        # Очищаємо сесію
+        if 'password_reset_email' in self.request.session:
+            del self.request.session['password_reset_email']
+        if 'password_reset_user_id' in self.request.session:
+            del self.request.session['password_reset_user_id']
+        
+        messages.success(self.request, 'Пароль успішно змінено! Тепер ви можете увійти.')
+        return redirect('users:login')
+
+
+class ResendPasswordResetCodeView(View):
+    """Повторна відправка коду відновлення паролю"""
+    
+    def post(self, request):
+        email = request.session.get('password_reset_email')
+        
+        if not email:
+            return JsonResponse({
+                'success': False,
+                'message': 'Сесія відновлення паролю закінчилась.'
+            })
+        
+        try:
+            user = CustomUser.objects.get(email=email, is_active=True)
+            
+            if send_password_reset_code_email(user):
+                logger.info(f"Password reset code resent to {email}")
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Код відправлено повторно!'
+                })
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Помилка при відправці коду.'
+                })
+                
+        except CustomUser.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Користувача не знайдено.'
+            })

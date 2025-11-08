@@ -2,7 +2,7 @@
 Форми для користувачів
 """
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordResetForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordResetForm, SetPasswordForm
 from django.core.exceptions import ValidationError
 from .models import CustomUser, UserProfile
 import re
@@ -183,6 +183,87 @@ class CustomPasswordResetForm(PasswordResetForm):
             user for user in active_users
             if user.has_usable_password()
         )
+
+
+class EmailVerificationCodeForm(forms.Form):
+    """Форма для введення коду підтвердження email"""
+    
+    code = forms.CharField(
+        max_length=6,
+        min_length=6,
+        required=True,
+        label='Код підтвердження',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control code-input',
+            'placeholder': '123456',
+            'pattern': '[0-9]{6}',
+            'inputmode': 'numeric',
+            'maxlength': '6',
+            'autocomplete': 'one-time-code'
+        }),
+        help_text='Введіть 6-значний код з email'
+    )
+    
+    def clean_code(self):
+        code = self.cleaned_data.get('code')
+        
+        if not code.isdigit():
+            raise ValidationError('Код повинен містити тільки цифри')
+        
+        if len(code) != 6:
+            raise ValidationError('Код повинен містити 6 цифр')
+        
+        return code
+
+
+class PasswordResetCodeForm(forms.Form):
+    """Форма для введення коду відновлення паролю"""
+    
+    code = forms.CharField(
+        max_length=6,
+        min_length=6,
+        required=True,
+        label='Код відновлення',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control code-input',
+            'placeholder': '123456',
+            'pattern': '[0-9]{6}',
+            'inputmode': 'numeric',
+            'maxlength': '6',
+            'autocomplete': 'one-time-code'
+        }),
+        help_text='Введіть 6-значний код з email'
+    )
+    
+    def clean_code(self):
+        code = self.cleaned_data.get('code')
+        
+        if not code.isdigit():
+            raise ValidationError('Код повинен містити тільки цифри')
+        
+        if len(code) != 6:
+            raise ValidationError('Код повинен містити 6 цифр')
+        
+        return code
+
+
+class CustomSetPasswordForm(SetPasswordForm):
+    """Форма для встановлення нового паролю після підтвердження коду"""
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        self.fields['new_password1'].widget.attrs.update({
+            'class': 'form-control password-field',
+            'placeholder': 'Новий пароль',
+            'autocomplete': 'new-password'
+        })
+        
+        self.fields['new_password2'].widget.attrs.update({
+            'class': 'form-control password-field',
+            'placeholder': 'Підтвердіть новий пароль',
+            'autocomplete': 'new-password'
+        })
 
 
 class ProfileEditForm(forms.ModelForm):

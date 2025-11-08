@@ -11,48 +11,87 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def send_verification_email(user, request):
+def send_verification_code_email(user, request):
     """
-    Надсилає лист з підтвердженням email користувачу
+    Надсилає лист з 6-значним кодом підтвердження email
     """
-    # Генеруємо токен
-    token = user.generate_email_verification_token()
-    
-    # Будуємо URL для верифікації
-    verification_url = request.build_absolute_uri(
-        reverse('users:verify_email', kwargs={'token': token})
-    )
+    # Генеруємо код
+    code = user.generate_email_verification_code()
     
     # Контекст для шаблону
     context = {
         'user': user,
-        'verification_url': verification_url,
+        'code': code,
     }
     
     # Рендеримо HTML версію
-    html_message = render_to_string('emails/email_verification.html', context)
+    html_message = render_to_string('emails/email_verification_code.html', context)
     plain_message = strip_tags(html_message)
     
     # Надсилаємо лист
     try:
         send_mail(
-            subject='Підтвердження email - BeautyShop',
+            subject='Підтвердження e-mail - BeautyShop',
             message=plain_message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
             html_message=html_message,
             fail_silently=False,
         )
-        logger.info(f"Verification email sent to {user.email}")
+        logger.info(f"Verification code sent to {user.email}")
         return True
     except Exception as e:
-        logger.error(f"Failed to send verification email to {user.email}: {str(e)}")
+        logger.error(f"Failed to send verification code to {user.email}: {str(e)}")
+        return False
+
+
+def send_verification_email(user, request):
+    """
+    Надсилає лист з підтвердженням email користувачу (старий метод з токеном)
+    Залишаємо для зворотної сумісності
+    """
+    # Використовуємо новий метод з кодом
+    return send_verification_code_email(user, request)
+
+
+def send_password_reset_code_email(user):
+    """
+    Надсилає лист з 6-значним кодом відновлення паролю
+    """
+    # Генеруємо код
+    code = user.generate_password_reset_code()
+    
+    # Контекст для шаблону
+    context = {
+        'user': user,
+        'code': code,
+    }
+    
+    # Рендеримо HTML версію
+    html_message = render_to_string('emails/password_reset_code.html', context)
+    plain_message = strip_tags(html_message)
+    
+    # Надсилаємо лист
+    try:
+        send_mail(
+            subject='Відновлення паролю - BeautyShop',
+            message=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+        logger.info(f"Password reset code sent to {user.email}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send password reset code to {user.email}: {str(e)}")
         return False
 
 
 def send_password_reset_email(user, request, token, uidb64):
     """
-    Надсилає лист з посиланням для відновлення паролю
+    Надсилає лист з посиланням для відновлення паролю (старий метод)
+    Залишаємо для зворотної сумісності
     """
     # Будуємо URL для відновлення
     reset_url = request.build_absolute_uri(

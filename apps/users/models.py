@@ -6,7 +6,9 @@ from django.db import models
 from django.utils import timezone
 from django.core.validators import RegexValidator
 from decimal import Decimal
+from datetime import timedelta
 import secrets
+import random
 
 
 class CustomUser(AbstractUser):
@@ -38,6 +40,16 @@ class CustomUser(AbstractUser):
     email_verified = models.BooleanField('Email підтверджено', default=False)
     email_verification_token = models.CharField('Токен верифікації', max_length=100, blank=True)
     
+    # Код верифікації email (6 цифр)
+    email_verification_code = models.CharField('Код верифікації email', max_length=6, blank=True)
+    email_verification_code_created_at = models.DateTimeField('Час створення коду верифікації', null=True, blank=True)
+    email_verification_attempts = models.IntegerField('Спроби введення коду', default=0)
+    
+    # Код відновлення паролю (6 цифр)
+    password_reset_code = models.CharField('Код відновлення паролю', max_length=6, blank=True)
+    password_reset_code_created_at = models.DateTimeField('Час створення коду відновлення', null=True, blank=True)
+    password_reset_attempts = models.IntegerField('Спроби введення коду відновлення', default=0)
+    
     is_wholesale = models.BooleanField(
         'Оптовий клієнт', 
         default=True,
@@ -50,17 +62,95 @@ class CustomUser(AbstractUser):
         verbose_name_plural = 'Користувачі'
     
     def generate_email_verification_token(self):
-        """Генерує токен для верифікації email"""
+        """Генерує токен для верифікації email (старий метод)"""
         self.email_verification_token = secrets.token_urlsafe(32)
         self.save(update_fields=['email_verification_token'])
         return self.email_verification_token
     
+    def generate_email_verification_code(self):
+        """Генерує 6-значний код для верифікації email"""
+        self.email_verification_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+        self.email_verification_code_created_at = timezone.now()
+        self.email_verification_attempts = 0
+        self.save(update_fields=['email_verification_code', 'email_verification_code_created_at', 'email_verification_attempts'])
+        return self.email_verification_code
+    
+    def verify_email_code(self, code):
+        """Верифікує email код"""
+        if not self.email_verification_code or not self.email_verification_code_created_at:
+            return False, 'Код не знайдено. Будь ласка, запросіть новий код.'
+        
+        # Перевіряємо термін дії (15 хвилин)
+        time_limit = timedelta(minutes=15)
+        if timezone.now() - self.email_verification_code_created_at > time_limit:
+            return False, 'Термін дії коду минув. Будь ласка, запросіть новий код.'
+        
+        # Перевіряємо кількість спроб (максимум 5)
+        if self.email_verification_attempts >= 5:
+            return False, 'Перевищено кількість спроб. Будь ласка, запросіть новий код.'
+        
+        # Збільшуємо лічильник спроб
+        self.email_verification_attempts += 1
+        self.save(update_fields=['email_verification_attempts'])
+        
+        # Перевіряємо код
+        if self.email_verification_code == code:
+            self.email_verified = True
+            self.is_active = True
+            self.is_wholesale = True
+            self.email_verification_code = ''
+            self.email_verification_code_created_at = None
+            self.email_verification_attempts = 0
+            self.save(update_fields=['email_verified', 'is_active', 'is_wholesale', 'email_verification_code', 'email_verification_code_created_at', 'email_verification_attempts'])
+            return True, 'Email успішно підтверджено!'
+        
+        return False, f'Невірний код. Залишилось спроб: {5 - self.email_verification_attempts}'
+    
+    def generate_password_reset_code(self):
+        """Генерує 6-значний код для відновлення паролю"""
+        self.password_reset_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+        self.password_reset_code_created_at = timezone.now()
+        self.password_reset_attempts = 0
+        self.save(update_fields=['password_reset_code', 'password_reset_code_created_at', 'password_reset_attempts'])
+        return self.password_reset_code
+    
+    def verify_password_reset_code(self, code):
+        """Верифікує код відновлення паролю"""
+        if not self.password_reset_code or not self.password_reset_code_created_at:
+            return False, 'Код не знайдено. Будь ласка, запросіть новий код.'
+        
+        # Перевіряємо термін дії (15 хвилин)
+        time_limit = timedelta(minutes=15)
+        if timezone.now() - self.password_reset_code_created_at > time_limit:
+            return False, 'Термін дії коду минув. Будь ласка, запросіть новий код.'
+        
+        # Перевіряємо кількість спроб (максимум 5)
+        if self.password_reset_attempts >= 5:
+            return False, 'Перевищено кількість спроб. Будь ласка, запросіть новий код.'
+        
+        # Збільшуємо лічильник спроб
+        self.password_reset_attempts += 1
+        self.save(update_fields=['password_reset_attempts'])
+        
+        # Перевіряємо код
+        if self.password_reset_code == code:
+            return True, 'Код підтверджено!'
+        
+        return False, f'Невірний код. Залишилось спроб: {5 - self.password_reset_attempts}'
+    
+    def clear_password_reset_code(self):
+        """Очищає код відновлення паролю після використання"""
+        self.password_reset_code = ''
+        self.password_reset_code_created_at = None
+        self.password_reset_attempts = 0
+        self.save(update_fields=['password_reset_code', 'password_reset_code_created_at', 'password_reset_attempts'])
+    
     def verify_email(self, token):
-        """Верифікує email якщо токен збігається"""
+        """Верифікує email якщо токен збігається (старий метод)"""
         if self.email_verification_token and self.email_verification_token == token:
             self.email_verified = True
             self.is_active = True
-            self.is_wholesale = True  # Надаємо оптовий статус при підтвердженні email
+            self.is_wholesale = True
             self.email_verification_token = ''
             self.save(update_fields=['email_verified', 'is_active', 'is_wholesale', 'email_verification_token'])
             return True
