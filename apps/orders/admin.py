@@ -237,9 +237,6 @@ class RetailClientAdmin(admin.ModelAdmin):
         'get_full_name_display', 'email', 'get_phone_display',
         'get_orders_count', 'get_last_order_date'
     ]
-    list_filter = [
-        ('created_at', admin.DateFieldListFilter),
-    ]
     search_fields = [
         'first_name', 'last_name', 'middle_name', 'email', 'phone'
     ]
@@ -247,35 +244,20 @@ class RetailClientAdmin(admin.ModelAdmin):
     list_per_page = 50
     
     def get_queryset(self, request):
-        """Показуємо тільки замовлення без користувача (гості)"""
-        from django.db.models import Count, Max
+        """Показуємо тільки замовлення без користувача (унікальні по email)"""
         qs = super().get_queryset(request)
+        guest_orders = qs.filter(user__isnull=True).order_by('email', '-created_at')
         
-        unique_clients = {}
-        for order in qs.filter(user__isnull=True).select_related().order_by('email', '-created_at'):
-            key = order.email.lower()
-            if key not in unique_clients:
-                unique_clients[key] = {
-                    'order': order,
-                    'count': 0,
-                    'last_date': order.created_at
-                }
+        seen_emails = set()
+        unique_orders_ids = []
         
-        for order in qs.filter(user__isnull=True):
-            key = order.email.lower()
-            if key in unique_clients:
-                unique_clients[key]['count'] += 1
-                if order.created_at > unique_clients[key]['last_date']:
-                    unique_clients[key]['last_date'] = order.created_at
+        for order in guest_orders:
+            email_lower = order.email.lower()
+            if email_lower not in seen_emails:
+                seen_emails.add(email_lower)
+                unique_orders_ids.append(order.id)
         
-        result_orders = []
-        for data in unique_clients.values():
-            order = data['order']
-            order._orders_count = data['count']
-            order._last_order_date = data['last_date']
-            result_orders.append(order)
-        
-        return result_orders
+        return qs.filter(id__in=unique_orders_ids).order_by('-created_at')
     
     def get_full_name_display(self, obj):
         """Повне ім'я з по-батькові"""
@@ -296,15 +278,11 @@ class RetailClientAdmin(admin.ModelAdmin):
     
     def get_orders_count(self, obj):
         """Кількість замовлень клієнта"""
-        if hasattr(obj, '_orders_count'):
-            return obj._orders_count
         return Order.objects.filter(user__isnull=True, email=obj.email).count()
     get_orders_count.short_description = 'Кількість замовлень'
     
     def get_last_order_date(self, obj):
         """Дата останнього замовлення"""
-        if hasattr(obj, '_last_order_date'):
-            return obj._last_order_date.strftime('%d.%m.%Y %H:%M')
         last_order = Order.objects.filter(user__isnull=True, email=obj.email).order_by('-created_at').first()
         if last_order:
             return last_order.created_at.strftime('%d.%m.%Y %H:%M')
@@ -321,15 +299,11 @@ class RetailClientAdmin(admin.ModelAdmin):
     
     def has_change_permission(self, request, obj=None):
         """Дозвіл тільки на перегляд"""
-        return True
+        return False
     
-    fieldsets = (
-        ('Інформація про клієнта', {
-            'fields': ('first_name', 'last_name', 'middle_name', 'email', 'phone')
-        }),
-    )
-    
-    readonly_fields = ['first_name', 'last_name', 'middle_name', 'email', 'phone']
+    def changelist_view(self, request, extra_context=None):
+        """Переопределяем changelist_view для відображення унікальних клієнтів"""
+        return super().changelist_view(request, extra_context)
 
 
 # Налаштування відображення в адмінці
