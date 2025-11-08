@@ -52,8 +52,8 @@ class CustomUser(AbstractUser):
     
     is_wholesale = models.BooleanField(
         'Оптовий клієнт', 
-        default=True,
-        help_text='Всі зареєстровані користувачі мають доступ до оптових цін'
+        default=False,
+        help_text='Встановлюється True після підтвердження email'
     )
     created_at = models.DateTimeField('Дата реєстрації', auto_now_add=True)
     

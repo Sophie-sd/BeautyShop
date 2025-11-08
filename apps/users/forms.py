@@ -129,8 +129,8 @@ class WholesaleRegistrationForm(UserCreationForm):
         
         # Користувач неактивний до підтвердження email
         user.is_active = False
-        # Оптовий статус за замовчуванням True - буде активовано після підтвердження email
-        user.is_wholesale = True
+        # Оптовий статус False - буде встановлено True після підтвердження email
+        user.is_wholesale = False
         
         if commit:
             user.save()

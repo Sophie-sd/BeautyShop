@@ -62,22 +62,38 @@
                 <!-- Ціна -->
                 <div class="product-detail-price">
                     {% if user.is_authenticated and user.is_wholesale and not user.is_staff and not user.is_superuser %}
-                        <!-- Для оптових клієнтів: оптова + перекреслена роздрібна -->
+                        <!-- Для оптових клієнтів: оптова (або акційна) + перекреслена роздрібна -->
                         {% if product.wholesale_price %}
-                            <span class="price-current" data-wholesale-price="{{ product.wholesale_price }}">{{ product.wholesale_price }} ₴</span>
-                            <span class="price-old">{{ product.retail_price }} ₴</span>
-                            <span class="price-wholesale-label">Оптова ціна</span>
+                            {% if product.is_sale_active and product.sale_price and product.sale_price < product.wholesale_price %}
+                                <span class="price-current" data-wholesale-price="{{ product.sale_price }}">{{ product.sale_price }} ₴</span>
+                                <span class="price-old">{{ product.wholesale_price }} ₴</span>
+                                <span class="price-wholesale-label">Акційна ціна</span>
+                            {% else %}
+                                <span class="price-current" data-wholesale-price="{{ product.wholesale_price }}">{{ product.wholesale_price }} ₴</span>
+                                <span class="price-old">{{ product.retail_price }} ₴</span>
+                                <span class="price-wholesale-label">Оптова ціна</span>
+                            {% endif %}
                         {% else %}
                             <span class="price-current">{{ product.retail_price }} ₴</span>
                         {% endif %}
                     {% else %}
-                        <!-- Для незалогінених та адміністраторів: роздрібна + динамічна ціна від кількості -->
-                        <span class="price-current" 
-                              data-retail-price="{{ product.retail_price }}"
-                              {% if product.price_3_qty %}data-price-3="{{ product.price_3_qty }}"{% endif %}
-                              {% if product.price_5_qty %}data-price-5="{{ product.price_5_qty }}"{% endif %}>
-                            {{ product.retail_price }} ₴
-                        </span>
+                        <!-- Для незалогінених та адміністраторів: роздрібна (або акційна) + динамічна ціна від кількості -->
+                        {% if product.is_sale_active and product.sale_price %}
+                            <span class="price-current" 
+                                  data-retail-price="{{ product.sale_price }}"
+                                  {% if product.price_3_qty %}data-price-3="{{ product.price_3_qty }}"{% endif %}
+                                  {% if product.price_5_qty %}data-price-5="{{ product.price_5_qty }}"{% endif %}>
+                                {{ product.sale_price }} ₴
+                            </span>
+                            <span class="price-old">{{ product.retail_price }} ₴</span>
+                        {% else %}
+                            <span class="price-current" 
+                                  data-retail-price="{{ product.retail_price }}"
+                                  {% if product.price_3_qty %}data-price-3="{{ product.price_3_qty }}"{% endif %}
+                                  {% if product.price_5_qty %}data-price-5="{{ product.price_5_qty }}"{% endif %}>
+                                {{ product.retail_price }} ₴
+                            </span>
+                        {% endif %}
                     {% endif %}
                 </div>
                 

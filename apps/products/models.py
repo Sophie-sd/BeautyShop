@@ -236,14 +236,16 @@ class Product(models.Model):
         Повертає ціну для конкретного користувача згідно бізнес-логіки:
         
         ДЛЯ НЕЗАЛОГІНЕНИХ КОРИСТУВАЧІВ ТА АДМІНІСТРАТОРІВ:
-        - Повна роздрібна ціна
+        - Повна роздрібна ціна (або акційна якщо є)
         - Градація цін (від 3шт, від 5шт) застосовується
         - Оптова ціна НЕ відображається
         
         ДЛЯ ЗАЛОГІНЕНИХ (ОПТОВИХ) КОРИСТУВАЧІВ:
-        - Оптова ціна (основна)
+        - Оптова ціна (або акційна якщо вона менша)
         - Градація цін НЕ застосовується
         - Завжди оптова ціна незалежно від кількості
+        
+        АКЦІЇ застосовуються для всіх типів користувачів
         """
         # Перевірка чи є користувач оптовим клієнтом (НЕ адміністратор)
         is_wholesale_user = (
@@ -255,19 +257,26 @@ class Product(models.Model):
             not user.is_superuser
         )
         
-        # Для оптових клієнтів - тільки оптова ціна (градація НЕ діє)
+        # Для оптових клієнтів
         if is_wholesale_user and self.wholesale_price:
+            # Якщо акція активна і акційна ціна менша за оптову - повертаємо акційну
+            if self.is_sale_active() and self.sale_price and self.sale_price < self.wholesale_price:
+                return self.sale_price
             return self.wholesale_price
         
-        # Для незалогінених та адміністраторів - роздрібна ціна з градацією
+        # Для незалогінених та адміністраторів
+        # Визначаємо базову ціну (роздрібна або акційна)
+        base_price = self.retail_price
+        if self.is_sale_active() and self.sale_price:
+            base_price = self.sale_price
+        
         # Градація застосовується тільки якщо є відповідні ціни
         if quantity >= 5 and self.price_5_qty:
             return self.price_5_qty
         elif quantity >= 3 and self.price_3_qty:
             return self.price_3_qty
         
-        # Базова роздрібна ціна
-        return self.retail_price
+        return base_price
     
     def get_all_prices(self, user=None):
         """
