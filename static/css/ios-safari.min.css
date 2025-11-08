@@ -107,7 +107,8 @@
     }
     
     body {
-        overscroll-behavior: none;
+        overscroll-behavior-x: none;
+        overscroll-behavior-y: auto;
     }
     
     /* Form Element Styles */
@@ -440,6 +441,20 @@
             font-size: 28px;
             line-height: 1;
         }
+    }
+    
+    /* Mobile Bottom Navigation - Фіксація до низу екрана */
+    .mobile-bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        -webkit-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0);
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        will-change: transform;
+        pointer-events: auto;
     }
     
     /* Mobile Menu Optimizations */
