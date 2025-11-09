@@ -128,14 +128,14 @@
                 {% if product.is_in_stock %}
                 <div class="product-detail-actions">
                     <div class="quantity-selector">
-                        <button class="quantity-btn" data-action="decrease">−</button>
-                        <input type="number" class="quantity-input" value="1" min="1" max="{{ product.stock }}" id="productQuantity">
-                        <button class="quantity-btn" data-action="increase">+</button>
+                        <button type="button" class="quantity-btn" data-action="decrease" aria-label="Зменшити кількість">−</button>
+                        <input type="number" class="quantity-input" value="1" min="1" max="{{ product.stock }}" id="productQuantity" aria-label="Кількість товару">
+                        <button type="button" class="quantity-btn" data-action="increase" aria-label="Збільшити кількість">+</button>
                     </div>
-                    <button class="btn-primary btn-add-cart" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}">
+                    <button type="button" class="btn-add-cart" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}">
                         Додати в кошик
                     </button>
-                    <button class="btn-wishlist" data-product-id="{{ product.id }}" title="Додати в список бажань">
+                    <button type="button" class="btn-wishlist" data-product-id="{{ product.id }}" title="Додати в список бажань" aria-label="Додати в обране">
                         ♡
                     </button>
                 </div>

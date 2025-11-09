@@ -179,6 +179,158 @@
     margin-left: 8px;
 }
 
+.product-detail-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 30px 0;
+    flex-wrap: wrap;
+}
+
+.quantity-selector {
+    display: flex;
+    align-items: center;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.quantity-btn {
+    width: 40px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border: none;
+    color: #333;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.quantity-btn:hover {
+    background: #e91e63;
+    color: #fff;
+}
+
+.quantity-btn:active {
+    transform: scale(0.95);
+}
+
+.quantity-input {
+    width: 60px;
+    height: 44px;
+    border: none;
+    border-left: 1px solid #e0e0e0;
+    border-right: 1px solid #e0e0e0;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    background: #fff;
+    outline: none;
+    -webkit-appearance: textfield;
+    appearance: textfield;
+}
+
+.quantity-input::-webkit-outer-spin-button,
+.quantity-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.btn-add-cart {
+    flex: 1;
+    min-width: 180px;
+    height: 44px;
+    padding: 0 24px;
+    background: linear-gradient(135deg, #e91e63 0%, #f06292 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.btn-add-cart:hover {
+    background: linear-gradient(135deg, #c2185b 0%, #e91e63 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+}
+
+.btn-add-cart:active {
+    transform: translateY(0);
+}
+
+.btn-wishlist {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1.5rem;
+    color: #e91e63;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.btn-wishlist:hover {
+    background: #e91e63;
+    color: #fff;
+    border-color: #e91e63;
+    transform: scale(1.1);
+}
+
+.btn-wishlist:active {
+    transform: scale(0.95);
+}
+
+.product-stock {
+    font-size: 0.95rem;
+    margin: 15px 0;
+}
+
+.stock-available {
+    color: #27ae60;
+    font-weight: 500;
+}
+
+.stock-unavailable {
+    color: #e74c3c;
+    font-weight: 500;
+}
+
+.product-category-link {
+    margin: 20px 0;
+}
+
+.product-category-link a {
+    color: #666;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.product-category-link a:hover {
+    color: #e91e63;
+}
+
 .product-card__price-tiers {
     display: block;
     font-size: 0.85rem;
@@ -306,6 +458,27 @@
         font-size: 1.5rem;
     }
     
+    .product-detail-actions {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .quantity-selector {
+        width: 100%;
+        max-width: 100%;
+        justify-content: center;
+    }
+    
+    .btn-add-cart {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .btn-wishlist {
+        width: 44px;
+        flex-shrink: 0;
+    }
+    
     .product-tabs {
         margin: 30px 0;
     }
@@ -326,5 +499,29 @@
     
     .attribute-value {
         font-size: 0.9rem;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 992px) {
+    .product-detail-actions {
+        gap: 10px;
+    }
+    
+    .btn-add-cart {
+        min-width: 160px;
+    }
+}
+
+@supports (-webkit-touch-callout: none) {
+    .quantity-btn,
+    .btn-add-cart,
+    .btn-wishlist {
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .quantity-btn:active,
+    .btn-add-cart:active,
+    .btn-wishlist:active {
+        opacity: 0.8;
     }
 }
