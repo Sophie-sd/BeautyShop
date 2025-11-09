@@ -100,34 +100,42 @@
             
             <!-- Pagination -->
             {% if is_paginated %}
-                <nav aria-label="Пагінація товарів" class="mt-5">
-                    <div class="pagination-wrapper d-flex justify-content-center gap-1">
-                        {% if page_obj.has_previous %}
-                            <a href="?page=1" class="btn btn-outline btn-sm" aria-label="Перша сторінка">
-                                <span aria-hidden="true">&laquo;&laquo;</span>
-                            </a>
-                            <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline btn-sm" aria-label="Попередня">
-                                <span aria-hidden="true">&laquo;</span>
-                            </a>
-                        {% endif %}
-                        
-                        {% for num in page_obj.paginator.page_range %}
-                            {% if page_obj.number == num %}
-                                <span class="btn btn-primary btn-sm active" aria-current="page">{{ num }}</span>
-                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                <a href="?page={{ num }}" class="btn btn-outline btn-sm">{{ num }}</a>
-                            {% endif %}
-                        {% endfor %}
-                        
-                        {% if page_obj.has_next %}
-                            <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline btn-sm" aria-label="Наступна">
-                                <span aria-hidden="true">&raquo;</span>
-                            </a>
-                            <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline btn-sm" aria-label="Остання сторінка">
-                                <span aria-hidden="true">&raquo;&raquo;</span>
-                            </a>
-                        {% endif %}
-                    </div>
+                <nav class="pagination" role="navigation" aria-label="Навігація по сторінках">
+                    {% if page_obj.has_previous %}
+                        <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page=1" class="pagination__link" aria-label="Перша сторінка">
+                            ⟨⟨
+                        </a>
+                        <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.previous_page_number }}" class="pagination__link" aria-label="Попередня сторінка">
+                            ⟨ Попередня
+                        </a>
+                    {% else %}
+                        <span class="pagination__link pagination__link--disabled" aria-disabled="true">
+                            ⟨⟨
+                        </span>
+                        <span class="pagination__link pagination__link--disabled" aria-disabled="true">
+                            ⟨ Попередня
+                        </span>
+                    {% endif %}
+                    
+                    <span class="pagination__info" aria-live="polite">
+                        Сторінка {{ page_obj.number }} з {{ page_obj.paginator.num_pages }}
+                    </span>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.next_page_number }}" class="pagination__link" aria-label="Наступна сторінка">
+                            Наступна ⟩
+                        </a>
+                        <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.paginator.num_pages }}" class="pagination__link" aria-label="Остання сторінка">
+                            ⟩⟩
+                        </a>
+                    {% else %}
+                        <span class="pagination__link pagination__link--disabled" aria-disabled="true">
+                            Наступна ⟩
+                        </span>
+                        <span class="pagination__link pagination__link--disabled" aria-disabled="true">
+                            ⟩⟩
+                        </span>
+                    {% endif %}
                 </nav>
             {% endif %}
         {% else %}

@@ -117,6 +117,56 @@
     margin-top: auto;
 }
 
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 50px;
+    padding: 30px 0;
+}
+
+.pagination__link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 16px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    color: #333;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.pagination__link:hover:not(.pagination__link--disabled) {
+    background: #f8f9fa;
+    border-color: #e91e63;
+    color: #e91e63;
+}
+
+.pagination__link--active {
+    background: #e91e63;
+    border-color: #e91e63;
+    color: #fff;
+}
+
+.pagination__link--disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.pagination__info {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0 16px;
+    white-space: nowrap;
+}
+
 .empty-state {
     padding: 60px 20px;
 }
@@ -204,6 +254,24 @@
         font-size: 0.9rem;
         padding: 8px 36px 8px 12px;
     }
+    
+    .pagination {
+        gap: 6px;
+        margin-top: 40px;
+        padding: 25px 0;
+    }
+    
+    .pagination__link {
+        min-width: 36px;
+        height: 36px;
+        padding: 0 12px;
+        font-size: 0.85rem;
+    }
+    
+    .pagination__info {
+        font-size: 0.85rem;
+        margin: 0 10px;
+    }
 }
 
 @media (max-width: 575px) {
@@ -251,6 +319,49 @@
     .empty-state-title {
         font-size: 1.25rem;
     }
+    
+    .pagination {
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-top: 30px;
+        padding: 20px 10px;
+    }
+    
+    .pagination__link {
+        min-width: 32px;
+        height: 32px;
+        padding: 0 10px;
+        font-size: 0.8rem;
+    }
+    
+    .pagination__info {
+        font-size: 0.8rem;
+        margin: 0 8px;
+        width: 100%;
+        text-align: center;
+        order: -1;
+        margin-bottom: 10px;
+    }
+}
+
+@media (max-width: 991px) and (min-width: 768px) {
+    .pagination {
+        gap: 7px;
+        margin-top: 45px;
+        padding: 28px 0;
+    }
+    
+    .pagination__link {
+        min-width: 38px;
+        height: 38px;
+        padding: 0 14px;
+        font-size: 0.88rem;
+    }
+    
+    .pagination__info {
+        font-size: 0.88rem;
+        margin: 0 12px;
+    }
 }
 
 @supports (-webkit-touch-callout: none) {
@@ -267,6 +378,15 @@
     .products-grid--sale .product-card {
         -webkit-transform: translateZ(0);
         transform: translateZ(0);
+    }
+    
+    .pagination__link {
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+        -webkit-touch-callout: none;
+    }
+    
+    .pagination {
+        -webkit-overflow-scrolling: touch;
     }
 }
 
