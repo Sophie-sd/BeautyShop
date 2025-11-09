@@ -45,16 +45,13 @@
                 {% endif %}
                 
                 <!-- Бейджі -->
-                {% if product.is_sale_active or product.is_new or product.is_top %}
+                {% if product.is_sale_active or product.is_new %}
                 <div class="product-badges">
                     {% if product.is_sale_active %}
                         <span class="badge badge-sale">SALE -{{ product.get_discount_percentage }}%</span>
                     {% endif %}
                     {% if product.is_new %}
                         <span class="badge badge-new">NEW</span>
-                    {% endif %}
-                    {% if product.is_top %}
-                        <span class="badge badge-top">TOP</span>
                     {% endif %}
                 </div>
                 {% endif %}

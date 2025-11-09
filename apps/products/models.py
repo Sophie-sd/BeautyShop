@@ -141,9 +141,7 @@ class Product(models.Model):
     )
     
     # Стікери
-    is_top = models.BooleanField('Топ', default=False)
     is_new = models.BooleanField('Новинка', default=False)
-    # is_sale вже є вище для акційних товарів
     
     # Додаткові поля
     sku = models.CharField('Артикул', max_length=50, unique=True, blank=True)
@@ -174,7 +172,7 @@ class Product(models.Model):
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['category', 'is_active']),
-            models.Index(fields=['is_active', 'is_sale', 'is_new', 'is_top']),
+            models.Index(fields=['is_active', 'is_sale', 'is_new']),
             models.Index(fields=['sku']),
             models.Index(fields=['slug']),
             models.Index(fields=['created_at']),
@@ -319,12 +317,9 @@ class Product(models.Model):
     def get_stickers(self):
         """Повертає список активних стікерів (бейджів)"""
         stickers = []
-        if self.is_top:
-            stickers.append({'type': 'top', 'text': 'Хіт', 'class': 'badge-top'})
         if self.is_new:
             stickers.append({'type': 'new', 'text': 'Новинка', 'class': 'badge-new'})
         if self.is_sale_active():
-            # Якщо є назва акції - показуємо її, інакше відсоток
             if self.active_promotion_name:
                 stickers.append({'type': 'sale', 'text': self.active_promotion_name, 'class': 'badge-sale'})
             else:

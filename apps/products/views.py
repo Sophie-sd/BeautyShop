@@ -68,8 +68,6 @@ class CategoryView(ListView):
                         Q(sale_start_date__lte=now, sale_end_date__gte=now)
                     )
                 )
-            if 'top' in product_types:
-                type_filter |= Q(is_top=True)
             if type_filter:
                 queryset = queryset.filter(type_filter)
         
@@ -84,7 +82,7 @@ class CategoryView(ListView):
         elif sort == 'new':
             queryset = queryset.order_by('-created_at')
         elif sort == 'popular':
-            queryset = queryset.order_by('-is_top', '-created_at')
+            queryset = queryset.order_by('-created_at')
         else:
             queryset = queryset.order_by('sort_order', '-created_at')
         

@@ -213,7 +213,6 @@ class ProductAdmin(admin.ModelAdmin):
         CategoryFilter,
         StockFilter,
         'is_sale',
-        'is_top',
         'is_new',
         'is_featured',
     ]
@@ -285,13 +284,12 @@ class ProductAdmin(admin.ModelAdmin):
         }),
         ('🏷️ Позначки товару (Бейджі)', {
             'fields': (
-                ('is_top', 'is_new'),
+                'is_new',
                 'sort_order'
             ),
             'description': mark_safe('''
-                <strong>Хіт</strong> — топовий/популярний товар<br>
                 <strong>Новинка</strong> — новий товар<br>
-                <strong>Акція</strong> — встановлюється автоматично при is_sale=True
+                <strong>Акція</strong> — встановлюється автоматично через блок Акції
             ''')
         }),
         ('🔍 SEO налаштування', {
@@ -311,7 +309,6 @@ class ProductAdmin(admin.ModelAdmin):
         'deactivate_products',
         'mark_as_sale',
         'unmark_as_sale',
-        'mark_as_top',
         'mark_as_new',
         'set_sale_price_bulk',
         'clear_sale_prices',
@@ -429,11 +426,6 @@ class ProductAdmin(admin.ModelAdmin):
         self.message_user(request, f"Знято позначку акційний: {updated} товарів", messages.SUCCESS)
     unmark_as_sale.short_description = "Зняти позначку АКЦІЙНИЙ"
     
-    def mark_as_top(self, request, queryset):
-        """Позначити як ХІТ"""
-        updated = queryset.update(is_top=True)
-        self.message_user(request, f"Позначено як ХІТ: {updated} товарів", messages.SUCCESS)
-    mark_as_top.short_description = "⭐ Позначити як ХІТ"
     
     def mark_as_new(self, request, queryset):
         """Позначити як новинки"""
