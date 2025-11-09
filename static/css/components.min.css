@@ -153,7 +153,11 @@
 }
 
 .search-icon {
-    color: currentColor;
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
 }
 
 .header-actions {
@@ -179,8 +183,14 @@
 .wishlist-link:hover,
 .cart-link:hover,
 .account-link:hover {
-    background: var(--gray-light);
-    color: var(--primary-pink);
+    background: var(--primary-pink);
+    color: var(--white);
+}
+
+.wishlist-link:hover .action-icon,
+.cart-link:hover .action-icon,
+.account-link:hover .action-icon {
+    stroke: var(--white);
 }
 
 .action-icon {
@@ -269,13 +279,12 @@
     background: var(--white);
     border-top: 1px solid var(--neutral-light);
     box-shadow: var(--shadow-sm);
-    padding: var(--spacing-sm) 0;
 }
 
 @media (min-width: 992px) {
     .main-nav {
         position: fixed;
-        top: 110px;
+        top: 150px;
         left: 0;
         right: 0;
         width: 100%;
