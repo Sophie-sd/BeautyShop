@@ -161,6 +161,7 @@
 }
 
 .btn-subscribe:hover {
+    color: white;
     background: #d81b60;
 }
 
@@ -188,6 +189,7 @@
 }
 
 .social-link:hover {
+    color: white;
     background: #e91e63;
     transform: scale(1.1);
 }
@@ -400,6 +402,7 @@
     }
     
     .mobile-catalog-btn .btn:hover {
+        color: white;
         background: #c2185b;
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(233, 30, 99, 0.4);

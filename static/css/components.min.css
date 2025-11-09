@@ -149,6 +149,7 @@
 }
 
 .search-btn:hover {
+    color: var(--white);
     background: linear-gradient(135deg, var(--primary-pink-dark) 0%, var(--primary-pink) 100%);
 }
 

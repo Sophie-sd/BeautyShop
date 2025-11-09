@@ -179,6 +179,7 @@ img {
 }
 
 .btn-primary:hover {
+    color: var(--white);
     background: linear-gradient(135deg, var(--primary-pink-dark) 0%, var(--primary-pink) 100%);
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);

@@ -152,6 +152,7 @@
 
 .mobile-search-submit:hover,
 .mobile-search-submit:focus {
+    color: var(--white);
     background: #c2185b;
     border-color: #c2185b;
     transform: scale(1.05);

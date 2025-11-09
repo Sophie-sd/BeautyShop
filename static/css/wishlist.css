@@ -252,6 +252,7 @@
 }
 
 .btn-add-to-cart:hover {
+    color: var(--white);
     background: var(--primary-purple);
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(233, 30, 99, 0.3);
