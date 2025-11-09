@@ -12,37 +12,6 @@
     min-height: calc(100vh - 400px);
 }
 
-.wishlist-header {
-    text-align: center;
-    margin-bottom: var(--spacing-xl);
-    padding-bottom: var(--spacing-lg);
-    border-bottom: 2px solid var(--gray-light);
-}
-
-.wishlist-header .page-title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-md);
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--neutral-dark);
-    margin: 0 0 var(--spacing-sm) 0;
-}
-
-.wishlist-header .title-icon {
-    width: 48px;
-    height: 48px;
-    stroke: var(--primary-pink);
-    flex-shrink: 0;
-}
-
-.wishlist-count {
-    font-size: 1.125rem;
-    color: var(--gray-medium);
-    margin: 0;
-}
-
 /* ==================== 
    Wishlist Content
 ==================== */
@@ -497,15 +466,6 @@
         font-size: 1.25rem;
     }
 
-    .wishlist-header .page-title {
-        font-size: 2rem;
-    }
-
-    .wishlist-header .title-icon {
-        width: 40px;
-        height: 40px;
-    }
-
     /* Планшетна адаптація кнопки wishlist empty */
     .wishlist-empty .btn {
         max-width: 320px;
@@ -520,20 +480,6 @@
 @media (max-width: 768px) {
     .wishlist-page {
         padding: var(--spacing-lg) 0;
-    }
-
-    .wishlist-header {
-        margin-bottom: var(--spacing-lg);
-    }
-
-    .wishlist-header .page-title {
-        font-size: 1.75rem;
-        gap: var(--spacing-sm);
-    }
-
-    .wishlist-header .title-icon {
-        width: 32px;
-        height: 32px;
     }
 
     .wishlist-item {

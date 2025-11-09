@@ -2,13 +2,6 @@
     padding: var(--spacing-xl) 0;
 }
 
-.section-title {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: var(--spacing-lg);
-    text-align: center;
-}
-
 .cart-content {
     display: grid;
     grid-template-columns: 1fr 350px;
