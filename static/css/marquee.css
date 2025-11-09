@@ -5,7 +5,7 @@
     box-shadow: 0 2px 8px rgba(233, 30, 99, 0.3);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     width: 100%;
-    max-width: 100vw;
+    max-width: 100%;
     position: relative;
 }
 
@@ -42,6 +42,9 @@
     white-space: nowrap;
     opacity: 0;
     animation: fadeInOut 4s ease-in-out infinite;
+    max-width: 90%;
+    text-align: center;
+    padding: 0 10px;
 }
 
 @keyframes fadeInOut {
