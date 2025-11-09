@@ -7,6 +7,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/sale-banners.css' %}">
 <link rel="stylesheet" href="{% static 'css/promotions-slider.css' %}">
+<link rel="stylesheet" href="{% static 'css/sale-page.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -74,16 +75,17 @@
                 <div class="row align-items-center">
                     <div class="col-md-6">
                         <p class="results-count">
-                            Знайдено <strong>{{ products|length }}</strong> акційних товарів
+                            Знайдено <strong>{{ paginator.count }}</strong> акційних товарів
                         </p>
                     </div>
                     <div class="col-md-6">
                         <div class="sort-options">
                             <select class="form-select" id="sortSelect">
-                                <option value="name">За назвою</option>
-                                <option value="price_low">Спочатку дешевші</option>
-                                <option value="price_high">Спочатку дорожчі</option>
-                                <option value="discount">За розміром знижки</option>
+                                <option value="default" {% if selected_sort == 'default' %}selected{% endif %}>Сортувати за</option>
+                                <option value="name" {% if selected_sort == 'name' %}selected{% endif %}>За назвою</option>
+                                <option value="price_low" {% if selected_sort == 'price_low' %}selected{% endif %}>Спочатку дешевші</option>
+                                <option value="price_high" {% if selected_sort == 'price_high' %}selected{% endif %}>Спочатку дорожчі</option>
+                                <option value="discount" {% if selected_sort == 'discount' %}selected{% endif %}>За розміром знижки</option>
                             </select>
                         </div>
                     </div>
@@ -149,4 +151,21 @@
 
 {% block extra_js %}
 <script src="{% static 'js/sale-banners.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sortSelect = document.getElementById('sortSelect');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            const url = new URL(window.location.href);
+            if (this.value && this.value !== 'default') {
+                url.searchParams.set('sort', this.value);
+            } else {
+                url.searchParams.delete('sort');
+            }
+            url.searchParams.delete('page');
+            window.location.href = url.toString();
+        });
+    }
+});
+</script>
 {% endblock %}

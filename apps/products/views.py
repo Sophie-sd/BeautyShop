@@ -151,7 +151,7 @@ class SaleProductsView(ListView):
     def get_queryset(self):
         from django.utils import timezone
         now = timezone.now()
-        return Product.objects.filter(
+        queryset = Product.objects.filter(
             Q(is_active=True) &
             Q(is_sale=True) &
             (
@@ -160,4 +160,23 @@ class SaleProductsView(ListView):
                 Q(sale_start_date__lte=now, sale_end_date__isnull=True) |
                 Q(sale_start_date__lte=now, sale_end_date__gte=now)
             )
-        ).prefetch_related('images').order_by('-created_at')
+        ).prefetch_related('images')
+        
+        sort = self.request.GET.get('sort', 'default')
+        if sort == 'name':
+            queryset = queryset.order_by('name')
+        elif sort == 'price_low':
+            queryset = queryset.order_by('retail_price')
+        elif sort == 'price_high':
+            queryset = queryset.order_by('-retail_price')
+        elif sort == 'discount':
+            queryset = queryset.order_by('-sale_price')
+        else:
+            queryset = queryset.order_by('-created_at')
+        
+        return queryset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['selected_sort'] = self.request.GET.get('sort', 'default')
+        return context
