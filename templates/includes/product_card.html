@@ -4,7 +4,7 @@
          {% if product.retail_price %}data-price="{{ product.retail_price }}"{% endif %}
          {% if product.sale_price %}data-sale-price="{{ product.sale_price }}"{% endif %}
          {% if product.is_in_stock %}data-in-stock="true"{% else %}data-in-stock="false"{% endif %}
-         {% if product.is_sale %}data-is-sale="true"{% endif %}
+         {% if product.is_sale_active %}data-is-sale="true"{% endif %}
          {% if product.is_new %}data-is-new="true"{% endif %}
          {% if product.is_top %}data-is-top="true"{% endif %}
          data-name="{{ product.name }}">

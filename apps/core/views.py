@@ -28,10 +28,14 @@ class HomeView(TemplateView):
             product__is_new=True
         ).select_related('product').prefetch_related('product__images')[:12]
         
-        # Отримуємо акційні товари
+        # Отримуємо акційні товари з валідними датами
+        from django.utils import timezone
+        now = timezone.now()
         promotion_products = Product.objects.filter(
             is_active=True,
-            is_sale=True
+            is_sale=True,
+            sale_start_date__lte=now,
+            sale_end_date__gte=now
         ).select_related('category').prefetch_related('images')[:20]
         
         context.update({

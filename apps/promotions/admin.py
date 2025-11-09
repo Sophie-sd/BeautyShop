@@ -90,6 +90,26 @@ class PromotionAdmin(admin.ModelAdmin):
         return format_html('<span class="badge badge-info">{} товарів</span>', total)
     get_products_count.short_description = 'Товарів'
     
+    def save_model(self, request, obj, form, change):
+        """Автоматично застосовує акцію після збереження якщо вона валідна"""
+        super().save_model(request, obj, form, change)
+        
+        if obj.is_valid():
+            count = obj.apply_to_products()
+            from django.contrib import messages
+            self.message_user(
+                request, 
+                f'✅ Акцію збережено та застосовано до {count} товарів', 
+                messages.SUCCESS
+            )
+        else:
+            from django.contrib import messages
+            self.message_user(
+                request, 
+                f'⚠️ Акцію збережено, але вона поки не активна (перевірте дати та статус)', 
+                messages.WARNING
+            )
+    
     actions = ['apply_to_products_action', 'remove_from_products_action', 'activate', 'deactivate']
     
     def apply_to_products_action(self, request, queryset):

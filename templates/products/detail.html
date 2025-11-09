@@ -45,9 +45,9 @@
                 {% endif %}
                 
                 <!-- Бейджі -->
-                {% if product.is_sale or product.is_new or product.is_top %}
+                {% if product.is_sale_active or product.is_new or product.is_top %}
                 <div class="product-badges">
-                    {% if product.is_sale %}
+                    {% if product.is_sale_active %}
                         <span class="badge badge-sale">SALE -{{ product.get_discount_percentage }}%</span>
                     {% endif %}
                     {% if product.is_new %}

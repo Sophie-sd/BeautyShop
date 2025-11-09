@@ -53,11 +53,17 @@ class CategoryView(ListView):
         # Фільтр по типу товару
         product_types = self.request.GET.getlist('type')
         if product_types:
+            from django.utils import timezone
+            now = timezone.now()
             type_filter = Q()
             if 'new' in product_types:
                 type_filter |= Q(is_new=True)
             if 'sale' in product_types:
-                type_filter |= Q(is_sale=True)
+                type_filter |= Q(
+                    is_sale=True,
+                    sale_start_date__lte=now,
+                    sale_end_date__gte=now
+                )
             if 'top' in product_types:
                 type_filter |= Q(is_top=True)
             if type_filter:
@@ -134,14 +140,18 @@ class ProductDetailView(DetailView):
 
 
 class SaleProductsView(ListView):
-    """Акції - показує товари з is_sale=True"""
+    """Акції - показує тільки товари з активними акціями"""
     model = Product
     template_name = 'products/sale.html'
     context_object_name = 'products'
     paginate_by = 12
     
     def get_queryset(self):
+        from django.utils import timezone
+        now = timezone.now()
         return Product.objects.filter(
             is_sale=True,
-            is_active=True
+            is_active=True,
+            sale_start_date__lte=now,
+            sale_end_date__gte=now
         ).prefetch_related('images').order_by('-created_at')

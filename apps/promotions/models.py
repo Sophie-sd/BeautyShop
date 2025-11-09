@@ -115,23 +115,6 @@ class Promotion(models.Model):
                 product.active_promotion_name = self.name
                 updated = True
             
-            # Якщо є знижка на оптову ціну
-            if self.wholesale_discount_percent and product.wholesale_price:
-                # Поки не зберігаємо, бо немає окремого поля
-                updated = True
-            
-            # Якщо є знижка від 3 шт
-            if self.qty3_discount_percent and product.price_3_qty:
-                discount = product.price_3_qty * (Decimal(str(self.qty3_discount_percent)) / Decimal('100'))
-                product.price_3_qty = product.price_3_qty - discount
-                updated = True
-            
-            # Якщо є знижка від 5 шт
-            if self.qty5_discount_percent and product.price_5_qty:
-                discount = product.price_5_qty * (Decimal(str(self.qty5_discount_percent)) / Decimal('100'))
-                product.price_5_qty = product.price_5_qty - discount
-                updated = True
-            
             if updated:
                 product.save()
                 count += 1
