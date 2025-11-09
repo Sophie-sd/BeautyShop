@@ -157,12 +157,16 @@
 }
 
 .product-badge--top,
-.product-badge--hit,
 .badge-top,
-.badge-hit,
 .featured-badge,
 .sticker-top {
   background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: var(--color-white);
+}
+
+.product-badge--hit,
+.badge-hit {
+  background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
   color: var(--color-white);
 }
 
