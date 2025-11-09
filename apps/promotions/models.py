@@ -105,17 +105,35 @@ class Promotion(models.Model):
         for product in products:
             updated = False
             
-            # Якщо є знижка на роздрібну ціну
+            # Застосовуємо знижку на роздрібну ціну
             if self.retail_discount_percent and product.retail_price:
                 discount = product.retail_price * (Decimal(str(self.retail_discount_percent)) / Decimal('100'))
                 product.sale_price = product.retail_price - discount
+                updated = True
+            
+            # Застосовуємо знижку на оптову ціну
+            if self.wholesale_discount_percent and product.wholesale_price:
+                discount = product.wholesale_price * (Decimal(str(self.wholesale_discount_percent)) / Decimal('100'))
+                product.sale_wholesale_price = product.wholesale_price - discount
+                updated = True
+            
+            # Застосовуємо знижку на ціну від 3 шт
+            if self.qty3_discount_percent and product.price_3_qty:
+                discount = product.price_3_qty * (Decimal(str(self.qty3_discount_percent)) / Decimal('100'))
+                product.sale_price_3_qty = product.price_3_qty - discount
+                updated = True
+            
+            # Застосовуємо знижку на ціну від 5 шт
+            if self.qty5_discount_percent and product.price_5_qty:
+                discount = product.price_5_qty * (Decimal(str(self.qty5_discount_percent)) / Decimal('100'))
+                product.sale_price_5_qty = product.price_5_qty - discount
+                updated = True
+            
+            if updated:
                 product.is_sale = True
                 product.sale_start_date = self.start_date
                 product.sale_end_date = self.end_date
                 product.active_promotion_name = self.name
-                updated = True
-            
-            if updated:
                 product.save()
                 count += 1
         
@@ -127,9 +145,12 @@ class Promotion(models.Model):
         count = 0
         
         for product in products:
-            if product.is_sale and product.sale_price:
+            if product.is_sale:
                 product.is_sale = False
                 product.sale_price = None
+                product.sale_wholesale_price = None
+                product.sale_price_3_qty = None
+                product.sale_price_5_qty = None
                 product.sale_start_date = None
                 product.sale_end_date = None
                 product.active_promotion_name = ''

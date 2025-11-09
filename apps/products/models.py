@@ -83,11 +83,36 @@ class Product(models.Model):
     # Знижки
     is_sale = models.BooleanField('Акційний товар', default=False)
     sale_price = models.DecimalField(
-        'Акційна ціна', 
+        'Акційна роздрібна ціна', 
         max_digits=10, 
         decimal_places=2, 
         null=True, 
-        blank=True
+        blank=True,
+        help_text='Акційна ціна для роздрібних покупців'
+    )
+    sale_wholesale_price = models.DecimalField(
+        'Акційна оптова ціна',
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text='Акційна ціна для оптових клієнтів'
+    )
+    sale_price_3_qty = models.DecimalField(
+        'Акційна ціна від 3 шт',
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text='Акційна ціна при покупці від 3 штук'
+    )
+    sale_price_5_qty = models.DecimalField(
+        'Акційна ціна від 5 шт',
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text='Акційна ціна при покупці від 5 штук'
     )
     sale_start_date = models.DateTimeField(
         'Дата початку акції',
@@ -211,7 +236,17 @@ class Product(models.Model):
     
     def is_sale_active(self):
         """Перевіряє чи активна акція зараз"""
-        if not self.is_sale or not self.sale_price:
+        if not self.is_sale:
+            return False
+        
+        has_sale_price = (
+            self.sale_price or 
+            self.sale_wholesale_price or 
+            self.sale_price_3_qty or 
+            self.sale_price_5_qty
+        )
+        
+        if not has_sale_price:
             return False
         
         # Якщо дати не вказані - акція завжди активна
@@ -245,6 +280,8 @@ class Product(models.Model):
         
         АКЦІЇ застосовуються для всіх типів користувачів
         """
+        is_sale = self.is_sale_active()
+        
         # Перевірка чи є користувач оптовим клієнтом (НЕ адміністратор)
         is_wholesale_user = (
             user and 
@@ -257,24 +294,29 @@ class Product(models.Model):
         
         # Для оптових клієнтів
         if is_wholesale_user and self.wholesale_price:
-            # Якщо акція активна і акційна ціна менша за оптову - повертаємо акційну
-            if self.is_sale_active() and self.sale_price and self.sale_price < self.wholesale_price:
-                return self.sale_price
+            if is_sale and self.sale_wholesale_price:
+                return self.sale_wholesale_price
             return self.wholesale_price
         
         # Для незалогінених та адміністраторів
-        # Визначаємо базову ціну (роздрібна або акційна)
-        base_price = self.retail_price
-        if self.is_sale_active() and self.sale_price:
-            base_price = self.sale_price
+        # Градація застосовується з пріоритетом акційних цін
+        if quantity >= 5:
+            if is_sale and self.sale_price_5_qty:
+                return self.sale_price_5_qty
+            elif self.price_5_qty:
+                return self.price_5_qty
         
-        # Градація застосовується тільки якщо є відповідні ціни
-        if quantity >= 5 and self.price_5_qty:
-            return self.price_5_qty
-        elif quantity >= 3 and self.price_3_qty:
-            return self.price_3_qty
+        if quantity >= 3:
+            if is_sale and self.sale_price_3_qty:
+                return self.sale_price_3_qty
+            elif self.price_3_qty:
+                return self.price_3_qty
         
-        return base_price
+        # Базова роздрібна або акційна ціна
+        if is_sale and self.sale_price:
+            return self.sale_price
+        
+        return self.retail_price
     
     def get_all_prices(self, user=None):
         """
