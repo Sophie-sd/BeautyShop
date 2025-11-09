@@ -59,10 +59,14 @@ class CategoryView(ListView):
             if 'new' in product_types:
                 type_filter |= Q(is_new=True)
             if 'sale' in product_types:
-                type_filter |= Q(
-                    is_sale=True,
-                    sale_start_date__lte=now,
-                    sale_end_date__gte=now
+                type_filter |= (
+                    Q(is_sale=True) &
+                    (
+                        Q(sale_start_date__isnull=True, sale_end_date__isnull=True) |
+                        Q(sale_start_date__isnull=True, sale_end_date__gte=now) |
+                        Q(sale_start_date__lte=now, sale_end_date__isnull=True) |
+                        Q(sale_start_date__lte=now, sale_end_date__gte=now)
+                    )
                 )
             if 'top' in product_types:
                 type_filter |= Q(is_top=True)
@@ -150,8 +154,12 @@ class SaleProductsView(ListView):
         from django.utils import timezone
         now = timezone.now()
         return Product.objects.filter(
-            is_sale=True,
-            is_active=True,
-            sale_start_date__lte=now,
-            sale_end_date__gte=now
+            Q(is_active=True) &
+            Q(is_sale=True) &
+            (
+                Q(sale_start_date__isnull=True, sale_end_date__isnull=True) |
+                Q(sale_start_date__isnull=True, sale_end_date__gte=now) |
+                Q(sale_start_date__lte=now, sale_end_date__isnull=True) |
+                Q(sale_start_date__lte=now, sale_end_date__gte=now)
+            )
         ).prefetch_related('images').order_by('-created_at')
