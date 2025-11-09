@@ -66,27 +66,33 @@
         <div class="product-card__price">
             {% if user.is_authenticated and user.is_wholesale and not user.is_staff and not user.is_superuser %}
                 <!-- Для оптових клієнтів: оптова (або акційна) + перекреслена роздрібна -->
-                {% if product.wholesale_price %}
-                    {% if product.is_sale_active and product.sale_price and product.sale_price < product.wholesale_price %}
-                        <span class="product-card__price-current">{{ product.sale_price }} ₴</span>
-                        <span class="product-card__price-old">{{ product.wholesale_price }} ₴</span>
+                <div class="product-card__price-row">
+                    {% if product.wholesale_price %}
+                        {% if product.is_sale_active and product.sale_price and product.sale_price < product.wholesale_price %}
+                            <span class="product-card__price-current">{{ product.sale_price }} ₴</span>
+                            <span class="product-card__price-old">{{ product.wholesale_price }} ₴</span>
+                        {% else %}
+                            <span class="product-card__price-current">{{ product.wholesale_price }} ₴</span>
+                            <span class="product-card__price-old">{{ product.retail_price }} ₴</span>
+                        {% endif %}
                     {% else %}
-                        <span class="product-card__price-current">{{ product.wholesale_price }} ₴</span>
-                        <span class="product-card__price-old">{{ product.retail_price }} ₴</span>
+                        <span class="product-card__price-current">{{ product.retail_price }} ₴</span>
                     {% endif %}
-                {% else %}
-                    <span class="product-card__price-current">{{ product.retail_price }} ₴</span>
-                {% endif %}
+                </div>
             {% else %}
                 <!-- Для незалогінених та адміністраторів: роздрібна (або акційна) + інфо про градацію -->
-                {% if product.is_sale_active and product.sale_price %}
-                    <span class="product-card__price-current">{{ product.sale_price }} ₴</span>
-                    <span class="product-card__price-old">{{ product.retail_price }} ₴</span>
-                {% else %}
-                    <span class="product-card__price-current">{{ product.retail_price }} ₴</span>
-                {% endif %}
+                <div class="product-card__price-row">
+                    {% if product.is_sale_active and product.sale_price %}
+                        <span class="product-card__price-current">{{ product.sale_price }} ₴</span>
+                        <span class="product-card__price-old">{{ product.retail_price }} ₴</span>
+                    {% else %}
+                        <span class="product-card__price-current">{{ product.retail_price }} ₴</span>
+                    {% endif %}
+                </div>
                 {% if product.price_3_qty or product.price_5_qty %}
-                    <span class="product-card__price-tiers">від {{ product.price_5_qty|default:product.price_3_qty }} ₴</span>
+                    <div class="product-card__price-row product-card__price-row--tiers">
+                        <span class="product-card__price-tiers">від {{ product.price_5_qty|default:product.price_3_qty }} ₴</span>
+                    </div>
                 {% endif %}
             {% endif %}
         </div>
