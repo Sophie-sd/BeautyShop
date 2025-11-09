@@ -12,8 +12,8 @@ class PromotionAdmin(admin.ModelAdmin):
     """Адміністрування акцій"""
     
     list_display = [
-        'name', 'get_period', 'get_status', 'get_discounts', 
-        'get_products_count', 'priority', 'is_active'
+        'name', 'get_period', 'get_time_left', 'get_discounts', 
+        'get_products_count', 'priority', 'get_active_status'
     ]
     list_filter = ['is_active', 'start_date', 'end_date']
     search_fields = ['name', 'description']
@@ -24,7 +24,7 @@ class PromotionAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('📋 Основна інформація', {
-            'fields': ('name', 'description', 'is_active', 'priority')
+            'fields': ('name', 'description', 'priority')
         }),
         ('🎯 Товари та категорії', {
             'fields': ('products', 'categories'),
@@ -51,19 +51,33 @@ class PromotionAdmin(admin.ModelAdmin):
         return f"{start} - {end}"
     get_period.short_description = 'Період'
     
-    def get_status(self, obj):
-        """Статус акції"""
-        if obj.is_valid():
-            days_left = (obj.end_date - timezone.now()).days
-            return format_html(
-                '<span class="badge badge-success">Активна ({} дн.)</span>',
-                days_left
-            )
-        elif obj.end_date < timezone.now():
+    def get_time_left(self, obj):
+        """Лишилось часу до закінчення акції"""
+        now = timezone.now()
+        
+        if obj.end_date < now:
             return format_html('<span class="badge badge-secondary">Завершена</span>')
+        elif obj.start_date > now:
+            days_until_start = (obj.start_date - now).days
+            return format_html('<span class="badge badge-warning">Почнеться через {} дн.</span>', days_until_start)
         else:
-            return format_html('<span class="badge badge-warning">Очікується</span>')
-    get_status.short_description = 'Статус'
+            days_left = (obj.end_date - now).days
+            hours_left = ((obj.end_date - now).seconds // 3600)
+            if days_left > 0:
+                return format_html('<span class="badge badge-success">{} дн.</span>', days_left)
+            elif hours_left > 0:
+                return format_html('<span class="badge badge-warning">{} год.</span>', hours_left)
+            else:
+                return format_html('<span class="badge badge-danger">Закінчується</span>')
+    get_time_left.short_description = 'Лишилось часу'
+    
+    def get_active_status(self, obj):
+        """Статус активності акції"""
+        if obj.is_active:
+            return format_html('<span class="badge badge-success">✓ Активна</span>')
+        else:
+            return format_html('<span class="badge badge-secondary">Не активна</span>')
+    get_active_status.short_description = 'Статус'
     
     def get_discounts(self, obj):
         """Відображення знижок"""
@@ -91,61 +105,87 @@ class PromotionAdmin(admin.ModelAdmin):
     get_products_count.short_description = 'Товарів'
     
     def save_model(self, request, obj, form, change):
-        """Автоматично застосовує акцію після збереження якщо вона валідна"""
+        """Зберігає акцію як неактивну за замовчуванням"""
+        if not change:
+            obj.is_active = False
         super().save_model(request, obj, form, change)
         
-        if obj.is_valid():
-            count = obj.apply_to_products()
-            from django.contrib import messages
-            self.message_user(
-                request, 
-                f'✅ Акцію збережено та застосовано до {count} товарів', 
-                messages.SUCCESS
-            )
-        else:
-            from django.contrib import messages
-            self.message_user(
-                request, 
-                f'⚠️ Акцію збережено, але вона поки не активна (перевірте дати та статус)', 
-                messages.WARNING
-            )
-    
-    actions = ['apply_to_products_action', 'remove_from_products_action', 'activate', 'deactivate']
-    
-    def apply_to_products_action(self, request, queryset):
-        """Застосувати акції до товарів"""
-        total = 0
-        for promotion in queryset:
-            if promotion.is_valid():
-                count = promotion.apply_to_products()
-                total += count
         from django.contrib import messages
-        self.message_user(request, f'✅ Застосовано акції до {total} товарів', messages.SUCCESS)
-    apply_to_products_action.short_description = '✓ Застосувати акції до товарів'
+        self.message_user(
+            request, 
+            '✅ Акцію збережено. Використайте дію "Активувати акції" щоб застосувати її до товарів.', 
+            messages.SUCCESS
+        )
     
-    def remove_from_products_action(self, request, queryset):
-        """Видалити акції з товарів"""
-        total = 0
+    actions = ['activate_promotions', 'deactivate_promotions', 'delete_promotions']
+    
+    def activate_promotions(self, request, queryset):
+        """Активувати акції та застосувати до товарів"""
+        total_promotions = 0
+        total_products = 0
+        
+        for promotion in queryset:
+            promotion.is_active = True
+            promotion.save()
+            total_promotions += 1
+            
+            count = promotion.apply_to_products()
+            total_products += count
+        
+        from django.contrib import messages
+        self.message_user(
+            request, 
+            f'✅ Активовано {total_promotions} акцій та застосовано до {total_products} товарів', 
+            messages.SUCCESS
+        )
+    activate_promotions.short_description = '✓ Активувати акції'
+    
+    def deactivate_promotions(self, request, queryset):
+        """Деактивувати акції та зняти з товарів"""
+        total_promotions = 0
+        total_products = 0
+        
         for promotion in queryset:
             count = promotion.remove_from_products()
-            total += count
+            total_products += count
+            
+            promotion.is_active = False
+            promotion.save()
+            total_promotions += 1
+        
         from django.contrib import messages
-        self.message_user(request, f'❌ Видалено акції з {total} товарів', messages.SUCCESS)
-    remove_from_products_action.short_description = '✕ Видалити акції з товарів'
+        self.message_user(
+            request, 
+            f'✅ Деактивовано {total_promotions} акцій, знято з {total_products} товарів', 
+            messages.SUCCESS
+        )
+    deactivate_promotions.short_description = '✕ Деактивувати акції'
     
-    def activate(self, request, queryset):
-        """Активувати акції"""
-        updated = queryset.update(is_active=True)
+    def delete_promotions(self, request, queryset):
+        """Видалити обрані акції"""
+        total_products = 0
+        for promotion in queryset:
+            if promotion.is_active:
+                count = promotion.remove_from_products()
+                total_products += count
+        
+        count = queryset.count()
+        queryset.delete()
+        
         from django.contrib import messages
-        self.message_user(request, f'✅ Активовано {updated} акцій', messages.SUCCESS)
-    activate.short_description = '✓ Активувати акції'
+        self.message_user(
+            request, 
+            f'✅ Видалено {count} акцій, знято з {total_products} товарів', 
+            messages.SUCCESS
+        )
+    delete_promotions.short_description = '🗑 Видалити обрані акції'
     
-    def deactivate(self, request, queryset):
-        """Деактивувати акції"""
-        updated = queryset.update(is_active=False)
-        from django.contrib import messages
-        self.message_user(request, f'❌ Деактивовано {updated} акцій', messages.SUCCESS)
-    deactivate.short_description = '✕ Деактивувати акції'
+    def get_actions(self, request):
+        """Видаляємо стандартну дію видалення"""
+        actions = super().get_actions(request)
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions
     
     class Media:
         css = {
