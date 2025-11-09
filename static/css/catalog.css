@@ -11,6 +11,7 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 var(--space-lg);
+  padding-top: 25px;
 }
 
 /* Заголовок з відступом */
@@ -252,6 +253,7 @@
 
 .catalog-main {
   min-width: 0; /* Дозволяє flex елементу стискатися */
+  padding-top: 0px;
 }
 
 /* Мобільні контроли */
