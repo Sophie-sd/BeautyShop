@@ -1,4 +1,3 @@
-/* Біжуча стрічка - Base Styles */
 .marquee-container {
     background: linear-gradient(135deg, #e91e63 0%, #f50057 100%);
     height: 40px;
@@ -7,9 +6,9 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     width: 100%;
     max-width: 100vw;
+    position: relative;
 }
 
-/* Рожевий колір для Desktop */
 @media (min-width: 992px) {
     .marquee-container.desktop-marquee {
         background: linear-gradient(135deg, #FF1493 0%, #FF69B4 100%);
@@ -17,49 +16,53 @@
     }
 }
 
-/* Базова видимість для всіх контейнерів */
 .marquee-container.desktop-marquee,
 .marquee-container.mobile-marquee {
-    display: none; /* За замовчуванням приховані */
+    display: none;
 }
 
 .marquee-content {
     display: flex;
     align-items: center;
+    justify-content: center;
     height: 100%;
-    white-space: nowrap;
+    position: relative;
+}
+
+.marquee-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     font-family: var(--font-primary, 'Inter', -apple-system, BlinkMacSystemFont, sans-serif);
     font-size: 14px;
     font-weight: 600;
     color: #ffffff;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    animation: marqueeScroll 15s linear infinite;
-    transition: animation-play-state 0.3s ease;
-    will-change: transform;
-}
-
-.marquee-container:hover .marquee-content {
-    animation-play-state: paused;
-}
-
-.marquee-text {
-    display: inline-flex;
-    align-items: center;
-    padding-right: 4rem;
     white-space: nowrap;
+    opacity: 0;
+    animation: fadeInOut 4s ease-in-out infinite;
 }
 
-/* Анімація скролу - справжній безперервний цикл */
-@keyframes marqueeScroll {
-    from {
-        transform: translateX(0%);
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) translateY(10px);
     }
-    to {
-        transform: translateX(-50%);
+    15% {
+        opacity: 1;
+        transform: translate(-50%, -50%) translateY(0);
+    }
+    85% {
+        opacity: 1;
+        transform: translate(-50%, -50%) translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) translateY(-10px);
     }
 }
 
-/* Desktop Styles - замість top-bar */
 @media (min-width: 992px) {
     .marquee-container.desktop-marquee {
         display: block;
@@ -71,13 +74,11 @@
         display: none;
     }
     
-    .marquee-content {
+    .marquee-text {
         font-size: 15px;
-        animation-duration: 45s;
     }
 }
 
-/* Mobile Styles - під банером */
 @media (max-width: 991.98px) {
     .marquee-container.desktop-marquee {
         display: none;
@@ -91,47 +92,33 @@
         opacity: 1;
     }
     
-    .marquee-content {
-        font-size: 13px;
-        animation-duration: 10s;
-    }
-    
     .marquee-text {
-        gap: 1.5rem;
+        font-size: 13px;
     }
 }
 
-/* Tablet Styles */
 @media (min-width: 768px) and (max-width: 991.98px) {
     .marquee-container {
         height: 38px;
     }
     
-    .marquee-content {
+    .marquee-text {
         font-size: 14px;
-        animation-duration: 38s;
     }
 }
 
-/* Very Small Mobile */
 @media (max-width: 375px) {
     .marquee-container.mobile-marquee {
         height: 34px;
     }
     
-    .marquee-content {
-        font-size: 12px;
-        animation-duration: 12s;
-    }
-    
     .marquee-text {
-        gap: 1rem;
+        font-size: 12px;
     }
 }
 
-/* iOS Safari Optimizations */
 @supports (-webkit-touch-callout: none) {
-    .marquee-content {
+    .marquee-text {
         -webkit-backface-visibility: hidden;
         backface-visibility: hidden;
         -webkit-perspective: 1000px;
@@ -141,32 +128,30 @@
     }
 }
 
-/* High Contrast Mode Support */
 @media (prefers-contrast: high) {
     .marquee-container {
         background: linear-gradient(135deg, #c2185b 0%, #d81b60 100%);
         border-bottom: 2px solid #ffffff;
     }
     
-    .marquee-content {
+    .marquee-text {
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     }
 }
 
-/* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
-    .marquee-content {
-        animation-duration: 120s;
+    .marquee-text {
+        animation: none;
+        opacity: 1;
+        transform: translate(-50%, -50%);
     }
 }
 
-/* Focus States for Accessibility */
 .marquee-container:focus-within {
     outline: 2px solid rgba(255, 255, 255, 0.8);
     outline-offset: -2px;
 }
 
-/* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
     .marquee-container {
         box-shadow: 0 2px 8px rgba(233, 30, 99, 0.4);
