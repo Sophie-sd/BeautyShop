@@ -10,11 +10,6 @@
     .container {
         padding-left: max(var(--spacing-md), env(safe-area-inset-left));
         padding-right: max(var(--spacing-md), env(safe-area-inset-right));
-        padding-top: 0;
-    }
-    
-    .header {
-        padding-top: env(safe-area-inset-top);
     }
     
     .footer {
@@ -64,11 +59,6 @@
     .products-slider .product-card {
         scroll-snap-align: start;
         scroll-snap-stop: normal;
-    }
-    
-    .header {
-        position: -webkit-sticky;
-        position: sticky;
     }
     
     /* Emoji Optimization */
@@ -390,8 +380,29 @@
 /* iOS Safari Touch Optimizations */
 @supports (-webkit-touch-callout: none) {
     @media (max-width: 767.98px) {
+        body {
+            padding-top: 0;
+        }
+        
+        main {
+            padding-top: 60px;
+        }
+        
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            z-index: 100;
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+        }
+        
         .main-header {
-            padding: env(safe-area-inset-top, var(--spacing-md)) 0 var(--spacing-md);
+            padding: var(--spacing-sm) 0;
         }
         
         .header-content {
@@ -441,6 +452,26 @@
         .cart-icon {
             font-size: 28px;
             line-height: 1;
+        }
+    }
+    
+    @media (max-width: 575.98px) {
+        main {
+            padding-top: 56px;
+        }
+        
+        .header-content {
+            min-height: 56px;
+        }
+    }
+    
+    @media (max-width: 400px) {
+        main {
+            padding-top: 52px;
+        }
+        
+        .header-content {
+            min-height: 52px;
         }
     }
     
