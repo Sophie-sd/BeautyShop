@@ -136,11 +136,12 @@
     <!-- Header -->
     <header class="header" role="banner">
         {% include 'includes/header.html' %}
-        
-        <!-- Navigation -->
-        <nav class="main-nav desktop-nav" role="navigation" aria-label="Головне меню">
-        <div class="container">
-            <ul class="nav-list">
+    </header>
+    
+    <!-- Navigation -->
+    <nav class="main-nav desktop-nav" role="navigation" aria-label="Головне меню">
+    <div class="container">
+        <ul class="nav-list">
                 <li class="nav-item">
                     <a href="{% url 'core:home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
                         Головна
@@ -191,10 +192,9 @@
                         Контакти
                     </a>
                 </li>
-            </ul>
-        </div>
-        </nav>
-    </header>
+        </ul>
+    </div>
+    </nav>
     
     <!-- Mobile Menu -->
     <div class="mobile-menu" id="mobile-menu" role="navigation" aria-label="Мобільне меню">

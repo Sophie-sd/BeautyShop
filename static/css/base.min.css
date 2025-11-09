@@ -38,6 +38,19 @@ body {
     overflow-x: hidden;
 }
 
+@media (min-width: 992px) {
+    body {
+        padding-top: 170px;
+    }
+}
+
+@media (max-width: 991.98px) {
+    body {
+        padding-top: 70px;
+        padding-bottom: 70px;
+    }
+}
+
 body.wholesale-user {
     background-color: #fff5f8;
 }
