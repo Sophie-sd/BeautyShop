@@ -59,12 +59,12 @@
                 <!-- Ціна -->
                 <div class="product-detail-price">
                     {% if user.is_authenticated and user.is_wholesale and not user.is_staff and not user.is_superuser %}
-                        <!-- Для оптових клієнтів: оптова (або акційна) + перекреслена роздрібна -->
+                        <!-- Для оптових клієнтів: оптова (або акційна оптова) + перекреслена роздрібна -->
                         {% if product.wholesale_price %}
-                            {% if product.is_sale_active and product.sale_price and product.sale_price < product.wholesale_price %}
-                                <span class="price-current" data-wholesale-price="{{ product.sale_price }}">{{ product.sale_price }} ₴</span>
+                            {% if product.is_sale_active and product.sale_wholesale_price %}
+                                <span class="price-current" data-wholesale-price="{{ product.sale_wholesale_price }}">{{ product.sale_wholesale_price }} ₴</span>
                                 <span class="price-old">{{ product.wholesale_price }} ₴</span>
-                                <span class="price-wholesale-label">Акційна ціна</span>
+                                <span class="price-wholesale-label">Акційна оптова ціна</span>
                             {% else %}
                                 <span class="price-current" data-wholesale-price="{{ product.wholesale_price }}">{{ product.wholesale_price }} ₴</span>
                                 <span class="price-old">{{ product.retail_price }} ₴</span>
@@ -78,8 +78,8 @@
                         {% if product.is_sale_active and product.sale_price %}
                             <span class="price-current" 
                                   data-retail-price="{{ product.sale_price }}"
-                                  {% if product.price_3_qty %}data-price-3="{{ product.price_3_qty }}"{% endif %}
-                                  {% if product.price_5_qty %}data-price-5="{{ product.price_5_qty }}"{% endif %}>
+                                  {% if product.sale_price_3_qty %}data-price-3="{{ product.sale_price_3_qty }}"{% elif product.price_3_qty %}data-price-3="{{ product.price_3_qty }}"{% endif %}
+                                  {% if product.sale_price_5_qty %}data-price-5="{{ product.sale_price_5_qty }}"{% elif product.price_5_qty %}data-price-5="{{ product.price_5_qty }}"{% endif %}>
                                 {{ product.sale_price }} ₴
                             </span>
                             <span class="price-old">{{ product.retail_price }} ₴</span>
@@ -96,14 +96,18 @@
                 
                 <!-- Градація цін (тільки для незалогінених та адміністраторів) -->
                 {% if not user.is_authenticated or not user.is_wholesale or user.is_staff or user.is_superuser %}
-                    {% if product.price_3_qty or product.price_5_qty %}
+                    {% if product.sale_price_3_qty or product.sale_price_5_qty or product.price_3_qty or product.price_5_qty %}
                     <div class="price-tiers">
                         <h3>Вигідні ціни при покупці:</h3>
                         <ul>
-                            {% if product.price_3_qty %}
+                            {% if product.sale_price_3_qty %}
+                            <li>Від 3 шт - <span class="tier-price-sale">{{ product.sale_price_3_qty }} ₴</span> <span class="tier-price-old">{{ product.price_3_qty }} ₴</span></li>
+                            {% elif product.price_3_qty %}
                             <li>Від 3 шт - {{ product.price_3_qty }} ₴</li>
                             {% endif %}
-                            {% if product.price_5_qty %}
+                            {% if product.sale_price_5_qty %}
+                            <li>Від 5 шт - <span class="tier-price-sale">{{ product.sale_price_5_qty }} ₴</span> <span class="tier-price-old">{{ product.price_5_qty }} ₴</span></li>
+                            {% elif product.price_5_qty %}
                             <li>Від 5 шт - {{ product.price_5_qty }} ₴</li>
                             {% endif %}
                         </ul>

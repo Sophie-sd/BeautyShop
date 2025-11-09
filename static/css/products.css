@@ -130,6 +130,48 @@
     color: #666;
 }
 
+.price-tiers {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.price-tiers h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 12px 0;
+}
+
+.price-tiers ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.price-tiers li {
+    font-size: 0.95rem;
+    color: #666;
+    padding: 8px 0;
+}
+
+.tier-price-sale {
+    color: #e91e63;
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+
+.tier-price-old {
+    color: #999;
+    text-decoration: line-through;
+    font-size: 0.9rem;
+    margin-left: 8px;
+}
+
 .product-card__price-old {
     font-size: 0.9rem;
     color: #999;

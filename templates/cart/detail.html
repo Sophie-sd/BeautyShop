@@ -29,7 +29,21 @@
                                 <h3 class="item-name">{{ item.product.name }}</h3>
                                 {% if item.product.is_sale_active %}
                                     <div class="item-price-wrapper">
-                                        <p class="item-price-old">{{ item.product.retail_price }} ₴</p>
+                                        {% if user.is_authenticated and user.is_wholesale and not user.is_staff and not user.is_superuser %}
+                                            {% if item.product.wholesale_price %}
+                                                <p class="item-price-old">{{ item.product.wholesale_price }} ₴</p>
+                                            {% else %}
+                                                <p class="item-price-old">{{ item.product.retail_price }} ₴</p>
+                                            {% endif %}
+                                        {% else %}
+                                            {% if item.quantity >= 5 and item.product.price_5_qty %}
+                                                <p class="item-price-old">{{ item.product.price_5_qty }} ₴</p>
+                                            {% elif item.quantity >= 3 and item.product.price_3_qty %}
+                                                <p class="item-price-old">{{ item.product.price_3_qty }} ₴</p>
+                                            {% else %}
+                                                <p class="item-price-old">{{ item.product.retail_price }} ₴</p>
+                                            {% endif %}
+                                        {% endif %}
                                         <p class="item-price item-price-sale">{{ item.price }} ₴</p>
                                         <span class="item-discount-badge">
                                             {% if item.product.active_promotion_name %}
