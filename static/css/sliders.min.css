@@ -273,7 +273,14 @@
 .categories-slider-container,
 .products-slider-container {
     position: relative;
-    margin: 0 -15px;
+    margin: 0;
+}
+
+@media (min-width: 992px) {
+    .categories-slider-container,
+    .products-slider-container {
+        margin: 0 -15px;
+    }
 }
 
 .categories-slider,

@@ -469,7 +469,6 @@
     .auth-page main {
         -webkit-transform: none;
         transform: none;
-        overflow-x: visible;
         overflow-y: visible;
     }
     
