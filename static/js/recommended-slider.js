@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const slider = document.getElementById('recommendedSlider');
-    const prevBtn = document.querySelector('.slider-prev-btn');
-    const nextBtn = document.querySelector('.slider-next-btn');
+    const prevBtn = document.querySelector('.slider-prev-new');
+    const nextBtn = document.querySelector('.slider-next-new');
     
     if (!slider || !prevBtn || !nextBtn) return;
     

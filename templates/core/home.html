@@ -131,27 +131,27 @@
         
         {% if promotion_products %}
         <div class="promotions-slider-container">
-            <button class="promo-nav-btn promo-prev-btn" aria-label="Попередні товари">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
-            
             <div class="promotions-slider" id="promotionsSlider">
                 {% for product in promotion_products %}
                     {% include 'includes/product_card.html' %}
                 {% endfor %}
             </div>
-            
-            <button class="promo-nav-btn promo-next-btn" aria-label="Наступні товари">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
         </div>
         
-        <!-- Кнопка "Переглянути всі" -->
+        <!-- Навігація та кнопка "Переглянути всі" -->
         <div class="promotions-actions">
+            <div class="slider-nav-controls">
+                <button class="promo-nav-btn promo-prev-btn" aria-label="Попередні товари">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <button class="promo-nav-btn promo-next-btn" aria-label="Наступні товари">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
             <a href="{% url 'products:sale' %}" class="promo-view-all">
                 Переглянути всі
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -259,12 +259,6 @@
         </div>
         
         <div class="recommended-slider-container">
-            <button class="slider-nav-btn slider-prev-btn" aria-label="Попередні товари">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
-            
             <div class="recommended-slider" id="recommendedSlider">
                 {% for product in new_products %}
                     {% include 'includes/product_card.html' %}
@@ -274,9 +268,17 @@
                     </div>
                 {% endfor %}
             </div>
-            
-            <button class="slider-nav-btn slider-next-btn" aria-label="Наступні товари">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        </div>
+        
+        <!-- Навігація -->
+        <div class="slider-nav-controls">
+            <button class="promo-nav-btn promo-prev-btn slider-prev-new" aria-label="Попередні товари">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <button class="promo-nav-btn promo-next-btn slider-next-new" aria-label="Наступні товари">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </button>

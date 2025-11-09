@@ -48,16 +48,23 @@
     display: none;
 }
 
-/* Картки в слайдері промо */
+/* Картки в слайдері промо - desktop */
 .promotions-slider .product-card {
     flex: 0 0 200px;
     min-width: 200px;
     max-width: 200px;
 }
 
+/* Навігаційні елементи */
+.slider-nav-controls {
+    display: none;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
 
-/* Кнопки навігації */
-.promo-nav-btn {
+/* Кнопки навігації - desktop по боках */
+.promotions-section.desktop-only .promo-nav-btn {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
@@ -75,23 +82,52 @@
     color: #e91e63;
 }
 
-.promo-nav-btn:hover {
+.promotions-section.desktop-only .promo-nav-btn:hover {
     background: #e91e63;
     color: white;
     transform: translateY(-50%) scale(1.1);
 }
 
-.promo-prev-btn {
+.promotions-section.desktop-only .promo-nav-btn svg path {
+    stroke: currentColor;
+}
+
+.promotions-section.desktop-only .promo-prev-btn {
     left: 0;
 }
 
-.promo-next-btn {
+.promotions-section.desktop-only .promo-next-btn {
     right: 0;
+}
+
+/* Кнопки навігації - загальні стилі */
+.promo-nav-btn {
+    width: 40px;
+    height: 40px;
+    background: white;
+    border: 2px solid #e91e63;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #e91e63;
+}
+
+.promo-nav-btn:hover {
+    background: #e91e63;
+    color: white;
+    transform: scale(1.1);
 }
 
 .promo-nav-btn svg {
     width: 24px;
     height: 24px;
+}
+
+.promo-nav-btn svg path {
+    stroke: currentColor;
 }
 
 /* Сторінка акцій - сітка карток */
@@ -170,38 +206,56 @@
         display: none;
     }
     
-    .products-grid--sale {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
+    .promotions-slider-container {
+        padding: 0;
+    }
+    
+    .promotions-slider {
+        gap: 15px;
+        padding: 10px 15px 20px;
     }
     
     .promotions-slider .product-card {
-        flex: 0 0 180px;
-        min-width: 180px;
-        max-width: 180px;
+        flex: 0 0 calc(50% - 7.5px);
+        min-width: calc(50% - 7.5px);
+        max-width: calc(50% - 7.5px);
+    }
+    
+    .slider-nav-controls {
+        display: flex;
     }
     
     .promo-nav-btn {
-        width: 35px;
-        height: 35px;
+        width: 36px;
+        height: 36px;
     }
     
     .promo-nav-btn svg {
         width: 20px;
         height: 20px;
     }
+    
+    .products-grid--sale {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
 }
 
 @media (max-width: 480px) {
     .promotions-slider .product-card {
-        flex: 0 0 160px;
-        min-width: 160px;
-        max-width: 160px;
+        flex: 0 0 calc(50% - 7.5px);
+        min-width: calc(50% - 7.5px);
+        max-width: calc(50% - 7.5px);
     }
     
     .products-grid--sale {
         grid-template-columns: repeat(2, 1fr);
         gap: 8px;
+    }
+    
+    .promo-nav-btn {
+        width: 34px;
+        height: 34px;
     }
 }
 
