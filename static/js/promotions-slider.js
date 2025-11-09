@@ -12,52 +12,56 @@ function initPromotionsSlider(sliderId) {
     const slider = document.getElementById(sliderId);
     if (!slider) return;
     
-    const container = slider.closest('.promotions-slider-container');
+    const container = slider.closest('.promotions-section');
     const prevBtn = container.querySelector('.promo-prev-btn');
     const nextBtn = container.querySelector('.promo-next-btn');
-    const cards = slider.querySelectorAll('.promo-card');
     
-    if (cards.length === 0) return;
+    if (!prevBtn || !nextBtn) return;
     
-    // Функція для розрахунку ширини прокрутки
+    let currentScroll = 0;
+    
+    // Функція для розрахунку ширини прокрутки (2 картки)
     function getScrollAmount() {
+        const cards = slider.querySelectorAll('.product-card');
+        if (cards.length === 0) return 0;
+        
         const cardWidth = cards[0].offsetWidth;
-        const gap = 20; // gap між картками
-        return cardWidth + gap;
+        const gap = parseFloat(getComputedStyle(slider).gap) || 15;
+        return (cardWidth * 2) + gap;
     }
     
-    // Функція прокрутки
-    function scrollSlider(direction) {
-        const scrollAmount = getScrollAmount();
-        const currentScroll = slider.scrollLeft;
-        const targetScroll = direction === 'next' 
-            ? currentScroll + scrollAmount 
-            : currentScroll - scrollAmount;
-        
+    // Функція прокрутки вліво
+    function scrollLeft() {
+        currentScroll = Math.max(0, currentScroll - getScrollAmount());
         slider.scrollTo({
-            left: targetScroll,
+            left: currentScroll,
+            behavior: 'smooth'
+        });
+    }
+    
+    // Функція прокрутки вправо
+    function scrollRight() {
+        const maxScroll = slider.scrollWidth - slider.clientWidth;
+        currentScroll = Math.min(maxScroll, currentScroll + getScrollAmount());
+        slider.scrollTo({
+            left: currentScroll,
             behavior: 'smooth'
         });
     }
     
     // Обробники кнопок навігації
-    if (prevBtn) {
-        prevBtn.addEventListener('click', () => scrollSlider('prev'));
-    }
-    
-    if (nextBtn) {
-        nextBtn.addEventListener('click', () => scrollSlider('next'));
-    }
+    prevBtn.addEventListener('click', scrollLeft);
+    nextBtn.addEventListener('click', scrollRight);
     
     // Свайп на мобільних
     let startX = 0;
-    let scrollLeft = 0;
+    let startScrollLeft = 0;
     let isDown = false;
     
     slider.addEventListener('mousedown', (e) => {
         isDown = true;
         startX = e.pageX - slider.offsetLeft;
-        scrollLeft = slider.scrollLeft;
+        startScrollLeft = slider.scrollLeft;
         slider.style.cursor = 'grabbing';
     });
     
@@ -76,7 +80,7 @@ function initPromotionsSlider(sliderId) {
         e.preventDefault();
         const x = e.pageX - slider.offsetLeft;
         const walk = (x - startX) * 2;
-        slider.scrollLeft = scrollLeft - walk;
+        slider.scrollLeft = startScrollLeft - walk;
     });
     
     // Touch events для мобільних
@@ -98,33 +102,31 @@ function initPromotionsSlider(sliderId) {
     slider.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowLeft') {
             e.preventDefault();
-            scrollSlider('prev');
+            scrollLeft();
         } else if (e.key === 'ArrowRight') {
             e.preventDefault();
-            scrollSlider('next');
+            scrollRight();
         }
     });
     
-    // Оновлюємо видимість кнопок при прокрутці
-    function updateButtons() {
-        if (!prevBtn || !nextBtn) return;
+    // Оновлення currentScroll при ручній прокрутці
+    slider.addEventListener('scroll', () => {
+        currentScroll = slider.scrollLeft;
         
-        const isAtStart = slider.scrollLeft <= 0;
-        const isAtEnd = slider.scrollLeft >= slider.scrollWidth - slider.clientWidth - 1;
-        
-        prevBtn.style.opacity = isAtStart ? '0.5' : '1';
-        prevBtn.style.cursor = isAtStart ? 'not-allowed' : 'pointer';
-        
-        nextBtn.style.opacity = isAtEnd ? '0.5' : '1';
-        nextBtn.style.cursor = isAtEnd ? 'not-allowed' : 'pointer';
-    }
+        // Показуємо/приховуємо кнопки
+        prevBtn.style.opacity = currentScroll > 0 ? '1' : '0.5';
+        const maxScroll = slider.scrollWidth - slider.clientWidth;
+        nextBtn.style.opacity = currentScroll < maxScroll - 10 ? '1' : '0.5';
+    });
     
-    slider.addEventListener('scroll', updateButtons);
-    updateButtons();
+    // Ініціалізація стану кнопок
+    prevBtn.style.opacity = '0.5';
     
     // Оновлюємо при зміні розміру вікна
     window.addEventListener('resize', () => {
-        updateButtons();
+        const maxScroll = slider.scrollWidth - slider.clientWidth;
+        prevBtn.style.opacity = currentScroll > 0 ? '1' : '0.5';
+        nextBtn.style.opacity = currentScroll < maxScroll - 10 ? '1' : '0.5';
     });
 }
 
