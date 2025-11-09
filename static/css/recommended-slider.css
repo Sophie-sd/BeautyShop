@@ -19,7 +19,6 @@
     scroll-behavior: smooth;
     scrollbar-width: none;
     padding: 10px 0 20px;
-    align-items: stretch;
 }
 
 .recommended-slider::-webkit-scrollbar {
@@ -30,8 +29,8 @@
     flex: 0 0 200px;
     max-width: 200px;
     min-width: 200px;
-    height: auto;
-    min-height: 380px;
+    height: 340px;
+    max-height: 340px;
 }
 
 .new-products-section .promo-nav-btn {
@@ -86,7 +85,8 @@
         flex: 0 0 calc(50% - 7.5px);
         max-width: calc(50% - 7.5px);
         min-width: calc(50% - 7.5px);
-        min-height: 340px;
+        height: 280px;
+        max-height: 280px;
     }
     
     .new-products-section .section-subtitle {
@@ -116,7 +116,8 @@
         flex: 0 0 calc(50% - 7.5px);
         max-width: calc(50% - 7.5px);
         min-width: calc(50% - 7.5px);
-        min-height: 320px;
+        height: 280px;
+        max-height: 280px;
     }
     
     .new-products-section .promo-nav-btn {

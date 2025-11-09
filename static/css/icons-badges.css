@@ -134,7 +134,7 @@
   text-transform: uppercase;
   letter-spacing: 0.8px;
   box-shadow: var(--shadow-md);
-  border: 2px solid var(--color-white);
+  border: 0.5px solid var(--color-white);
   line-height: 1;
   white-space: nowrap;
 }
