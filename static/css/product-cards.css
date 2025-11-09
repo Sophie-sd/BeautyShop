@@ -13,10 +13,10 @@
   --card-gap: 8px;
   
   /* Бейджі */
-  --badge-padding: 4px 8px;
-  --badge-radius: 16px;
-  --badge-font-size: 10px;
-  --badge-offset: -2px;
+  --badge-padding: 8px 14px;
+  --badge-radius: 20px;
+  --badge-font-size: 12px;
+  --badge-offset: 12px;
   
   /* Кнопка обраного */
   --wishlist-size: 32px;
@@ -164,25 +164,29 @@
   left: var(--badge-offset);
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
+  gap: 6px;
   z-index: 15;
-  transform: translateX(-2px) translateY(-2px);
 }
 
 .product-badge,
 .badge,
 .product-sticker,
 .product-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: var(--badge-padding);
   border-radius: var(--badge-radius);
   font-size: var(--badge-font-size);
   font-weight: var(--font-weight-bold);
   text-transform: uppercase;
-  letter-spacing: 0.8px;
-  box-shadow: var(--shadow-md);
-  border: 2px solid var(--color-white);
-  line-height: 1;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: none;
+  line-height: 1.2;
   white-space: nowrap;
+  opacity: 0.95;
+  min-width: fit-content;
 }
 
 .product-label.sale,
@@ -359,7 +363,9 @@
     --card-gap: 6px;
     --wishlist-size: 30px;
     --wishlist-icon-size: 15px;
-    --badge-font-size: 9px;
+    --badge-font-size: 10px;
+    --badge-padding: 6px 10px;
+    --badge-offset: 10px;
   }
   
   .product-card__name {
@@ -388,8 +394,9 @@
     --wishlist-size: 28px;
     --wishlist-icon-size: 14px;
     --wishlist-offset: 6px;
-    --badge-font-size: 8px;
-    --badge-offset: -1px;
+    --badge-font-size: 9px;
+    --badge-padding: 5px 8px;
+    --badge-offset: 8px;
   }
   
   .product-card__name {
@@ -411,13 +418,6 @@
   .btn-add-cart {
     padding: 6px;
     font-size: 11px;
-  }
-  
-  .product-badge,
-  .badge,
-  .product-sticker {
-    padding: 2px 6px;
-    font-size: var(--badge-font-size);
   }
 }
 

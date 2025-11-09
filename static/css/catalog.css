@@ -730,41 +730,44 @@
 /* Бейджі */
 .product-card__badges {
   position: absolute;
-  top: calc(-1 * var(--space-xs));
-  left: calc(-1 * var(--space-xs));
+  top: 12px;
+  left: 12px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
+  gap: 6px;
   z-index: 15;
-  transform: translateX(-2px) translateY(-2px);
 }
 
 .product-badge {
-  display: inline-block;
-  padding: 6px 10px; /* Збільшено для кращої видимості */
-  border-radius: var(--radius-lg);
-  font-size: 11px; /* Збільшено розмір шрифту */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 12px;
   font-weight: var(--font-weight-bold);
   text-transform: uppercase;
-  letter-spacing: 0.8px;
-  box-shadow: var(--shadow-lg); /* Збільшено тінь */
-  border: 2px solid var(--color-white);
-  line-height: 1;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: none;
+  line-height: 1.2;
   white-space: nowrap;
+  opacity: 0.95;
+  min-width: fit-content;
 }
 
 .product-badge--sale {
-  background: var(--color-danger);
+  background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
   color: var(--color-white);
 }
 
 .product-badge--new {
-  background: var(--color-success);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: var(--color-white);
 }
 
 .product-badge--hit {
-  background: var(--color-secondary);
+  background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
   color: var(--color-white);
 }
 
