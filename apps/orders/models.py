@@ -35,6 +35,11 @@ class Order(models.Model):
         ('pickup', 'Самовивіз'),
     ]
     
+    DELIVERY_TYPE_CHOICES = [
+        ('warehouse', 'Відділення'),
+        ('postomat', 'Поштомат'),
+    ]
+    
     # Основна інформація
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
@@ -58,6 +63,11 @@ class Order(models.Model):
     delivery_city = models.CharField('Місто доставки', max_length=100)
     delivery_address = models.TextField('Адреса доставки')
     delivery_cost = models.DecimalField('Вартість доставки', max_digits=10, decimal_places=2, default=0)
+    
+    # Дані Нової Пошти
+    np_city_ref = models.CharField('Ref міста НП', max_length=100, blank=True, default='')
+    np_warehouse_ref = models.CharField('Ref відділення НП', max_length=100, blank=True, default='')
+    delivery_type = models.CharField('Тип доставки', max_length=20, choices=DELIVERY_TYPE_CHOICES, blank=True, default='')
     
     # Оплата
     payment_method = models.CharField('Спосіб оплати', max_length=20, choices=PAYMENT_METHOD_CHOICES)

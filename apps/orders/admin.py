@@ -46,7 +46,8 @@ class OrderAdmin(admin.ModelAdmin):
     ]
     readonly_fields = [
         'order_number', 'created_at', 'updated_at',
-        'get_total_cost', 'get_customer_info', 'get_items_list'
+        'get_total_cost', 'get_customer_info', 'get_items_list',
+        'np_city_ref', 'np_warehouse_ref'
     ]
     date_hierarchy = 'created_at'
     ordering = ['-created_at']
@@ -72,7 +73,8 @@ class OrderAdmin(admin.ModelAdmin):
         ('🚚 Доставка', {
             'fields': (
                 'delivery_method', 'delivery_city', 
-                'delivery_address', 'delivery_cost'
+                'delivery_address', 'delivery_cost',
+                'delivery_type', 'np_city_ref', 'np_warehouse_ref'
             )
         }),
         ('💳 Оплата', {

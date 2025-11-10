@@ -12,9 +12,15 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-me-in-production')
 
 # ALLOWED_HOSTS для Render
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS.append('.onrender.com')
+ALLOWED_HOSTS.append('beautyshop-django.onrender.com')
 
 # CSRF trusted origins для Render
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'https://localhost').split(',')
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'https://beautyshop-django.onrender.com').split(',')
+if 'https://beautyshop-django.onrender.com' not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append('https://beautyshop-django.onrender.com')
+if 'https://*.onrender.com' not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append('https://*.onrender.com')
 
 # Database для продакшну (оптимізовано для обмеженої пам'яті)
 if os.getenv('DATABASE_URL'):
@@ -204,9 +210,6 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
 # Додаткові налаштування для Render
 SECURE_REFERRER_POLICY = 'same-origin'
 SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
-
-# Вимкнути перевірку ALLOWED_HOSTS для healthcheck
-ALLOWED_HOSTS.append('.onrender.com')
 
 # Налаштування для Django 4.2+ 
 USE_TZ = True

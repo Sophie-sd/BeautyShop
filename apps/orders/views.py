@@ -1,13 +1,23 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
 from apps.cart.cart import Cart
 from decimal import Decimal
-from .models import Newsletter
+from .models import Newsletter, Order, OrderItem
+from .novaposhta import NovaPoshtaAPI
+import hashlib
+import base64
+import json
 
 
 MINIMUM_WHOLESALE_ORDER = Decimal('5000.00')
+
+
+LIQPAY_PUBLIC_KEY = 'sandbox_i69925457912'
+LIQPAY_PRIVATE_KEY = 'sandbox_d7fYUF83CUeVdBqHyEeYbjNM65B77RcjnWAIVkUm'
 
 
 def order_create(request):
@@ -17,7 +27,6 @@ def order_create(request):
         messages.error(request, 'Ваш кошик порожній')
         return redirect('cart:detail')
     
-    # Перевірка мінімальної суми для авторизованих користувачів (оптових клієнтів, НЕ адміністраторів)
     total_price = cart.get_total_price()
     is_wholesale_user = (
         request.user.is_authenticated and 
@@ -35,7 +44,6 @@ def order_create(request):
         return redirect('cart:detail')
     
     if request.method == 'POST':
-        # Повторна перевірка при POST запиті
         if is_wholesale_user and total_price < MINIMUM_WHOLESALE_ORDER:
             messages.error(
                 request, 
@@ -43,18 +51,201 @@ def order_create(request):
             )
             return redirect('cart:detail')
         
-        # Тут буде логіка створення замовлення
-        # Поки що просто очищуємо кошик
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        middle_name = request.POST.get('middle_name', '').strip()
+        email = request.POST.get('email', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        
+        delivery_method = request.POST.get('delivery_method', '')
+        delivery_city = request.POST.get('delivery_city', '').strip()
+        delivery_address = request.POST.get('delivery_address', '').strip()
+        
+        np_city_ref = request.POST.get('np_city_ref', '').strip()
+        np_warehouse_ref = request.POST.get('np_warehouse_ref', '').strip()
+        delivery_type = request.POST.get('delivery_type', '').strip()
+        
+        payment_method = request.POST.get('payment_method', '')
+        notes = request.POST.get('notes', '').strip()
+        
+        if not all([first_name, last_name, email, phone, delivery_method, delivery_city, payment_method]):
+            messages.error(request, "Будь ласка, заповніть всі обов'язкові поля")
+            return redirect('orders:create')
+        
+        order = Order.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            first_name=first_name,
+            last_name=last_name,
+            middle_name=middle_name,
+            email=email,
+            phone=phone,
+            delivery_method=delivery_method,
+            delivery_city=delivery_city,
+            delivery_address=delivery_address,
+            np_city_ref=np_city_ref,
+            np_warehouse_ref=np_warehouse_ref,
+            delivery_type=delivery_type,
+            payment_method=payment_method,
+            subtotal=total_price,
+            discount=Decimal('0'),
+            total=total_price,
+            notes=notes
+        )
+        
+        for item in cart:
+            OrderItem.objects.create(
+                order=order,
+                product=item['product'],
+                quantity=item['quantity'],
+                price=item['price']
+            )
+        
+        order.order_number = f"BS{order.id:06d}"
+        order.save(update_fields=['order_number'])
+        
+        if payment_method == 'liqpay':
+            request.session['pending_order_id'] = order.id
+            return redirect('orders:liqpay_payment', order_id=order.id)
+        
         cart.clear()
-        messages.success(request, 'Ваше замовлення прийнято!')
+        request.session['completed_order_id'] = order.id
         return redirect('orders:success')
     
-    return render(request, 'orders/create.html', {'cart': cart})
+    return render(request, 'orders/create.html', {
+        'cart': cart,
+        'user': request.user
+    })
 
 
 def order_success(request):
     """Сторінка успішного замовлення"""
-    return render(request, 'orders/success.html')
+    order_id = request.session.pop('completed_order_id', None)
+    order = None
+    if order_id:
+        try:
+            order = Order.objects.get(id=order_id)
+        except Order.DoesNotExist:
+            pass
+    
+    return render(request, 'orders/success.html', {'order': order})
+
+
+@require_GET
+def np_search_cities(request):
+    """API пошук міст Нової Пошти"""
+    query = request.GET.get('query', '').strip()
+    
+    if not query or len(query) < 2:
+        return JsonResponse({'success': False, 'cities': []})
+    
+    api = NovaPoshtaAPI()
+    cities = api.search_cities(query)
+    
+    return JsonResponse({
+        'success': True,
+        'cities': cities
+    })
+
+
+@require_GET
+def np_get_warehouses(request):
+    """API отримання відділень Нової Пошти"""
+    city_ref = request.GET.get('city_ref', '').strip()
+    warehouse_type = request.GET.get('type', '').strip()
+    
+    if not city_ref:
+        return JsonResponse({'success': False, 'warehouses': []})
+    
+    api = NovaPoshtaAPI()
+    warehouses = api.get_warehouses(city_ref, warehouse_type)
+    
+    return JsonResponse({
+        'success': True,
+        'warehouses': warehouses
+    })
+
+
+def liqpay_payment(request, order_id):
+    """Сторінка оплати через LiqPay"""
+    try:
+        order = Order.objects.get(id=order_id)
+    except Order.DoesNotExist:
+        messages.error(request, 'Замовлення не знайдено')
+        return redirect('core:home')
+    
+    if order.is_paid:
+        messages.info(request, 'Це замовлення вже оплачено')
+        return redirect('orders:success')
+    
+    data_dict = {
+        'version': 3,
+        'public_key': LIQPAY_PUBLIC_KEY,
+        'action': 'pay',
+        'amount': str(order.total),
+        'currency': 'UAH',
+        'description': f'Оплата замовлення #{order.order_number}',
+        'order_id': str(order.id),
+        'result_url': request.build_absolute_uri('/orders/liqpay-callback/'),
+        'server_url': request.build_absolute_uri('/orders/liqpay-callback/')
+    }
+    
+    data_json = json.dumps(data_dict)
+    data = base64.b64encode(data_json.encode('utf-8')).decode('utf-8')
+    
+    sign_string = LIQPAY_PRIVATE_KEY + data + LIQPAY_PRIVATE_KEY
+    signature = base64.b64encode(hashlib.sha1(sign_string.encode('utf-8')).digest()).decode('utf-8')
+    
+    return render(request, 'orders/liqpay_payment.html', {
+        'order': order,
+        'data': data,
+        'signature': signature,
+        'public_key': LIQPAY_PUBLIC_KEY
+    })
+
+
+@csrf_exempt
+@require_POST
+def liqpay_callback(request):
+    """Callback для обробки результату оплати LiqPay"""
+    data = request.POST.get('data')
+    signature = request.POST.get('signature')
+    
+    if not data or not signature:
+        return JsonResponse({'success': False})
+    
+    sign_string = LIQPAY_PRIVATE_KEY + data + LIQPAY_PRIVATE_KEY
+    expected_signature = base64.b64encode(hashlib.sha1(sign_string.encode('utf-8')).digest()).decode('utf-8')
+    
+    if signature != expected_signature:
+        return JsonResponse({'success': False, 'error': 'Invalid signature'})
+    
+    try:
+        data_decoded = base64.b64decode(data).decode('utf-8')
+        payment_data = json.loads(data_decoded)
+        
+        order_id = payment_data.get('order_id')
+        status = payment_data.get('status')
+        
+        order = Order.objects.get(id=order_id)
+        
+        if status == 'success':
+            order.is_paid = True
+            order.payment_date = timezone.now()
+            order.status = 'confirmed'
+            order.save(update_fields=['is_paid', 'payment_date', 'status'])
+            
+            cart = Cart(request)
+            cart.clear()
+            
+            request.session['completed_order_id'] = order.id
+            
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'success': False, 'status': status})
+            
+    except Exception as e:
+        print(f"LiqPay callback error: {e}")
+        return JsonResponse({'success': False, 'error': str(e)})
 
 
 @require_POST

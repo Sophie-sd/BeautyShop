@@ -7,6 +7,66 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/cart.css' %}">
+<link rel="stylesheet" href="{% static 'css/order-form.css' %}">
+<style>
+    .autocomplete-container {
+        position: relative;
+    }
+    .autocomplete-results,
+    .warehouse-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid var(--border-color, #ddd);
+        border-top: none;
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 1000;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .autocomplete-item,
+    .warehouse-item {
+        padding: 12px;
+        cursor: pointer;
+        border-bottom: 1px solid var(--border-color, #f0f0f0);
+        transition: background 0.2s;
+    }
+    .autocomplete-item:hover,
+    .warehouse-item:hover {
+        background: var(--bg-hover, #f5f5f5);
+    }
+    .warehouse-item {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+    .warehouse-item.selected {
+        background: var(--primary-light, #e3f2fd);
+        border-left: 3px solid var(--primary-color, #2196F3);
+    }
+    .warehouse-number {
+        font-weight: 600;
+        color: var(--primary-color, #2196F3);
+        min-width: 50px;
+    }
+    .warehouse-address {
+        flex: 1;
+        font-size: 14px;
+    }
+    .loading,
+    .no-results,
+    .error {
+        padding: 12px;
+        text-align: center;
+        color: var(--text-muted, #666);
+    }
+    .delivery-type-wrapper,
+    .delivery-address-wrapper {
+        display: none;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -34,6 +94,12 @@
                         </div>
                         
                         <div class="form-group">
+                            <label for="middle_name">По-батькові</label>
+                            <input type="text" id="middle_name" name="middle_name" class="form-control" 
+                                   value="{{ user.middle_name|default:'' }}">
+                        </div>
+                        
+                        <div class="form-group">
                             <label for="phone">Телефон *</label>
                             <input type="tel" id="phone" name="phone" class="form-control" 
                                    value="{{ user.phone|default:'' }}" required 
@@ -54,20 +120,33 @@
                             <select id="delivery_method" name="delivery_method" class="form-control" required>
                                 <option value="">Оберіть спосіб доставки</option>
                                 <option value="nova_poshta">Нова Пошта</option>
-                                <option value="ukr_poshta">Укрпошта</option>
+                                <option value="ukrposhta">Укрпошта</option>
                                 <option value="courier">Кур'єр</option>
                                 <option value="pickup">Самовивіз</option>
                             </select>
                         </div>
                         
-                        <div class="form-group">
-                            <label for="city">Місто *</label>
-                            <input type="text" id="city" name="city" class="form-control" required>
+                        <div class="form-group autocomplete-container">
+                            <label for="delivery_city">Місто *</label>
+                            <input type="text" id="delivery_city" name="delivery_city" class="form-control" autocomplete="off">
+                            <div id="city_results" class="autocomplete-results"></div>
+                            <input type="hidden" id="np_city_ref" name="np_city_ref">
                         </div>
                         
-                        <div class="form-group delivery-address">
-                            <label for="address">Адреса/Відділення *</label>
-                            <input type="text" id="address" name="address" class="form-control" required>
+                        <div class="form-group delivery-type-wrapper">
+                            <label for="delivery_type">Тип доставки *</label>
+                            <select id="delivery_type" name="delivery_type" class="form-control">
+                                <option value="">Оберіть тип доставки</option>
+                                <option value="warehouse">Відділення</option>
+                                <option value="postomat">Поштомат</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group delivery-address-wrapper">
+                            <label for="delivery_address">Адреса/Відділення *</label>
+                            <input type="text" id="delivery_address" name="delivery_address" class="form-control">
+                            <div id="warehouse_results" class="warehouse-results"></div>
+                            <input type="hidden" id="np_warehouse_ref" name="np_warehouse_ref">
                         </div>
                     </div>
                     
@@ -79,7 +158,7 @@
                                 <span>Оплата при отриманні</span>
                             </label>
                             <label class="payment-method">
-                                <input type="radio" name="payment_method" value="online">
+                                <input type="radio" name="payment_method" value="liqpay">
                                 <span>Онлайн оплата (LiqPay)</span>
                             </label>
                         </div>
@@ -88,7 +167,7 @@
                     <div class="form-section">
                         <h3>Коментар до замовлення</h3>
                         <div class="form-group">
-                            <textarea id="comment" name="comment" class="form-control" rows="4" 
+                            <textarea id="notes" name="notes" class="form-control" rows="4" 
                                       placeholder="Додайте коментар (необов'язково)"></textarea>
                         </div>
                     </div>
@@ -149,3 +228,6 @@
 </section>
 {% endblock %}
 
+{% block extra_js %}
+<script src="{% static 'js/order-form.js' %}"></script>
+{% endblock %}
