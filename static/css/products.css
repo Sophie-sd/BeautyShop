@@ -321,6 +321,25 @@
     transform: scale(0.95);
 }
 
+.btn-wishlist.animate-heart {
+    animation: heartBeat 0.6s ease;
+}
+
+@keyframes heartBeat {
+    0%, 100% {
+        transform: scale(1);
+    }
+    25% {
+        transform: scale(1.3);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    75% {
+        transform: scale(1.2);
+    }
+}
+
 .product-stock {
     font-size: 0.95rem;
     margin: 15px 0;
@@ -639,6 +658,70 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+}
+
+.notification {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    z-index: 1050;
+    min-width: 300px;
+    max-width: 400px;
+    padding: 16px 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    transform: translateX(400px);
+    transition: all 0.3s ease;
+}
+
+.notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.notification-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.notification-success {
+    border-left: 4px solid #27ae60;
+}
+
+.notification-success .notification-icon {
+    color: #27ae60;
+}
+
+.notification-error {
+    border-left: 4px solid #e74c3c;
+}
+
+.notification-error .notification-icon {
+    color: #e74c3c;
+}
+
+.notification-content span {
+    font-size: 0.95rem;
+    color: #333;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .notification {
+        left: 10px;
+        right: 10px;
+        min-width: auto;
+        top: 80px;
     }
 }
 

@@ -65,25 +65,23 @@ class WishlistManager {
     }
 
     updateButtonIcon(button, isActive) {
-        // Для різних типів кнопок різна логіка оновлення іконки
         const iconElement = button.querySelector('svg, .icon-heart, .product-card__wishlist-icon');
         
         if (button.classList.contains('product-card__wishlist')) {
-            // Для кнопок в product-card використовуємо text content
             const iconSpan = button.querySelector('.product-card__wishlist-icon');
             if (iconSpan) {
                 iconSpan.textContent = isActive ? '♥' : '♡';
             }
         } else if (iconElement && iconElement.tagName === 'svg') {
-            // Для SVG іконок
             if (isActive) {
                 iconElement.innerHTML = '<path d="M20.84 4.61C20.3292 4.099 19.7228 3.69364 19.0554 3.41708C18.3879 3.14052 17.6725 2.99817 16.95 2.99817C16.2275 2.99817 15.5121 3.14052 14.8446 3.41708C14.1772 3.69364 13.5708 4.099 13.06 4.61L12 5.67L10.94 4.61C9.9083 3.57831 8.50903 2.99871 7.05 2.99871C5.59096 2.99871 4.19169 3.57831 3.16 4.61C2.1283 5.64169 1.54871 7.04097 1.54871 8.5C1.54871 9.95903 2.1283 11.3583 3.16 12.39L4.22 13.45L12 21.23L19.78 13.45L20.84 12.39C21.351 11.8792 21.7564 11.2728 22.0329 10.6054C22.3095 9.93789 22.4518 9.22248 22.4518 8.5C22.4518 7.77752 22.3095 7.06211 22.0329 6.39464C21.7564 5.72718 21.351 5.12084 20.84 4.61Z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
             } else {
                 iconElement.innerHTML = '<path d="M20.84 4.61C20.3292 4.099 19.7228 3.69364 19.0554 3.41708C18.3879 3.14052 17.6725 2.99817 16.95 2.99817C16.2275 2.99817 15.5121 3.14052 14.8446 3.41708C14.1772 3.69364 13.5708 4.099 13.06 4.61L12 5.67L10.94 4.61C9.9083 3.57831 8.50903 2.99871 7.05 2.99871C5.59096 2.99871 4.19169 3.57831 3.16 4.61C2.1283 5.64169 1.54871 7.04097 1.54871 8.5C1.54871 9.95903 2.1283 11.3583 3.16 12.39L4.22 13.45L12 21.23L19.78 13.45L20.84 12.39C21.351 11.8792 21.7564 11.2728 22.0329 10.6054C22.3095 9.93789 22.4518 9.22248 22.4518 8.5C22.4518 7.77752 22.3095 7.06211 22.0329 6.39464C21.7564 5.72718 21.351 5.12084 20.84 4.61Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
             }
         } else if (iconElement && iconElement.classList.contains('icon-heart')) {
-            // Для text-based іконок
             iconElement.textContent = isActive ? '♥' : '♡';
+        } else if (button.classList.contains('btn-wishlist')) {
+            button.textContent = isActive ? '♥' : '♡';
         }
     }
 
@@ -129,8 +127,14 @@ class WishlistManager {
 
     async toggleWishlist(button) {
         const productId = button.dataset.productId;
-        const isInWishlist = button.classList.contains('active');
         
+        if (!productId) {
+            console.error('Product ID not found');
+            this.showNotification('Помилка: ID товару не знайдено', 'error');
+            return;
+        }
+        
+        const isInWishlist = button.classList.contains('active');
         button.disabled = true;
 
         try {
@@ -142,30 +146,26 @@ class WishlistManager {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': this.getCookie('csrftoken'),
-                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
                 },
             });
 
-            if (!response.ok) throw new Error('Network response was not ok');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
 
             const data = await response.json();
 
             if (data.success) {
-                // Оновлюємо стан кнопки
                 button.classList.toggle('active');
-                
-                // Оновлюємо іконку за допомогою нового методу
                 this.updateButtonIcon(button, button.classList.contains('active'));
-
-                // Оновлюємо лічильники
                 this.updateWishlistBadges(data.count);
-
-                // Показуємо повідомлення
                 this.showNotification(data.message);
 
-                // Анімація
                 button.classList.add('animate-heart');
                 setTimeout(() => button.classList.remove('animate-heart'), 600);
+            } else {
+                throw new Error(data.message || 'Помилка сервера');
             }
         } catch (error) {
             console.error('Wishlist error:', error);

@@ -299,17 +299,17 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert(`${productName} додано в кошик (${quantity} шт)!`);
+                    showNotification(`${productName} додано в кошик (${quantity} шт)`, 'success');
                     if (data.cart && data.cart.item_count) {
                         updateCartCount(data.cart.item_count);
                     }
                 } else {
-                    alert(data.message || 'Помилка додавання товару');
+                    showNotification(data.message || 'Помилка додавання товару', 'error');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Помилка додавання товару в кошик');
+                showNotification('Помилка додавання товару в кошик', 'error');
             });
         });
     }
@@ -369,6 +369,30 @@ document.addEventListener('DOMContentLoaded', function() {
             quantityInput.addEventListener('change', updatePrice);
             quantityInput.addEventListener('input', updatePrice);
         }
+    }
+    
+    // Система повідомлень
+    function showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <svg class="notification-icon" viewBox="0 0 24 24" fill="none">
+                    ${type === 'success' 
+                        ? '<path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+                        : '<path d="M12 8V12M12 16H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+                    }
+                </svg>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        setTimeout(() => notification.classList.add('show'), 10);
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
     }
 });
 </script>
