@@ -32,6 +32,40 @@
     gap: 20px;
 }
 
+@media (max-width: 768px) {
+    .similar-products {
+        margin: 40px 0;
+    }
+    
+    .similar-products .section-title {
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+    }
+    
+    .similar-products .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .similar-products .product-card {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .similar-products {
+        margin: 30px 0;
+    }
+    
+    .similar-products .products-grid {
+        gap: 10px;
+    }
+    
+    .similar-products .product-card {
+        max-width: 100%;
+    }
+}
+
 .similar-product .product-link {
     text-decoration: none;
     color: inherit;
