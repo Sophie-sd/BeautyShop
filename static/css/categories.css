@@ -5,9 +5,7 @@
     grid-template-columns: repeat(5, 1fr);
     gap: 15px;
     margin-top: 30px;
-    max-width: 1200px;
-    margin-left: auto;
-    margin-right: auto;
+    width: 100%;
     padding: 0;
 }
 
@@ -19,6 +17,8 @@
     box-shadow: 0 3px 12px rgba(0,0,0,0.08);
     transition: all 0.3s ease;
     aspect-ratio: 1;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .category-card:hover {
@@ -175,11 +175,13 @@
         gap: 12px;
         margin-top: 20px;
         padding: 0;
+        justify-items: stretch;
     }
     
     .category-card {
         aspect-ratio: 1;
         min-height: 120px;
+        width: 100%;
     }
     
     .category-content {
@@ -205,11 +207,13 @@
         gap: 12px;
         margin-top: 15px;
         padding: 0;
+        justify-items: stretch;
     }
     
     .category-card {
         aspect-ratio: 1;
         min-height: 140px;
+        width: 100%;
     }
     
     .category-content {
@@ -226,10 +230,12 @@
     .categories-grid {
         gap: 10px;
         padding: 0;
+        justify-items: stretch;
     }
     
     .category-card {
         min-height: 120px;
+        width: 100%;
     }
     
     .category-content {
