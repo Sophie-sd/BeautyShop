@@ -41,12 +41,13 @@
   border: 1px solid var(--card-border);
   border-radius: var(--card-border-radius);
   overflow: hidden;
-  transition: all var(--transition-normal);
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal), border-color var(--transition-normal);
   height: 100%;
   max-width: var(--card-max-width);
   width: 100%;
   position: relative;
   box-shadow: var(--card-shadow);
+  opacity: 1;
 }
 
 .product-card:hover {
@@ -77,7 +78,7 @@
 
 .product-card:hover .product-card__image,
 .product-card:hover .product-image img {
-  transform: scale(1.03);
+  transform: scale(1.05);
 }
 
 .product-card__placeholder,
@@ -497,10 +498,5 @@
 
 .loading-skeleton .product-card {
   background: var(--color-gray-100);
-  animation: skeleton-pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes skeleton-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  opacity: 1;
 }
