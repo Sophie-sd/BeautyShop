@@ -95,12 +95,8 @@ class CategoryView(ListView):
         context = super().get_context_data(**kwargs)
         context['category'] = self.category
         
-        # Підкатегорії для фільтрів (тільки з товарами)
-        subcategories = self.category.children.filter(
-            is_active=True,
-            product__is_active=True
-        ).distinct()
-        context['subcategories'] = subcategories
+        # Підкатегорії для фільтрів
+        context['subcategories'] = self.category.children.filter(is_active=True)
         
         # Отримуємо конфігурацію фільтрів для категорії
         try:
