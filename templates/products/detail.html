@@ -143,7 +143,12 @@
                 
                 <!-- Категорія -->
                 <div class="product-category-link">
-                    <a href="{{ product.category.get_absolute_url }}">← Повернутися до категорії "{{ product.category.name }}"</a>
+                    <a href="{{ product.category.get_absolute_url }}" class="btn-back-category">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 12H5M12 19l-7-7 7-7"/>
+                        </svg>
+                        <span>{{ product.category.name }}</span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -151,8 +156,8 @@
         <!-- Вкладки з описом та характеристиками -->
         <div class="product-tabs">
             <div class="product-tabs-nav">
-                <button class="product-tab-btn active" data-tab="description">Опис</button>
-                <button class="product-tab-btn" data-tab="characteristics">Характеристики</button>
+                <button type="button" class="product-tab-btn active" data-tab="description">Опис</button>
+                <button type="button" class="product-tab-btn" data-tab="characteristics">Характеристики</button>
             </div>
             
             <div class="product-tabs-content">
@@ -205,38 +210,49 @@ document.addEventListener('DOMContentLoaded', function() {
     const tabBtns = document.querySelectorAll('.product-tab-btn');
     const tabPanels = document.querySelectorAll('.product-tab-panel');
     
-    tabBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const targetTab = this.dataset.tab;
-            
-            // Знімаємо active з усіх кнопок та панелей
-            tabBtns.forEach(b => b.classList.remove('active'));
-            tabPanels.forEach(p => p.classList.remove('active'));
-            
-            // Додаємо active до поточної кнопки та відповідної панелі
-            this.classList.add('active');
-            const targetPanel = document.querySelector(`[data-panel="${targetTab}"]`);
-            if (targetPanel) {
-                targetPanel.classList.add('active');
-            }
+    if (tabBtns.length > 0 && tabPanels.length > 0) {
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const targetTab = this.dataset.tab;
+                
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabPanels.forEach(p => p.classList.remove('active'));
+                
+                this.classList.add('active');
+                const targetPanel = document.querySelector(`[data-panel="${targetTab}"]`);
+                if (targetPanel) {
+                    targetPanel.classList.add('active');
+                }
+            });
         });
-    });
+    }
     
     // Перемикання зображень
     const thumbnails = document.querySelectorAll('.thumbnail');
     const currentImage = document.getElementById('currentImage');
     
-    thumbnails.forEach(thumbnail => {
-        thumbnail.addEventListener('click', function() {
-            const imageUrl = this.dataset.image;
-            if (currentImage) {
-                currentImage.src = imageUrl;
-            }
-            
-            thumbnails.forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
+    if (thumbnails.length > 0 && currentImage) {
+        thumbnails.forEach(thumbnail => {
+            thumbnail.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const imageUrl = this.dataset.image;
+                
+                if (imageUrl) {
+                    currentImage.src = imageUrl;
+                    const thumbImg = this.querySelector('img');
+                    if (thumbImg) {
+                        currentImage.alt = thumbImg.alt || '';
+                    }
+                }
+                
+                thumbnails.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
         });
-    });
+    }
     
     // Управління кількістю та кошиком
     const quantityInput = document.getElementById('productQuantity');
