@@ -141,7 +141,8 @@ class WishlistManager {
             return;
         }
         
-        const isInWishlist = button.classList.contains('active');
+        const isInWishlist = button.classList.contains('active') || button.classList.contains('product-card__wishlist--active');
+        const isWishlistPage = !!button.closest('.wishlist-page');
         button.disabled = true;
 
         try {
@@ -170,13 +171,32 @@ class WishlistManager {
             console.log('Response data:', data);
 
             if (data.success) {
-                button.classList.toggle('active');
-                this.updateButtonIcon(button, button.classList.contains('active'));
+                if (isWishlistPage && isInWishlist) {
+                    const productCard = button.closest('.product-card');
+                    if (productCard) {
+                        productCard.style.opacity = '0';
+                        productCard.style.transform = 'scale(0.9)';
+                        
+                        setTimeout(() => {
+                            productCard.remove();
+                            
+                            const remainingCards = document.querySelectorAll('.wishlist-page .product-card');
+                            if (remainingCards.length === 0) {
+                                location.reload();
+                            }
+                        }, 300);
+                    }
+                } else {
+                    button.classList.toggle('active');
+                    button.classList.toggle('product-card__wishlist--active');
+                    this.updateButtonIcon(button, button.classList.contains('active') || button.classList.contains('product-card__wishlist--active'));
+
+                    button.classList.add('animate-heart');
+                    setTimeout(() => button.classList.remove('animate-heart'), 600);
+                }
+                
                 this.updateWishlistBadges(data.count);
                 this.showNotification(data.message);
-
-                button.classList.add('animate-heart');
-                setTimeout(() => button.classList.remove('animate-heart'), 600);
             } else {
                 throw new Error(data.message || 'Помилка сервера');
             }

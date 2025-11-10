@@ -672,6 +672,10 @@
   grid-template-columns: repeat(4, 1fr);
 }
 
+.products-grid--cols-5 {
+  grid-template-columns: repeat(5, 1fr);
+}
+
 /* ============================================ */
 /*              КАРТКА ТОВАРУ                  */
 /* ============================================ */
@@ -1344,11 +1348,19 @@
   .products-grid {
     grid-template-columns: repeat(4, 1fr);
   }
+  
+  .products-grid--cols-5 {
+    grid-template-columns: repeat(5, 1fr);
+  }
 }
 
 /* Планшети 768-1199px */
 @media (min-width: 768px) and (max-width: 1199px) {
   .products-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .products-grid--cols-5 {
     grid-template-columns: repeat(3, 1fr);
   }
   
@@ -1371,6 +1383,10 @@
 /* Малі планшети 600-767px */
 @media (min-width: 600px) and (max-width: 767px) {
   .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .products-grid--cols-5 {
     grid-template-columns: repeat(2, 1fr);
   }
   
@@ -1479,6 +1495,10 @@
     gap: 12px;
     padding: 0;
     justify-items: stretch;
+  }
+  
+  .products-grid--cols-5 {
+    grid-template-columns: repeat(2, 1fr);
   }
   
   .product-card {

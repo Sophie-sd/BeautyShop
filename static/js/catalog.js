@@ -20,7 +20,6 @@ class CatalogManager {
         this.bindEvents();
         this.loadInitialData();
         this.initMobileFilters();
-        this.initWishlist();
         this.initPagination();
     }
     
@@ -546,74 +545,6 @@ class CatalogManager {
         });
     }
     
-    // Список бажань
-    initWishlist() {
-        const wishlistBtns = document.querySelectorAll(
-            '.product-card__wishlist, .btn-wishlist, .wishlist-btn, .btn-toggle-wishlist, .wishlist-toggle'
-        );
-        
-        wishlistBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const productId = btn.dataset.productId;
-                const isActive = btn.classList.contains('product-card__wishlist--active') || 
-                               btn.classList.contains('active');
-                
-                this.toggleWishlist(btn, productId, isActive);
-            });
-        });
-    }
-    
-    async toggleWishlist(btn, productId, isActive) {
-        try {
-            // Анімація
-            btn.style.transform = 'scale(1.3)';
-            setTimeout(() => {
-                btn.style.transform = 'scale(1)';
-            }, 200);
-            
-            const url = isActive ? `/wishlist/remove/${productId}/` : `/wishlist/add/${productId}/`;
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': this.getCookie('csrftoken')
-                }
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                // Оновлюємо стан кнопки для різних типів
-                if (btn.classList.contains('product-card__wishlist')) {
-                    btn.classList.toggle('product-card__wishlist--active');
-                    const icon = btn.querySelector('.product-card__wishlist-icon');
-                    if (icon) {
-                        icon.textContent = isActive ? '♡' : '♥';
-                    }
-                } else {
-                    btn.classList.toggle('active');
-                    // Оновлення іконки для інших типів кнопок
-                    const icon = btn.querySelector('.icon-heart');
-                    if (icon) {
-                        icon.textContent = isActive ? '♡' : '♥';
-                    }
-                }
-                
-                // Оновлюємо лічильники wishlist через глобальний wishlistManager
-                if (window.wishlistManager && window.wishlistManager.updateWishlistBadges) {
-                    window.wishlistManager.updateWishlistBadges(data.count);
-                }
-                
-                this.showToast(isActive ? 'Видалено з обраного' : 'Додано до обраного');
-            }
-        } catch (error) {
-            console.error('Wishlist error:', error);
-            this.showToast('Помилка. Спробуйте ще раз', 'error');
-        }
-    }
     
     initCartActions() {
         // Видалено - використовуємо глобальний cart.js обробник

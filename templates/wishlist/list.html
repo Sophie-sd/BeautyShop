@@ -14,7 +14,7 @@
         {% if products %}
         <!-- Wishlist Items Grid -->
         <div class="wishlist-content">
-            <div class="products-grid products-grid--cols-4">
+            <div class="products-grid products-grid--cols-5">
                 {% for product in products %}
                     {% include 'includes/product_card.html' with in_wishlist=True %}
                 {% endfor %}

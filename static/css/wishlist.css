@@ -8,8 +8,16 @@
 ==================== */
 
 .wishlist-page {
-    padding: var(--spacing-xl) 0;
+    padding: var(--spacing-xxl) 0;
     min-height: calc(100vh - 400px);
+}
+
+.wishlist-page .container {
+    padding-top: var(--spacing-xl);
+}
+
+.wishlist-page .product-card {
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 /* ==================== 
