@@ -27,7 +27,7 @@
     margin-bottom: 20px;
     color: var(--text-dark, #333);
     padding-bottom: 12px;
-    border-bottom: 2px solid var(--primary-color, #2196F3);
+    border-bottom: 2px solid var(--color-primary, #FF1493);
 }
 
 .form-group {
@@ -54,8 +54,8 @@
 
 .form-control:focus {
     outline: none;
-    border-color: var(--primary-color, #2196F3);
-    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+    border-color: var(--color-primary, #FF1493);
+    box-shadow: 0 0 0 3px rgba(255, 20, 147, 0.1);
 }
 
 .form-control:disabled,
@@ -86,7 +86,7 @@ textarea.form-control {
 }
 
 .payment-method:hover {
-    border-color: var(--primary-color, #2196F3);
+    border-color: var(--color-primary, #FF1493);
     background: var(--bg-light, #f5f5f5);
 }
 
@@ -99,13 +99,27 @@ textarea.form-control {
 
 .payment-method input[type="radio"]:checked + span {
     font-weight: 600;
-    color: var(--primary-color, #2196F3);
+    color: var(--color-primary, #FF1493);
 }
 
 .form-actions {
     display: flex;
     gap: 16px;
-    margin-top: 32px;
+    margin-top: 20px;
+}
+
+.form-actions .btn-primary {
+    width: 100%;
+}
+
+.form-section.no-border {
+    margin-bottom: 0;
+    border-bottom: none;
+}
+
+.form-section.no-border h3 {
+    border-bottom: none;
+    padding-bottom: 0;
 }
 
 .btn {
@@ -122,15 +136,15 @@ textarea.form-control {
 }
 
 .btn-primary {
-    background: var(--primary-color, #2196F3);
+    background: var(--color-primary, #FF1493);
     color: white;
     flex: 1;
 }
 
 .btn-primary:hover {
-    background: var(--primary-dark, #1976D2);
+    background: var(--color-primary-dark, #DC143C);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+    box-shadow: 0 4px 12px rgba(255, 20, 147, 0.3);
 }
 
 .btn-outline {
@@ -140,8 +154,8 @@ textarea.form-control {
 }
 
 .btn-outline:hover {
-    border-color: var(--primary-color, #2196F3);
-    color: var(--primary-color, #2196F3);
+    border-color: var(--color-primary, #FF1493);
+    color: var(--color-primary, #FF1493);
 }
 
 .order-summary {
@@ -224,7 +238,7 @@ textarea.form-control {
 }
 
 .total-amount {
-    color: var(--primary-color, #2196F3);
+    color: var(--color-primary, #FF1493);
 }
 
 .order-info {

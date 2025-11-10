@@ -68,48 +68,62 @@ def order_create(request):
         payment_method = request.POST.get('payment_method', '')
         notes = request.POST.get('notes', '').strip()
         
-        if not all([first_name, last_name, email, phone, delivery_method, delivery_city, payment_method]):
+        if delivery_method == 'pickup':
+            delivery_city = 'Монастирище'
+            if not delivery_address:
+                delivery_address = 'Україна, Черкаська область, м.Монастирище, вул. Соборна 126Д'
+        
+        if not all([first_name, last_name, email, phone, delivery_method, payment_method]):
             messages.error(request, "Будь ласка, заповніть всі обов'язкові поля")
             return redirect('orders:create')
         
-        order = Order.objects.create(
-            user=request.user if request.user.is_authenticated else None,
-            first_name=first_name,
-            last_name=last_name,
-            middle_name=middle_name,
-            email=email,
-            phone=phone,
-            delivery_method=delivery_method,
-            delivery_city=delivery_city,
-            delivery_address=delivery_address,
-            np_city_ref=np_city_ref,
-            np_warehouse_ref=np_warehouse_ref,
-            delivery_type=delivery_type,
-            payment_method=payment_method,
-            subtotal=total_price,
-            discount=Decimal('0'),
-            total=total_price,
-            notes=notes
-        )
+        if not delivery_address:
+            messages.error(request, "Будь ласка, вкажіть адресу доставки")
+            return redirect('orders:create')
         
-        for item in cart:
-            OrderItem.objects.create(
-                order=order,
-                product=item['product'],
-                quantity=item['quantity'],
-                price=item['price']
+        try:
+            order = Order.objects.create(
+                user=request.user if request.user.is_authenticated else None,
+                first_name=first_name,
+                last_name=last_name,
+                middle_name=middle_name,
+                email=email,
+                phone=phone,
+                delivery_method=delivery_method,
+                delivery_city=delivery_city or 'Не вказано',
+                delivery_address=delivery_address,
+                np_city_ref=np_city_ref,
+                np_warehouse_ref=np_warehouse_ref,
+                delivery_type=delivery_type,
+                payment_method=payment_method,
+                subtotal=total_price,
+                discount=Decimal('0'),
+                total=total_price,
+                notes=notes
             )
-        
-        order.order_number = f"BS{order.id:06d}"
-        order.save(update_fields=['order_number'])
-        
-        if payment_method == 'liqpay':
-            request.session['pending_order_id'] = order.id
-            return redirect('orders:liqpay_payment', order_id=order.id)
-        
-        cart.clear()
-        request.session['completed_order_id'] = order.id
-        return redirect('orders:success')
+            
+            for item in cart:
+                OrderItem.objects.create(
+                    order=order,
+                    product=item['product'],
+                    quantity=item['quantity'],
+                    price=item['price']
+                )
+            
+            order.order_number = f"BS{order.id:06d}"
+            order.save(update_fields=['order_number'])
+            
+            if payment_method == 'liqpay':
+                request.session['pending_order_id'] = order.id
+                return redirect('orders:liqpay_payment', order_id=order.id)
+            
+            cart.clear()
+            request.session['completed_order_id'] = order.id
+            return redirect('orders:success')
+            
+        except Exception as e:
+            messages.error(request, f'Помилка при створенні замовлення. Будь ласка, спробуйте ще раз.')
+            return redirect('orders:create')
     
     return render(request, 'orders/create.html', {
         'cart': cart,

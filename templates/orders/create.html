@@ -43,12 +43,12 @@
         align-items: center;
     }
     .warehouse-item.selected {
-        background: var(--primary-light, #e3f2fd);
-        border-left: 3px solid var(--primary-color, #2196F3);
+        background: rgba(255, 20, 147, 0.1);
+        border-left: 3px solid var(--color-primary, #FF1493);
     }
     .warehouse-number {
         font-weight: 600;
-        color: var(--primary-color, #2196F3);
+        color: var(--color-primary, #FF1493);
         min-width: 50px;
     }
     .warehouse-address {
@@ -164,7 +164,7 @@
                         </div>
                     </div>
                     
-                    <div class="form-section">
+                    <div class="form-section no-border">
                         <h3>Коментар до замовлення</h3>
                         <div class="form-group">
                             <textarea id="notes" name="notes" class="form-control" rows="4" 
@@ -173,7 +173,6 @@
                     </div>
                     
                     <div class="form-actions">
-                        <a href="{% url 'cart:detail' %}" class="btn btn-outline">Повернутись до кошика</a>
                         <button type="submit" class="btn btn-primary">Підтвердити замовлення</button>
                     </div>
                 </form>

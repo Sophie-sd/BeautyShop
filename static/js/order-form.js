@@ -155,6 +155,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         deliveryAddressInput.value = '';
         npWarehouseRefInput.value = '';
+        warehouseResultsContainer.innerHTML = '';
+        warehouseResultsContainer.style.display = 'none';
         
         if (deliveryTypeSelect.value) {
             loadWarehouses();
@@ -225,8 +227,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     deliveryTypeSelect.addEventListener('change', function() {
-        if (selectedCityRef) {
+        deliveryAddressInput.value = '';
+        npWarehouseRefInput.value = '';
+        warehouseResultsContainer.innerHTML = '';
+        
+        if (selectedCityRef && deliveryTypeSelect.value) {
             loadWarehouses();
+        } else if (!selectedCityRef) {
+            warehouseResultsContainer.innerHTML = '<div class="loading">Спочатку оберіть місто</div>';
+            warehouseResultsContainer.style.display = 'block';
+        } else {
+            warehouseResultsContainer.style.display = 'none';
         }
     });
     
