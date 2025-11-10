@@ -102,19 +102,11 @@
             {% if is_paginated %}
                 <nav class="pagination" role="navigation" aria-label="Навігація по сторінках">
                     {% if page_obj.has_previous %}
-                        <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page=1" class="pagination__link" aria-label="Перша сторінка">
-                            ⟨⟨
-                        </a>
-                        <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.previous_page_number }}" class="pagination__link" aria-label="Попередня сторінка">
-                            ⟨ Попередня
-                        </a>
+                        <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page=1" class="pagination__link" aria-label="Перша сторінка">⟨⟨</a>
+                        <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.previous_page_number }}" class="pagination__link" aria-label="Попередня сторінка">⟨</a>
                     {% else %}
-                        <span class="pagination__link pagination__link--disabled" aria-disabled="true">
-                            ⟨⟨
-                        </span>
-                        <span class="pagination__link pagination__link--disabled" aria-disabled="true">
-                            ⟨ Попередня
-                        </span>
+                        <span class="pagination__link pagination__link--disabled" aria-disabled="true">⟨⟨</span>
+                        <span class="pagination__link pagination__link--disabled" aria-disabled="true">⟨</span>
                     {% endif %}
                     
                     <span class="pagination__info" aria-live="polite">
@@ -122,19 +114,11 @@
                     </span>
                     
                     {% if page_obj.has_next %}
-                        <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.next_page_number }}" class="pagination__link" aria-label="Наступна сторінка">
-                            Наступна ⟩
-                        </a>
-                        <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.paginator.num_pages }}" class="pagination__link" aria-label="Остання сторінка">
-                            ⟩⟩
-                        </a>
+                        <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.next_page_number }}" class="pagination__link" aria-label="Наступна сторінка">⟩</a>
+                        <a href="?{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.paginator.num_pages }}" class="pagination__link" aria-label="Остання сторінка">⟩⟩</a>
                     {% else %}
-                        <span class="pagination__link pagination__link--disabled" aria-disabled="true">
-                            Наступна ⟩
-                        </span>
-                        <span class="pagination__link pagination__link--disabled" aria-disabled="true">
-                            ⟩⟩
-                        </span>
+                        <span class="pagination__link pagination__link--disabled" aria-disabled="true">⟩</span>
+                        <span class="pagination__link pagination__link--disabled" aria-disabled="true">⟩⟩</span>
                     {% endif %}
                 </nav>
             {% endif %}
