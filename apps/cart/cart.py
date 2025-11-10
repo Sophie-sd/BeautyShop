@@ -89,6 +89,27 @@ class Cart:
             for item in self.cart.values()
         )
     
+    def get_original_total_price(self):
+        """Повна вартість без знижок"""
+        product_ids = self.cart.keys()
+        products = Product.objects.filter(id__in=product_ids)
+        products_dict = {str(p.id): p for p in products}
+        
+        total = Decimal('0')
+        for product_id, item in self.cart.items():
+            if product_id in products_dict:
+                product = products_dict[product_id]
+                if self.user and hasattr(self.user, 'is_wholesale') and self.user.is_wholesale:
+                    original_price = product.wholesale_price or product.retail_price
+                else:
+                    original_price = product.retail_price
+                total += Decimal(str(original_price)) * item['quantity']
+        return total
+    
+    def get_savings_amount(self):
+        """Сума економії (різниця між оригінальною ціною та поточною)"""
+        return self.get_original_total_price() - self.get_total_price()
+    
     def clear(self):
         """Очищення кошика"""
         del self.session[settings.CART_SESSION_ID]

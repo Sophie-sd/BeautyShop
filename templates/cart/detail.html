@@ -19,7 +19,7 @@
                                     data-product-id="{{ item.product.id }}"
                                     data-product-name="{{ item.product.name }}"
                                     aria-label="Видалити товар">
-                                &#x2020;
+                                &times;
                             </button>
                             
                             <div class="cart-item__image">
@@ -97,13 +97,20 @@
                     <div class="summary-details">
                         <div class="summary-row">
                             <span>Сума товарів:</span>
-                            <span class="cart-subtotal">{{ cart.get_total_price }} ₴</span>
+                            <span class="cart-subtotal">{{ cart.get_original_total_price }} ₴</span>
                         </div>
                         
+                        {% if cart.get_savings_amount > 0 %}
+                        <div class="summary-row summary-savings">
+                            <span>Сума економії:</span>
+                            <span class="cart-savings">-{{ cart.get_savings_amount }} ₴</span>
+                        </div>
+                        {% endif %}
+                        
                         {% if request.session.promo_discount %}
-                        <div class="summary-row promo-discount-row">
-                            <span>Знижка ({{ request.session.promo_code }}):</span>
-                            <span class="promo-discount">-{{ request.session.promo_discount }} ₴</span>
+                        <div class="summary-row summary-promo">
+                            <span>Промокод ({{ request.session.promo_code }}):</span>
+                            <span class="promo-discount">{{ request.session.promo_discount }} ₴</span>
                         </div>
                         {% endif %}
                         
@@ -137,7 +144,6 @@
                     
                     <div class="cart-actions">
                         <a href="{% url 'core:catalog' %}" class="btn btn-outline">Продовжити покупки</a>
-                        <button class="btn btn-secondary clear-cart">Очистити кошик</button>
                         <a href="{% url 'orders:create' %}" class="btn btn-primary">Оформити замовлення</a>
                     </div>
                 </div>
