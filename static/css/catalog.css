@@ -683,12 +683,11 @@
   border: 1px solid var(--color-gray-200);
   border-radius: var(--product-card-border-radius);
   overflow: hidden;
-  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+  transition: all var(--transition-normal);
   height: 100%;
   max-width: var(--product-card-max-width);
   width: 100%;
   position: relative;
-  opacity: 1;
 }
 
 .product-card:hover {
@@ -715,7 +714,7 @@
 }
 
 .catalog-main .product-card:hover .product-card__image {
-  transform: scale(1.05);
+  transform: scale(1.02);
 }
 
 .catalog-main .product-card__placeholder {
@@ -1060,7 +1059,23 @@
 /* ============================================ */
 
 .skeleton {
-  background: var(--color-gray-200);
+  background: linear-gradient(
+    90deg,
+    var(--color-gray-200) 25%,
+    var(--color-gray-100) 50%,
+    var(--color-gray-200) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .product-card-skeleton {
@@ -1383,12 +1398,11 @@
 @media (max-width: 767px) {
   :root {
     --catalog-padding: var(--space-md);
-    --catalog-gap: 10px;
-    --product-card-max-width: 100%;
+    --catalog-gap: 12px;
   }
   
   .catalog-container {
-    padding: 0 8px;
+    padding: 0 var(--space-sm);
   }
   
   /* Змінюємо layout на мобільному */
@@ -1462,22 +1476,20 @@
   }
   
   .products-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--catalog-gap);
     padding: 0;
     justify-items: stretch;
-    width: 100%;
   }
   
-  .products-grid .product-card {
+  .product-card {
     max-width: 100%;
-    width: 100%;
   }
   
   .catalog-header {
     margin: var(--space-lg) 0;
     text-align: left;
-    padding: 0 8px;
+    padding: 0 var(--space-sm);
   }
   
   .catalog-title {
@@ -1554,9 +1566,13 @@
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms;
-    animation-iteration-count: 1;
-    transition-duration: 0.01ms;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .skeleton {
+    animation: none;
   }
 }
 
