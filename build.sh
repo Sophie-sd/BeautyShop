@@ -124,3 +124,4 @@ echo ""
 echo "========================"
 echo "✅ BUILD COMPLETED SUCCESSFULLY!"
 echo "========================"
+# Force redeploy to apply blog migrations
