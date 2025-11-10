@@ -540,6 +540,30 @@
             transform: translate3d(0, 0, 0);
             z-index: 9999;
         }
+        
+        .cart-items {
+            gap: 10px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .cart-items {
+            gap: 8px;
+        }
+        
+        .cart-item {
+            padding: 10px;
+        }
+    }
+    
+    @media (max-width: 400px) {
+        .cart-items {
+            gap: 6px;
+        }
+        
+        .cart-item {
+            padding: 8px;
+        }
     }
     
     /* Mobile Menu Optimizations */

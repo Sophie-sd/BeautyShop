@@ -278,41 +278,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    if (addToCartBtn) {
-        addToCartBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const productId = this.dataset.productId;
-            const productName = this.dataset.productName || 'Товар';
-            const quantity = quantityInput ? parseInt(quantityInput.value) || 1 : 1;
-            
-            const formData = new FormData();
-            formData.append('quantity', quantity);
-            
-            fetch(`/cart/add/${productId}/`, {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification(`${productName} додано в кошик (${quantity} шт)`, 'success');
-                    if (data.cart && data.cart.item_count) {
-                        updateCartCount(data.cart.item_count);
-                    }
-                } else {
-                    showNotification(data.message || 'Помилка додавання товару', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Помилка додавання товару в кошик', 'error');
-            });
-        });
-    }
     
     // Функція для отримання CSRF токену
     function getCookie(name) {

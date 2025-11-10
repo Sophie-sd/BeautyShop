@@ -94,7 +94,13 @@ class ShoppingCart {
                 throw new Error(`Помилка сервера: ${response.status}`);
             }
 
-            const data = await response.json();
+            let data;
+            try {
+                data = await response.json();
+            } catch (jsonError) {
+                console.error('JSON parse error:', jsonError);
+                throw new Error('Помилка обробки відповіді сервера');
+            }
 
             if (data.success) {
                 this.showSuccessMessage(`${productName} додано в кошик`);
