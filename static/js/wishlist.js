@@ -158,6 +158,7 @@ class WishlistManager {
                     'X-CSRFToken': csrfToken,
                     'X-Requested-With': 'XMLHttpRequest',
                 },
+                credentials: 'same-origin',
             });
 
             console.log('Response status:', response.status);
@@ -345,11 +346,16 @@ class WishlistManager {
     }
 
     getCookie(name) {
-        let cookieValue = null;
-        
-        const csrfInput = document.querySelector('input[name=csrfmiddlewaretoken]');
-        if (csrfInput && name === 'csrftoken') {
-            return csrfInput.value;
+        if (name === 'csrftoken') {
+            const input = document.querySelector('input[name=csrfmiddlewaretoken]');
+            if (input && input.value) {
+                return input.value;
+            }
+            
+            const metaTag = document.querySelector('meta[name="csrf-token"]');
+            if (metaTag && metaTag.content) {
+                return metaTag.content;
+            }
         }
         
         if (document.cookie && document.cookie !== '') {
@@ -357,12 +363,12 @@ class WishlistManager {
             for (let i = 0; i < cookies.length; i++) {
                 const cookie = cookies[i].trim();
                 if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+                    return decodeURIComponent(cookie.substring(name.length + 1));
                 }
             }
         }
-        return cookieValue;
+        
+        return null;
     }
 }
 

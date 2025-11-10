@@ -282,6 +282,7 @@
 
 .product-card__price-row--tiers {
   display: block;
+  text-align: left;
 }
 
 .product-card__price-current,
@@ -306,6 +307,7 @@
   color: var(--color-success);
   font-weight: 500;
   line-height: 1.2;
+  text-align: left;
 }
 
 .product-card__price-save {
@@ -503,4 +505,16 @@
 @keyframes skeleton-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
+}
+
+/* iOS Safari оптимізації */
+@supports (-webkit-touch-callout: none) {
+  .product-card__wishlist,
+  .product-card__add-cart,
+  .btn-add-cart,
+  .btn-wishlist {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+  }
 }

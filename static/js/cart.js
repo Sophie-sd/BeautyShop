@@ -62,6 +62,13 @@ class ShoppingCart {
         const quantity = this.getQuantityFromForm(button) || 1;
 
         if (!productId) {
+            console.error('Product ID is missing');
+            return;
+        }
+
+        const csrfToken = this.getCsrfToken();
+        if (!csrfToken) {
+            this.showErrorMessage('Помилка безпеки. Оновіть сторінку.');
             return;
         }
 
@@ -75,13 +82,16 @@ class ShoppingCart {
                 method: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRFToken': this.getCsrfToken(),
+                    'X-CSRFToken': csrfToken,
                 },
                 body: formData,
+                credentials: 'same-origin',
             });
 
             if (!response.ok) {
-                throw new Error('Помилка сервера');
+                const errorText = await response.text();
+                console.error('Server error:', response.status, errorText);
+                throw new Error(`Помилка сервера: ${response.status}`);
             }
 
             const data = await response.json();
@@ -94,6 +104,7 @@ class ShoppingCart {
                 this.showErrorMessage(data.message || 'Помилка додавання товару');
             }
         } catch (error) {
+            console.error('Add to cart error:', error);
             this.showErrorMessage('Помилка додавання товару в кошик');
         } finally {
             this.setButtonLoading(button, false);
@@ -420,14 +431,27 @@ class ShoppingCart {
     }
 
     getCsrfToken() {
-        const token = document.querySelector('[name=csrfmiddlewaretoken]');
-        if (token) {
-            return token.value;
+        const input = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (input && input.value) {
+            return input.value;
         }
-        const cookie = document.cookie
-            .split('; ')
-            .find((row) => row.startsWith('csrftoken='));
-        return cookie ? cookie.split('=')[1] : '';
+        
+        const metaTag = document.querySelector('meta[name="csrf-token"]');
+        if (metaTag && metaTag.content) {
+            return metaTag.content;
+        }
+        
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith('csrftoken=')) {
+                    return decodeURIComponent(cookie.substring('csrftoken='.length));
+                }
+            }
+        }
+        
+        return '';
     }
 }
 
