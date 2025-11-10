@@ -334,7 +334,9 @@ img {
 }
 
 /* Animations */
-.fade-in {
+.alert.fade-in,
+.message.fade-in,
+.notification.fade-in {
     animation: fadeIn 0.6s ease-in-out;
 }
 

@@ -99,19 +99,19 @@
     }
 }
 
-.feature-item.fade-in {
+.features-section .feature-item.fade-in {
     animation: slideInUp 0.5s ease forwards;
 }
 
-.feature-item.fade-in:nth-child(1) {
+.features-section .feature-item.fade-in:nth-child(1) {
     animation-delay: 0.1s;
 }
 
-.feature-item.fade-in:nth-child(2) {
+.features-section .feature-item.fade-in:nth-child(2) {
     animation-delay: 0.15s;
 }
 
-.feature-item.fade-in:nth-child(3) {
+.features-section .feature-item.fade-in:nth-child(3) {
     animation-delay: 0.2s;
 }
 

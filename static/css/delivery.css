@@ -447,19 +447,23 @@
     }
 }
 
-.fade-in {
+.delivery-card.fade-in,
+.payment-card.fade-in {
     animation: slideInUp 0.6s ease forwards;
 }
 
-.fade-in:nth-child(1) {
+.delivery-card.fade-in:nth-child(1),
+.payment-card.fade-in:nth-child(1) {
     animation-delay: 0.1s;
 }
 
-.fade-in:nth-child(2) {
+.delivery-card.fade-in:nth-child(2),
+.payment-card.fade-in:nth-child(2) {
     animation-delay: 0.2s;
 }
 
-.fade-in:nth-child(3) {
+.delivery-card.fade-in:nth-child(3),
+.payment-card.fade-in:nth-child(3) {
     animation-delay: 0.3s;
 }
 

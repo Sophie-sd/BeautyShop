@@ -1402,12 +1402,11 @@
   }
   
   .catalog-container {
-    padding: 0 var(--space-sm);
+    padding: 0 12px;
   }
   
-  /* Змінюємо layout на мобільному */
   .catalog-layout {
-    display: block; /* Відміняємо grid */
+    display: block;
   }
   
   .catalog-sidebar {
@@ -1477,19 +1476,20 @@
   
   .products-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: var(--catalog-gap);
+    gap: 12px;
     padding: 0;
     justify-items: stretch;
   }
   
   .product-card {
     max-width: 100%;
+    width: 100%;
   }
   
   .catalog-header {
     margin: var(--space-lg) 0;
     text-align: left;
-    padding: 0 var(--space-sm);
+    padding: 0;
   }
   
   .catalog-title {
