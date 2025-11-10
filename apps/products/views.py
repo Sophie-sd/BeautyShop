@@ -33,17 +33,17 @@ class CategoryView(ListView):
             queryset = queryset.filter(category__slug__in=selected_subcats)
         
         # Фільтр по ціні
-        price_min = self.request.GET.get('price_min')
-        price_max = self.request.GET.get('price_max')
+        price_min = self.request.GET.get('price_min', '').strip()
+        price_max = self.request.GET.get('price_max', '').strip()
         if price_min:
             try:
                 queryset = queryset.filter(retail_price__gte=float(price_min))
-            except ValueError:
+            except (ValueError, TypeError):
                 pass
         if price_max:
             try:
                 queryset = queryset.filter(retail_price__lte=float(price_max))
-            except ValueError:
+            except (ValueError, TypeError):
                 pass
         
         # Фільтр по наявності
@@ -95,8 +95,12 @@ class CategoryView(ListView):
         context = super().get_context_data(**kwargs)
         context['category'] = self.category
         
-        # Підкатегорії для фільтрів
-        context['subcategories'] = self.category.children.filter(is_active=True)
+        # Підкатегорії для фільтрів (тільки з товарами)
+        subcategories = self.category.children.filter(
+            is_active=True,
+            product__is_active=True
+        ).distinct()
+        context['subcategories'] = subcategories
         
         # Отримуємо конфігурацію фільтрів для категорії
         try:
