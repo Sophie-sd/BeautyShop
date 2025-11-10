@@ -4,19 +4,17 @@ Views для списку бажань
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.generic import TemplateView
 from apps.products.models import Product
 from .wishlist import Wishlist
 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class WishlistView(TemplateView):
     """Сторінка списку бажань"""
     template_name = 'wishlist/list.html'
-    
-    @ensure_csrf_cookie
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

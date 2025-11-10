@@ -37,12 +37,12 @@
         
         <button 
             type="button"
-            class="product-card__wishlist{% if in_wishlist %} product-card__wishlist--active{% endif %}" 
+            class="product-card__wishlist{% if product in wishlist or in_wishlist %} product-card__wishlist--active{% endif %}" 
             data-product-id="{{ product.id }}" 
-            aria-label="{% if in_wishlist %}Видалити з обраного{% else %}Додати в обране{% endif %}"
-            title="{% if in_wishlist %}Видалити з обраного{% else %}Додати в обране{% endif %}"
+            aria-label="{% if product in wishlist or in_wishlist %}Видалити з обраного{% else %}Додати в обране{% endif %}"
+            title="{% if product in wishlist or in_wishlist %}Видалити з обраного{% else %}Додати в обране{% endif %}"
         >
-            <span class="product-card__wishlist-icon">{% if in_wishlist %}♥{% else %}♡{% endif %}</span>
+            <span class="product-card__wishlist-icon">{% if product in wishlist or in_wishlist %}♥{% else %}♡{% endif %}</span>
         </button>
         
         {% if product.get_stickers %}
