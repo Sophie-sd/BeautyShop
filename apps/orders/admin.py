@@ -358,7 +358,6 @@ class EmailCampaignAdmin(admin.ModelAdmin):
     ordering = ['-created_at']
     list_per_page = 30
     readonly_fields = ['status', 'sent_count', 'failed_count', 'created_at', 'updated_at', 'sent_at', 'created_by', 'get_recipients_count']
-    actions = ['duplicate_campaign', 'mark_as_draft']
     
     def get_fieldsets(self, request, obj=None):
         """Динамічні fieldsets в залежності від наявності об'єкта"""
@@ -500,34 +499,8 @@ class EmailCampaignAdmin(admin.ModelAdmin):
             messages.info(request, f'Розсилку заплановано на {scheduled_at.strftime("%d.%m.%Y %H:%M")}')
     
     def has_delete_permission(self, request, obj=None):
-        """Дозволити видалення тільки чернеток"""
-        if not request.user.is_superuser and not request.user.is_staff:
-            return False
-        if obj and obj.status == 'sent':
-            return False
-        return True
-    
-    def duplicate_campaign(self, request, queryset):
-        """Дублювати розсилку"""
-        for campaign in queryset:
-            campaign.pk = None
-            campaign.id = None
-            campaign.name = f"{campaign.name} (Копія)"
-            campaign.status = 'draft'
-            campaign.sent_count = 0
-            campaign.failed_count = 0
-            campaign.sent_at = None
-            campaign.created_by = request.user
-            campaign.save()
-        
-        messages.success(request, f'Продубльовано {queryset.count()} розсилок')
-    duplicate_campaign.short_description = 'Дублювати вибрані розсилки'
-    
-    def mark_as_draft(self, request, queryset):
-        """Повернути в чернетки"""
-        updated = queryset.exclude(status='sent').update(status='draft')
-        messages.success(request, f'Переведено в чернетки {updated} розсилок')
-    mark_as_draft.short_description = 'Перевести в чернетки'
+        """Дозволити видалення всім адміністраторам"""
+        return request.user.is_superuser or request.user.is_staff
     
     class Media:
         css = {
