@@ -18,10 +18,18 @@ class ShoppingCart {
         });
 
         document.addEventListener('click', (e) => {
-            const removeBtn = e.target.closest('.remove-from-cart, .btn-remove-from-cart');
+            const removeBtn = e.target.closest('.cart-item__remove, .remove-from-cart, .btn-remove-from-cart');
             if (removeBtn) {
                 e.preventDefault();
                 this.handleRemoveFromCart(removeBtn);
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            const quantityBtn = e.target.closest('.quantity-btn');
+            if (quantityBtn) {
+                e.preventDefault();
+                this.handleQuantityButton(quantityBtn);
             }
         });
 
@@ -146,6 +154,61 @@ class ShoppingCart {
         }
     }
 
+    async handleQuantityButton(button) {
+        const productId = button.dataset.productId;
+        const action = button.dataset.action;
+        const quantitySpan = document.querySelector(`.quantity-value[data-product-id="${productId}"]`);
+        
+        if (!productId || !quantitySpan) {
+            return;
+        }
+
+        let currentQuantity = parseInt(quantitySpan.textContent);
+        let newQuantity = currentQuantity;
+
+        if (action === 'increase') {
+            newQuantity = currentQuantity + 1;
+        } else if (action === 'decrease') {
+            newQuantity = currentQuantity - 1;
+            if (newQuantity < 1) {
+                return;
+            }
+        }
+
+        button.disabled = true;
+
+        try {
+            const formData = new FormData();
+            formData.append('quantity', newQuantity);
+            formData.append('override', 'true');
+
+            const response = await fetch(`/cart/add/${productId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': this.getCsrfToken(),
+                },
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error('Помилка сервера');
+            }
+
+            const data = await response.json();
+
+            if (data.success) {
+                quantitySpan.textContent = newQuantity;
+                this.updateCartDisplay(data.cart);
+                this.updateItemPrice(productId, data.item);
+            }
+        } catch (error) {
+            this.showErrorMessage('Помилка оновлення кількості');
+        } finally {
+            button.disabled = false;
+        }
+    }
+
     async handleQuantityChange(input) {
         const productId = input.dataset.productId;
         const quantity = parseInt(input.value);
@@ -176,7 +239,7 @@ class ShoppingCart {
 
             if (data.success) {
                 this.updateCartDisplay(data.cart);
-                this.updateItemPrice(input, data.item);
+                this.updateItemPrice(productId, data.item);
             }
         } catch (error) {
             this.showErrorMessage('Помилка оновлення кількості');
@@ -262,22 +325,17 @@ class ShoppingCart {
         });
     }
 
-    updateItemPrice(quantityInput, itemData) {
-        if (!itemData) return;
+    updateItemPrice(productId, itemData) {
+        if (!itemData || !productId) return;
 
-        const cartItem = quantityInput.closest('.cart-item');
+        const cartItem = document.querySelector(`.cart-item[data-product-id="${productId}"]`);
         if (!cartItem) return;
 
         cartItem.dataset.price = itemData.price;
 
-        const priceElement = cartItem.querySelector('.item-price');
-        if (priceElement) {
-            priceElement.textContent = `${itemData.price.toFixed(2)} ₴`;
-        }
-
-        const totalElement = cartItem.querySelector('.item-total .total-price');
-        if (totalElement) {
-            totalElement.textContent = `${itemData.total.toFixed(2)} ₴`;
+        const priceCurrentElement = cartItem.querySelector('.cart-item__price-current');
+        if (priceCurrentElement) {
+            priceCurrentElement.textContent = `${itemData.total.toFixed(2)} ₴`;
         }
     }
 

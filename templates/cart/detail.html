@@ -15,7 +15,14 @@
                 <div class="cart-items">
                     {% for item in cart %}
                         <div class="cart-item" data-product-id="{{ item.product.id }}" data-price="{{ item.price }}">
-                            <div class="item-image">
+                            <button class="cart-item__remove" 
+                                    data-product-id="{{ item.product.id }}"
+                                    data-product-name="{{ item.product.name }}"
+                                    aria-label="Видалити товар">
+                                &#x2020;
+                            </button>
+                            
+                            <div class="cart-item__image">
                                 {% if item.product.images.first %}
                                     <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}">
                                 {% else %}
@@ -25,59 +32,49 @@
                                 {% endif %}
                             </div>
                             
-                            <div class="item-details">
-                                <h3 class="item-name">{{ item.product.name }}</h3>
-                                {% if item.product.is_sale_active %}
-                                    <div class="item-price-wrapper">
+                            <div class="cart-item__info">
+                                <h3 class="cart-item__name">{{ item.product.name }}</h3>
+                            </div>
+                            
+                            <div class="cart-item__controls">
+                                <div class="cart-item__quantity">
+                                    <button class="quantity-btn quantity-btn--minus" 
+                                            data-product-id="{{ item.product.id }}"
+                                            data-action="decrease"
+                                            aria-label="Зменшити кількість">
+                                        &minus;
+                                    </button>
+                                    <span class="quantity-value" data-product-id="{{ item.product.id }}">{{ item.quantity }}</span>
+                                    <button class="quantity-btn quantity-btn--plus" 
+                                            data-product-id="{{ item.product.id }}"
+                                            data-action="increase"
+                                            aria-label="Збільшити кількість">
+                                        &#43;
+                                    </button>
+                                </div>
+                                
+                                <div class="cart-item__price">
+                                    {% if item.product.is_sale_active %}
                                         {% if user.is_authenticated and user.is_wholesale and not user.is_staff and not user.is_superuser %}
                                             {% if item.product.wholesale_price %}
-                                                <p class="item-price-old">{{ item.product.wholesale_price }} ₴</p>
+                                                <span class="cart-item__price-old">{{ item.product.wholesale_price }} ₴</span>
                                             {% else %}
-                                                <p class="item-price-old">{{ item.product.retail_price }} ₴</p>
+                                                <span class="cart-item__price-old">{{ item.product.retail_price }} ₴</span>
                                             {% endif %}
                                         {% else %}
                                             {% if item.quantity >= 5 and item.product.price_5_qty %}
-                                                <p class="item-price-old">{{ item.product.price_5_qty }} ₴</p>
+                                                <span class="cart-item__price-old">{{ item.product.price_5_qty }} ₴</span>
                                             {% elif item.quantity >= 3 and item.product.price_3_qty %}
-                                                <p class="item-price-old">{{ item.product.price_3_qty }} ₴</p>
+                                                <span class="cart-item__price-old">{{ item.product.price_3_qty }} ₴</span>
                                             {% else %}
-                                        <p class="item-price-old">{{ item.product.retail_price }} ₴</p>
+                                                <span class="cart-item__price-old">{{ item.product.retail_price }} ₴</span>
                                             {% endif %}
                                         {% endif %}
-                                        <p class="item-price item-price-sale">{{ item.price }} ₴</p>
-                                        <span class="item-discount-badge">
-                                            {% if item.product.active_promotion_name %}
-                                                {{ item.product.active_promotion_name }}
-                                            {% else %}
-                                                -{{ item.product.get_discount_percentage }}%
-                                            {% endif %}
-                                        </span>
-                                    </div>
-                                {% else %}
-                                    <p class="item-price">{{ item.price }} ₴</p>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="item-quantity">
-                                <label for="quantity-{{ item.product.id }}">Кількість:</label>
-                                <input type="number" 
-                                       id="quantity-{{ item.product.id }}"
-                                       class="cart-quantity form-control" 
-                                       value="{{ item.quantity }}" 
-                                       min="1" 
-                                       data-product-id="{{ item.product.id }}">
-                            </div>
-                            
-                            <div class="item-total">
-                                <span class="total-price">{{ item.total_price }} ₴</span>
-                            </div>
-                            
-                            <div class="item-actions">
-                                <button class="btn btn-outline btn-sm remove-from-cart" 
-                                        data-product-id="{{ item.product.id }}"
-                                        data-product-name="{{ item.product.name }}">
-                                    Видалити
-                                </button>
+                                        <span class="cart-item__price-current">{{ item.total_price }} ₴</span>
+                                    {% else %}
+                                        <span class="cart-item__price-current">{{ item.total_price }} ₴</span>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     {% endfor %}
@@ -159,3 +156,4 @@
 </section>
 
 {% endblock %}
+
