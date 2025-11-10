@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const npCityRefInput = document.getElementById('np_city_ref');
     const npWarehouseRefInput = document.getElementById('np_warehouse_ref');
     const paymentMethodRadios = document.querySelectorAll('input[name="payment_method"]');
+    const deliveryAddressLabel = document.getElementById('delivery_address_label');
+    const pickupInfo = document.getElementById('pickup_info');
     
     let selectedCityRef = '';
     let searchTimeout = null;
@@ -24,6 +26,8 @@ document.addEventListener('DOMContentLoaded', function() {
         deliveryAddressWrapper.style.display = 'none';
         cityResultsContainer.style.display = 'none';
         warehouseResultsContainer.style.display = 'none';
+        pickupInfo.style.display = 'none';
+        deliveryAddressInput.style.display = 'block';
         
         deliveryCityInput.value = '';
         deliveryAddressInput.value = '';
@@ -45,8 +49,9 @@ document.addEventListener('DOMContentLoaded', function() {
             deliveryTypeSelect.setAttribute('required', 'required');
             deliveryAddressInput.setAttribute('required', 'required');
             
+            deliveryAddressLabel.textContent = 'Відділення/Поштомат *';
             deliveryCityInput.placeholder = 'Почніть вводити назву міста...';
-            deliveryAddressInput.placeholder = 'Оберіть відділення зі списку нижче';
+            deliveryAddressInput.placeholder = 'Оберіть відділення або поштомат зі списку нижче';
             deliveryAddressInput.readOnly = true;
         } else if (deliveryMethod === 'ukrposhta') {
             deliveryCityInput.parentElement.style.display = 'block';
@@ -55,13 +60,15 @@ document.addEventListener('DOMContentLoaded', function() {
             deliveryCityInput.setAttribute('required', 'required');
             deliveryAddressInput.setAttribute('required', 'required');
             
+            deliveryAddressLabel.textContent = 'Адреса *';
             deliveryCityInput.placeholder = 'Місто доставки';
             deliveryAddressInput.placeholder = 'Введіть адресу або індекс відділення';
             deliveryAddressInput.readOnly = false;
         } else if (deliveryMethod === 'pickup') {
             deliveryAddressWrapper.style.display = 'block';
+            deliveryAddressInput.style.display = 'none';
+            pickupInfo.style.display = 'block';
             deliveryAddressInput.value = PICKUP_ADDRESS;
-            deliveryAddressInput.readOnly = true;
             deliveryCityInput.value = 'Монастирище';
         } else if (deliveryMethod === 'courier') {
             deliveryCityInput.parentElement.style.display = 'block';
@@ -70,6 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
             deliveryCityInput.setAttribute('required', 'required');
             deliveryAddressInput.setAttribute('required', 'required');
             
+            deliveryAddressLabel.textContent = 'Адреса *';
             deliveryCityInput.placeholder = 'Місто доставки';
             deliveryAddressInput.placeholder = 'Вулиця, будинок, квартира';
             deliveryAddressInput.readOnly = false;
@@ -231,7 +239,16 @@ document.addEventListener('DOMContentLoaded', function() {
         npWarehouseRefInput.value = '';
         warehouseResultsContainer.innerHTML = '';
         
-        if (selectedCityRef && deliveryTypeSelect.value) {
+        const selectedType = deliveryTypeSelect.value;
+        if (selectedType === 'warehouse') {
+            deliveryAddressLabel.textContent = 'Відділення *';
+        } else if (selectedType === 'postomat') {
+            deliveryAddressLabel.textContent = 'Поштомат *';
+        } else {
+            deliveryAddressLabel.textContent = 'Відділення/Поштомат *';
+        }
+        
+        if (selectedCityRef && selectedType) {
             loadWarehouses();
         } else if (!selectedCityRef) {
             warehouseResultsContainer.innerHTML = '<div class="loading">Спочатку оберіть місто</div>';

@@ -66,6 +66,22 @@
     .delivery-address-wrapper {
         display: none;
     }
+    .pickup-info {
+        margin-top: 16px;
+        padding: 16px;
+        background: rgba(255, 20, 147, 0.05);
+        border-left: 3px solid var(--color-primary, #FF1493);
+        border-radius: 8px;
+    }
+    .pickup-message {
+        font-weight: 600;
+        color: var(--color-primary, #FF1493);
+        margin-bottom: 8px;
+    }
+    .pickup-address {
+        color: var(--text-dark, #333);
+        font-size: 15px;
+    }
 </style>
 {% endblock %}
 
@@ -84,32 +100,32 @@
                         <div class="form-group">
                             <label for="first_name">Ім'я *</label>
                             <input type="text" id="first_name" name="first_name" class="form-control" 
-                                   value="{{ user.first_name|default:'' }}" required>
+                                   value="{{ form_data.first_name|default:user.first_name|default:'' }}" required>
                         </div>
                         
                         <div class="form-group">
                             <label for="last_name">Прізвище *</label>
                             <input type="text" id="last_name" name="last_name" class="form-control" 
-                                   value="{{ user.last_name|default:'' }}" required>
+                                   value="{{ form_data.last_name|default:user.last_name|default:'' }}" required>
                         </div>
                         
                         <div class="form-group">
-                            <label for="middle_name">По-батькові</label>
+                            <label for="middle_name">По-батькові *</label>
                             <input type="text" id="middle_name" name="middle_name" class="form-control" 
-                                   value="{{ user.middle_name|default:'' }}">
+                                   value="{{ form_data.middle_name|default:user.middle_name|default:'' }}" required>
                         </div>
                         
                         <div class="form-group">
                             <label for="phone">Телефон *</label>
                             <input type="tel" id="phone" name="phone" class="form-control" 
-                                   value="{{ user.phone|default:'' }}" required 
+                                   value="{{ form_data.phone|default:user.phone|default:'' }}" required 
                                    placeholder="+380">
                         </div>
                         
                         <div class="form-group">
                             <label for="email">Email *</label>
                             <input type="email" id="email" name="email" class="form-control" 
-                                   value="{{ user.email|default:'' }}" required>
+                                   value="{{ form_data.email|default:user.email|default:'' }}" required>
                         </div>
                     </div>
                     
@@ -143,10 +159,14 @@
                         </div>
                         
                         <div class="form-group delivery-address-wrapper">
-                            <label for="delivery_address">Адреса/Відділення *</label>
+                            <label for="delivery_address" id="delivery_address_label">Адреса *</label>
                             <input type="text" id="delivery_address" name="delivery_address" class="form-control">
                             <div id="warehouse_results" class="warehouse-results"></div>
                             <input type="hidden" id="np_warehouse_ref" name="np_warehouse_ref">
+                            <div id="pickup_info" class="pickup-info" style="display: none;">
+                                <p class="pickup-message">Будемо чекати вас за адресою:</p>
+                                <p class="pickup-address">Україна, Черкаська область, м.Монастирище, вул. Соборна 126Д</p>
+                            </div>
                         </div>
                     </div>
                     

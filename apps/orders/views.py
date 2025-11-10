@@ -73,13 +73,23 @@ def order_create(request):
             if not delivery_address:
                 delivery_address = 'Україна, Черкаська область, м.Монастирище, вул. Соборна 126Д'
         
-        if not all([first_name, last_name, email, phone, delivery_method, payment_method]):
+        if not all([first_name, last_name, middle_name, email, phone, delivery_method, payment_method]):
             messages.error(request, "Будь ласка, заповніть всі обов'язкові поля")
-            return redirect('orders:create')
+            context = {
+                'cart': cart,
+                'user': request.user,
+                'form_data': request.POST
+            }
+            return render(request, 'orders/create.html', context)
         
         if not delivery_address:
             messages.error(request, "Будь ласка, вкажіть адресу доставки")
-            return redirect('orders:create')
+            context = {
+                'cart': cart,
+                'user': request.user,
+                'form_data': request.POST
+            }
+            return render(request, 'orders/create.html', context)
         
         try:
             order = Order.objects.create(
@@ -122,8 +132,16 @@ def order_create(request):
             return redirect('orders:success')
             
         except Exception as e:
+            import traceback
+            print(f"Order creation error: {e}")
+            print(traceback.format_exc())
             messages.error(request, f'Помилка при створенні замовлення. Будь ласка, спробуйте ще раз.')
-            return redirect('orders:create')
+            context = {
+                'cart': cart,
+                'user': request.user,
+                'form_data': request.POST
+            }
+            return render(request, 'orders/create.html', context)
     
     return render(request, 'orders/create.html', {
         'cart': cart,
