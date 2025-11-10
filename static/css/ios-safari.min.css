@@ -144,14 +144,12 @@
     
     /* Grid Fallback */
     @supports not (display: grid) {
-        .categories-grid,
         .products-grid {
             display: flex;
             flex-wrap: wrap;
             gap: var(--spacing-lg);
         }
         
-        .category-card,
         .product-card {
             flex: 1 1 calc(50% - var(--spacing-lg));
             max-width: calc(50% - var(--spacing-lg));

@@ -273,13 +273,6 @@
     .grid-cols-lg-6 { grid-template-columns: repeat(6, 1fr); }
     .grid-cols-lg-8 { grid-template-columns: repeat(8, 1fr); }
     
-    .categories-grid {
-        gap: var(--spacing-lg);
-    }
-    
-    .categories-grid .category-card {
-        min-height: 200px;
-    }
 }
 
 /* Extra large devices */
