@@ -49,9 +49,15 @@
                 <ul class="submenu-list">
                     {% for category in main_categories %}
                         <li>
-                            <a href="{{ category.get_absolute_url }}">
-                                {{ category.name }}
-                            </a>
+                            {% if category.name == 'Акційні товари' %}
+                                <a href="{% url 'products:sale' %}">
+                                    {{ category.name }}
+                                </a>
+                            {% else %}
+                                <a href="{{ category.get_absolute_url }}">
+                                    {{ category.name }}
+                                </a>
+                            {% endif %}
                         </li>
                     {% endfor %}
                 </ul>
