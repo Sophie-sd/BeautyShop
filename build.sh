@@ -25,7 +25,45 @@ echo ""
 
 # Застосовуємо міграції
 echo "🗄️  Застосування міграцій бази даних..."
-python manage.py fix_blog_migrations || true
+
+# Виправляємо blog міграції через прямий SQL
+echo "Виправлення blog таблиці..."
+python manage.py shell << 'EOFPYTHON'
+from django.db import connection
+try:
+    with connection.cursor() as cursor:
+        # Видаляємо записи про blog міграції
+        cursor.execute("DELETE FROM django_migrations WHERE app = 'blog'")
+        print(f"✓ Видалено записів: {cursor.rowcount}")
+        
+        # Перевіряємо чи існує таблиця
+        cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'blog_article');")
+        exists = cursor.fetchone()[0]
+        
+        if not exists:
+            print("✓ Створюємо таблицю blog_article...")
+            cursor.execute("""
+                CREATE TABLE blog_article (
+                    id BIGSERIAL PRIMARY KEY,
+                    title VARCHAR(200) NOT NULL,
+                    slug VARCHAR(200) NOT NULL UNIQUE,
+                    content TEXT NOT NULL,
+                    excerpt TEXT,
+                    image VARCHAR(100),
+                    is_published BOOLEAN NOT NULL DEFAULT TRUE,
+                    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+                    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+                    meta_title VARCHAR(200),
+                    meta_description TEXT
+                );
+            """)
+            print("✓ Таблиця blog_article створена")
+        else:
+            print("✓ Таблиця blog_article вже існує")
+except Exception as e:
+    print(f"✗ Помилка: {e}")
+EOFPYTHON
+
 python manage.py migrate blog --fake --no-input || true
 python manage.py migrate --no-input
 echo "✅ Міграції застосовано"
