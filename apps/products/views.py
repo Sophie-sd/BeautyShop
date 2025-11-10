@@ -168,12 +168,14 @@ class SaleProductsView(ListView):
         ).prefetch_related('images')
         
         sort = self.request.GET.get('sort', 'default')
-        if sort == 'name':
-            queryset = queryset.order_by('name')
-        elif sort == 'price_low':
+        if sort == 'price_asc':
             queryset = queryset.order_by('retail_price')
-        elif sort == 'price_high':
+        elif sort == 'price_desc':
             queryset = queryset.order_by('-retail_price')
+        elif sort == 'name':
+            queryset = queryset.order_by('name')
+        elif sort == 'new':
+            queryset = queryset.order_by('-created_at')
         elif sort == 'discount':
             queryset = queryset.order_by('-sale_price')
         else:

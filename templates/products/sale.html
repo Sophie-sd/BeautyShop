@@ -83,8 +83,9 @@
                             <select class="form-select" id="sortSelect">
                                 <option value="default" {% if selected_sort == 'default' %}selected{% endif %}>Сортувати за</option>
                                 <option value="name" {% if selected_sort == 'name' %}selected{% endif %}>За назвою</option>
-                                <option value="price_low" {% if selected_sort == 'price_low' %}selected{% endif %}>Спочатку дешевші</option>
-                                <option value="price_high" {% if selected_sort == 'price_high' %}selected{% endif %}>Спочатку дорожчі</option>
+                                <option value="price_asc" {% if selected_sort == 'price_asc' %}selected{% endif %}>Спочатку дешевші</option>
+                                <option value="price_desc" {% if selected_sort == 'price_desc' %}selected{% endif %}>Спочатку дорожчі</option>
+                                <option value="new" {% if selected_sort == 'new' %}selected{% endif %}>За новизною</option>
                                 <option value="discount" {% if selected_sort == 'discount' %}selected{% endif %}>За розміром знижки</option>
                             </select>
                         </div>
