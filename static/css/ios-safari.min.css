@@ -1,6 +1,11 @@
-/* iOS Safari Specific Styles */
+/* iOS Safari Styles - Оптимізовано */
+
 @supports (-webkit-touch-callout: none) {
     /* Viewport Height Fix */
+    :root {
+        --vh: 1vh;
+    }
+    
     .vh-100 {
         height: 100vh;
         height: calc(var(--vh, 1vh) * 100);
@@ -28,16 +33,12 @@
     }
     
     /* Performance Optimizations */
-    .logo-img {
+    .logo-img,
+    .search-icon {
         -webkit-transform: translateZ(0);
         transform: translateZ(0);
         -webkit-backface-visibility: hidden;
         backface-visibility: hidden;
-    }
-    
-    .search-icon {
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
     }
     
     /* Form Elements */
@@ -47,62 +48,6 @@
         font-size: 16px;
     }
     
-    /* Sliders */
-    .categories-slider,
-    .products-slider {
-        -webkit-overflow-scrolling: touch;
-        scroll-snap-type: x mandatory;
-        overscroll-behavior-x: contain;
-    }
-    
-    .categories-slider .category-card,
-    .products-slider .product-card {
-        scroll-snap-align: start;
-        scroll-snap-stop: normal;
-    }
-    
-    /* Emoji Optimization */
-    .category-emoji,
-    .product-emoji,
-    .cart-icon {
-        font-family: "Apple Color Emoji", system-ui, sans-serif;
-        font-variant-emoji: emoji;
-        text-rendering: optimizeSpeed;
-    }
-    
-    .categories-slider,
-    .products-slider {
-        overscroll-behavior: contain;
-        scroll-snap-type: x mandatory;
-    }
-    
-    /* Backdrop Filter Support */
-    @supports (backdrop-filter: blur(10px)) {
-        .mobile-menu {
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
-    }
-    
-    .slider-btn,
-    .cart-icon,
-    .hamburger {
-        transform: translateZ(0);
-        -webkit-transform: translateZ(0);
-    }
-    
-    .fade-in,
-    .slide-in-up {
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
-    }
-    
-    body {
-        overscroll-behavior-x: none;
-        overscroll-behavior-y: auto;
-    }
-    
-    /* Form Element Styles */
     input[type="search"] {
         -webkit-appearance: none;
         appearance: none;
@@ -125,6 +70,26 @@
         padding-right: 40px;
     }
     
+    /* Sliders */
+    .categories-slider,
+    .products-slider {
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+        overscroll-behavior: contain;
+    }
+    
+    .categories-slider .category-card,
+    .products-slider .product-card {
+        scroll-snap-align: start;
+        scroll-snap-stop: normal;
+    }
+    
+    /* Body */
+    body {
+        overscroll-behavior-x: none;
+        overscroll-behavior-y: auto;
+    }
+    
     /* User Selection */
     .slider-btn,
     .hamburger,
@@ -142,250 +107,28 @@
         user-select: text;
     }
     
-    /* Grid Fallback */
-    @supports not (display: grid) {
-        .products-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--spacing-lg);
-        }
-        
-        .product-card {
-            flex: 1 1 calc(50% - var(--spacing-lg));
-            max-width: calc(50% - var(--spacing-lg));
-        }
-    }
-    
-    /* Landscape Orientation */
-    @media (orientation: landscape) and (max-height: 500px) {
-        .hero-section {
-            height: auto;
-            min-height: 100vh;
-            min-height: calc(var(--vh, 1vh) * 100);
-        }
-        
-        .section-padding {
-            padding: var(--spacing-lg) 0;
-        }
-    }
-}
-
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --background-color: #1a1a1a;
-        --text-color: #ffffff;
-        --border-color: #333333;
-    }
-    
-    @supports (-webkit-touch-callout: none) {
-        .card {
-            background: #2a2a2a;
-            border-color: #333333;
-        }
-        
-        .category-placeholder,
-        .product-placeholder {
-            background: #333333;
-            color: #666666;
-        }
-    }
-}
-
-/* High Contrast Support */
-@media (prefers-contrast: high) {
-    @supports (-webkit-touch-callout: none) {
-        .btn,
-        .card,
-        .nav-link {
-            border: 2px solid currentColor;
-        }
-        
-        .slider-btn {
-            border: 3px solid currentColor;
-        }
-    }
-}
-
-/* Reduced Motion Support */
-@media (prefers-reduced-motion: reduce) {
-    @supports (-webkit-touch-callout: none) {
-        .categories-slider,
-        .products-slider {
-            scroll-behavior: auto;
-        }
-        
-        .fade-in,
-        .slide-in-up,
-        .slider-btn,
-        .cart-icon {
-            animation: none;
-            transition: none;
-        }
-    }
-}
-
-/* Tablet Layout */
-@media (max-width: 991.98px) {
-    
-    .header-content {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: nowrap;
-        gap: var(--spacing-md);
-    }
-    
-    .logo {
-        flex-shrink: 0;
-    }
-    
-    .search-container {
-        display: none;
-    }
-    
-    .hamburger {
-        display: flex;
-    }
-}
-
-/* Mobile Layout */
-@media (max-width: 767.98px) {
-    
-    .header-content {
-        gap: var(--spacing-sm);
-    }
-    
-    .logo-img {
-        height: 50px;
-        max-width: 170px;
-        width: auto;
-    }
-    
-    .cart-link {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 44px;
-        height: 44px;
-        padding: var(--spacing-xs);
-        border-radius: var(--border-radius-md);
-    }
-    
-    .cart-icon {
-        font-size: 24px;
-    }
-    
-    .cart-link .badge {
-        top: -2px;
-        right: -2px;
-        font-size: 11px;
-        min-width: 16px;
-        height: 16px;
-        padding: 1px 4px;
-    }
-    
-    .hamburger {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        width: 44px;
-        height: 44px;
-        padding: var(--spacing-xs);
-        background: transparent;
-        border: none;
-    }
-    
-    .hamburger span {
-        width: 24px;
-        height: 2px;
-        background: var(--neutral-dark);
-        margin: 2px 0;
-        transition: all var(--transition-normal);
-    }
-}
-
-/* Small Mobile Layout */
-@media (max-width: 575.98px) {
-    .main-header {
-        padding: 0;
-    }
-    
-    .header-content {
-        gap: var(--spacing-xs);
-    }
-    
-    .logo-img {
-        height: 42px;
-        max-width: 140px;
-    }
-    
-    .cart-link {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .hamburger {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .hamburger span {
-        width: 22px;
-        height: 2px;
-        margin: 1.5px 0;
-    }
-    
-    .cart-icon {
-        font-size: 22px;
-    }
-}
-
-/* Very Small Mobile Layout */
-@media (max-width: 400px) {
-    .logo-img {
-        height: 38px;
-        max-width: 120px;
-    }
-    
-    .cart-link {
-        width: 36px;
-        height: 36px;
-    }
-    
-    .hamburger {
-        width: 36px;
-        height: 36px;
-    }
-    
-    .hamburger span {
-        width: 20px;
-        height: 2px;
-    }
-    
-    .cart-icon {
-        font-size: 20px;
-    }
-    
-    .cart-link .badge {
-        font-size: 10px;
-        min-width: 14px;
-        height: 14px;
-    }
-}
-
-/* iOS Safari Touch Optimizations */
-@supports (-webkit-touch-callout: none) {
+    /* Mobile Layout для iOS Safari */
     @media (max-width: 767.98px) {
+        /* КРИТИЧНО: Заборона transform на body для збереження position: fixed */
+        html,
+        body {
+            -webkit-transform: none;
+            transform: none;
+            -webkit-perspective: none;
+            perspective: none;
+        }
+        
         body {
             padding-top: 0;
         }
         
-        main {
+        /* Main content з padding-top для header */
+        main,
+        .main-content {
             padding-top: 60px;
         }
         
+        /* Фіксований Header */
         .header {
             position: fixed;
             top: 0;
@@ -437,11 +180,7 @@
             border-radius: 1px;
         }
         
-        .cart-link {
-            -webkit-transform: translateZ(0);
-            transform: translateZ(0);
-        }
-        
+        .cart-link,
         .hamburger {
             -webkit-transform: translateZ(0);
             transform: translateZ(0);
@@ -451,118 +190,58 @@
             font-size: 28px;
             line-height: 1;
         }
+        
+        /* Фіксоване нижнє меню */
+        .mobile-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            pointer-events: auto;
+            z-index: 9999;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        
+        /* Padding для контенту щоб не перекривався з нижнім меню */
+        .cart-section,
+        .profile-container,
+        .wishlist-section,
+        main > section:last-child {
+            padding-bottom: calc(70px + env(safe-area-inset-bottom));
+        }
     }
     
     @media (max-width: 575.98px) {
-        main {
+        main,
+        .main-content {
             padding-top: 56px;
         }
         
         .header-content {
             min-height: 56px;
         }
+        
+        .cart-section,
+        .profile-container,
+        .wishlist-section,
+        main > section:last-child {
+            padding-bottom: calc(80px + env(safe-area-inset-bottom));
+        }
     }
     
     @media (max-width: 400px) {
-        main {
+        main,
+        .main-content {
             padding-top: 52px;
         }
         
         .header-content {
             min-height: 52px;
-        }
-    }
-    
-    /* Mobile Bottom Navigation - Фіксація до низу екрана для iOS Safari */
-    .mobile-bottom-nav {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        width: 100%;
-        -webkit-transform: translate3d(0, 0, 0);
-        transform: translate3d(0, 0, 0);
-        -webkit-backface-visibility: hidden;
-        backface-visibility: hidden;
-        pointer-events: auto;
-        z-index: 9999;
-    }
-    
-    /* Забороняємо всім батьківським елементам мати transform для iOS Safari */
-    html,
-    body,
-    body > *,
-    main,
-    .main-content,
-    .container,
-    .profile-container,
-    .profile-wrapper,
-    .profile-page,
-    .auth-page,
-    .cart-page,
-    .wishlist-page,
-    .cart-section,
-    .auth-container,
-    .auth-wrapper {
-        -webkit-transform: none;
-        transform: none;
-        -webkit-perspective: none;
-        perspective: none;
-        -webkit-transform-style: flat;
-        transform-style: flat;
-    }
-    
-    /* Перезаписуємо будь-які інші transform стилі */
-    * {
-        -webkit-transform-style: flat;
-        transform-style: flat;
-    }
-    
-    /* Додатково для всіх сторінок з mobile-bottom-nav */
-    @media (max-width: 768px) {
-        html,
-        body,
-        body.profile-page,
-        body.auth-page,
-        body.cart-page,
-        body.wishlist-page,
-        body.wholesale-user {
-            -webkit-transform: none;
-            transform: none;
-        }
-        
-        .mobile-bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            -webkit-transform: translate3d(0, 0, 0);
-            transform: translate3d(0, 0, 0);
-            z-index: 9999;
-        }
-        
-        .cart-items {
-            gap: 10px;
-        }
-    }
-    
-    @media (max-width: 576px) {
-        .cart-items {
-            gap: 8px;
-        }
-        
-        .cart-item {
-            padding: 10px;
-        }
-    }
-    
-    @media (max-width: 400px) {
-        .cart-items {
-            gap: 6px;
-        }
-        
-        .cart-item {
-            padding: 8px;
         }
     }
     
@@ -619,66 +298,9 @@
         display: block;
         text-align: center;
         width: 100%;
-    }
-    
-    /* Contact Page iOS Optimizations */
-    .contacts-main {
-        padding: env(safe-area-inset-top, var(--spacing-lg)) 
-                env(safe-area-inset-right, var(--spacing-md)) 
-                env(safe-area-inset-bottom, var(--spacing-lg)) 
-                env(safe-area-inset-left, var(--spacing-md));
-    }
-    
-    .contacts-main .container {
-        padding-left: max(var(--spacing-md), env(safe-area-inset-left));
-        padding-right: max(var(--spacing-md), env(safe-area-inset-right));
-    }
-    
-    .contact-info-section {
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
-        -webkit-backface-visibility: hidden;
-        backface-visibility: hidden;
-    }
-    
-    .contact-form .form-control {
-        -webkit-appearance: none;
-        appearance: none;
-        border-radius: var(--border-radius-md);
-    }
-    
-    .contact-form .btn {
-        -webkit-tap-highlight-color: rgba(255, 20, 147, 0.2);
-        touch-action: manipulation;
-        min-height: 48px;
-        min-width: 48px;
-    }
-    
-    .contact-item-icon {
         font-family: "Apple Color Emoji", system-ui, sans-serif;
         font-variant-emoji: emoji;
         text-rendering: optimizeSpeed;
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
-    }
-    
-    .schedule-icon i,
-    .contact-item-icon {
-        -webkit-user-select: none;
-        user-select: none;
-    }
-    
-    .contact-form textarea {
-        resize: vertical;
-        min-height: 120px;
-    }
-    
-    /* Portrait Orientation */
-    @media (max-width: 767.98px) and (orientation: portrait) {
-        .contacts-main {
-            padding-top: max(var(--spacing-md), env(safe-area-inset-top));
-            padding-bottom: max(var(--spacing-md), env(safe-area-inset-bottom));
-        }
     }
     
     /* Footer iOS Optimizations */
@@ -710,56 +332,59 @@
         -webkit-user-select: none;
         user-select: none;
     }
-    
-    /* Small Mobile iOS */
-    @media (max-width: 575.98px) {
-        .footer-main .row {
-            -webkit-transform: translateZ(0);
-            transform: translateZ(0);
-        }
-        
-        .footer-section {
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
-        }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background-color: #1a1a1a;
+        --text-color: #ffffff;
+        --border-color: #333333;
     }
     
-    /* Retina Display Optimizations */
-    @media (max-width: 400px) and (-webkit-min-device-pixel-ratio: 2) {
-        .footer-main {
-            padding: max(2px, env(safe-area-inset-bottom, 2px)) 0;
+    @supports (-webkit-touch-callout: none) {
+        .card {
+            background: #2a2a2a;
+            border-color: #333333;
         }
         
-        .footer-section {
-            padding: 2px;
+        .category-placeholder,
+        .product-placeholder {
+            background: #333333;
+            color: #666666;
+        }
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    @supports (-webkit-touch-callout: none) {
+        .categories-slider,
+        .products-slider {
+            scroll-behavior: auto;
         }
         
-        .footer-title {
-            font-size: 0.75rem;
-            margin-bottom: 2px;
+        .fade-in,
+        .slide-in-up,
+        .slider-btn,
+        .cart-icon {
+            animation: none;
+            transition: none;
+        }
+    }
+}
+
+/* Landscape Orientation */
+@media (orientation: landscape) and (max-height: 500px) {
+    @supports (-webkit-touch-callout: none) {
+        .hero-section {
+            height: auto;
+            min-height: 100vh;
+            min-height: calc(var(--vh, 1vh) * 100);
         }
         
-        .footer-links a {
-            font-size: 0.7rem;
-        }
-        
-        .footer-contact p {
-            font-size: 0.65rem;
-        }
-        
-        .footer-bottom {
-            background: var(--neutral-dark);
-            padding: max(2px, env(safe-area-inset-bottom, 2px)) 0;
-            border-top: none;
-        }
-        
-        .copyright {
-            font-size: 0.6rem;
-            color: rgba(255, 255, 255, 0.4);
-        }
-        
-        .footer-dev {
-            font-size: 0.55rem;
+        .section-padding {
+            padding: var(--spacing-lg) 0;
         }
     }
 }

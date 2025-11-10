@@ -90,7 +90,7 @@ class Cart:
         )
     
     def get_original_total_price(self):
-        """Повна вартість без знижок"""
+        """Повна вартість без знижок (завжди retail_price)"""
         product_ids = self.cart.keys()
         products = Product.objects.filter(id__in=product_ids)
         products_dict = {str(p.id): p for p in products}
@@ -99,10 +99,7 @@ class Cart:
         for product_id, item in self.cart.items():
             if product_id in products_dict:
                 product = products_dict[product_id]
-                if self.user and hasattr(self.user, 'is_wholesale') and self.user.is_wholesale:
-                    original_price = product.wholesale_price or product.retail_price
-                else:
-                    original_price = product.retail_price
+                original_price = product.retail_price
                 total += Decimal(str(original_price)) * item['quantity']
         return total
     
