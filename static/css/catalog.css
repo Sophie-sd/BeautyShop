@@ -256,6 +256,62 @@
   padding-top: 0px;
 }
 
+/* Десктопна панель сортування */
+.desktop-sort-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+  padding: var(--space-md);
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-lg);
+}
+
+.products-count {
+  color: var(--color-gray-600);
+  font-size: 14px;
+}
+
+.desktop-sort {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.sort-label {
+  color: var(--color-gray-700);
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.sort-select {
+  padding: 8px 32px 8px 12px;
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  color: var(--color-gray-900);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M2 4l4 4 4-4z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  min-width: 200px;
+}
+
+.sort-select:hover {
+  border-color: var(--color-primary);
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(255, 62, 152, 0.1);
+}
+
 /* Мобільні контроли */
 .mobile-controls {
   display: none; /* Приховано на desktop */
@@ -1415,6 +1471,10 @@
   :root {
     --catalog-padding: var(--space-md);
     --catalog-gap: 12px;
+  }
+  
+  .desktop-sort-bar {
+    display: none;
   }
   
   .catalog-container {

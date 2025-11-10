@@ -165,6 +165,26 @@
         
         <!-- Основний контент -->
         <main class="catalog-main">
+            <!-- Десктопна панель сортування -->
+            <div class="desktop-sort-bar">
+                <div class="products-count">
+                    {% if products %}
+                        Показано <strong>{{ products|length }}</strong> з <strong>{{ paginator.count }}</strong> товарів
+                    {% endif %}
+                </div>
+                <div class="desktop-sort">
+                    <label for="desktopSortSelect" class="sort-label">Сортувати:</label>
+                    <select class="sort-select" id="desktopSortSelect">
+                        <option value="default" {% if selected_sort == 'default' %}selected{% endif %}>За замовчуванням</option>
+                        <option value="price_asc" {% if selected_sort == 'price_asc' %}selected{% endif %}>Ціна: від дешевих</option>
+                        <option value="price_desc" {% if selected_sort == 'price_desc' %}selected{% endif %}>Ціна: від дорогих</option>
+                        <option value="name" {% if selected_sort == 'name' %}selected{% endif %}>За назвою</option>
+                        <option value="new" {% if selected_sort == 'new' %}selected{% endif %}>Нові товари</option>
+                        <option value="popular" {% if selected_sort == 'popular' %}selected{% endif %}>Популярні</option>
+                    </select>
+                </div>
+            </div>
+            
             <!-- Мобільна панель управління -->
             <div class="mobile-controls">
                 <button type="button" class="mobile-filters-btn" id="mobileFiltersBtn">

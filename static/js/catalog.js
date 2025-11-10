@@ -19,6 +19,7 @@ class CatalogManager {
         this.sortSelectBtn = document.getElementById('sortSelectBtn');
         this.sortDropdown = document.getElementById('sortDropdown');
         this.mobileFiltersClose = document.getElementById('mobileFiltersClose');
+        this.desktopSortSelect = document.getElementById('desktopSortSelect');
     }
     
     bindEvents() {
@@ -55,6 +56,20 @@ class CatalogManager {
             });
         });
         
+        if (this.desktopSortSelect) {
+            this.desktopSortSelect.addEventListener('change', () => {
+                const url = new URL(window.location);
+                const value = this.desktopSortSelect.value;
+                if (value && value !== 'default') {
+                    url.searchParams.set('sort', value);
+                } else {
+                    url.searchParams.delete('sort');
+                }
+                url.searchParams.delete('page');
+                window.location.href = url.toString();
+            });
+        }
+            
         if (this.sortSelectBtn && this.sortDropdown) {
             this.sortSelectBtn.addEventListener('click', () => this.toggleSortDropdown());
             
@@ -79,6 +94,10 @@ class CatalogManager {
     setActiveSortFromURL() {
         const urlParams = new URLSearchParams(window.location.search);
         const sortValue = urlParams.get('sort') || 'default';
+        
+        if (this.desktopSortSelect) {
+            this.desktopSortSelect.value = sortValue;
+        }
         
         if (this.sortDropdown) {
             const sortOption = this.sortDropdown.querySelector(`[data-value="${sortValue}"]`);
