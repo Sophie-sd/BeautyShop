@@ -1,6 +1,5 @@
 .cart-section {
     padding: calc(var(--spacing-xl) * 2) 0 var(--spacing-xl) 0;
-    -webkit-overflow-scrolling: touch;
 }
 
 .cart-content {
@@ -217,6 +216,24 @@
     padding: var(--spacing-lg);
     position: sticky;
     top: 100px;
+}
+
+.cart-summary .summary-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.cart-summary .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cart-subtotal,
+.cart-savings,
+.promo-discount,
+.cart-grand-total {
+    font-weight: 600;
 }
 
 .summary-row {
@@ -511,7 +528,16 @@
 
 @media (max-width: 768px) {
     .cart-section {
-        padding-top: var(--spacing-xl);
+        padding-top: 80px;
+    }
+    
+    .cart-warning {
+        margin-top: 16px;
+        margin-bottom: 16px;
+    }
+    
+    .cart-items {
+        gap: 12px;
     }
     
     .cart-item {
@@ -557,6 +583,15 @@
     .cart-item__price-old {
         font-size: 0.813rem;
     }
+    
+    .cart-summary {
+        margin-bottom: 20px;
+    }
+    
+    .summary-details {
+        display: flex;
+        flex-direction: column;
+    }
 }
 
 @media (max-width: 576px) {
@@ -564,6 +599,21 @@
         left: 10px;
         right: 10px;
         min-width: auto;
+    }
+    
+    .cart-section {
+        padding-top: 70px;
+        padding-bottom: calc(80px + env(safe-area-inset-bottom));
+    }
+    
+    .cart-warning {
+        margin-top: 12px;
+        margin-bottom: 12px;
+        padding: 12px;
+    }
+    
+    .cart-items {
+        gap: 10px;
     }
     
     .cart-item {
@@ -616,9 +666,36 @@
     .cart-item__price-old {
         font-size: 0.75rem;
     }
+    
+    .cart-summary {
+        margin-bottom: calc(20px + env(safe-area-inset-bottom));
+        padding: 16px;
+    }
+    
+    .summary-details .summary-row {
+        padding: 8px 0;
+        font-size: 0.875rem;
+    }
+    
+    .summary-total {
+        margin-top: 12px;
+        padding-top: 12px;
+    }
+    
+    .cart-grand-total {
+        font-size: 1.25rem;
+    }
+    
+    .cart-actions {
+        margin-top: 16px;
+    }
 }
 
 @media (max-width: 400px) {
+    .cart-section {
+        padding-top: 65px;
+    }
+    
     .cart-item__name {
         font-size: 0.813rem;
     }
@@ -626,6 +703,19 @@
     .cart-item__image {
         width: 60px;
         height: 60px;
+    }
+    
+    .cart-summary {
+        padding: 12px;
+        margin-bottom: calc(15px + env(safe-area-inset-bottom));
+    }
+    
+    .summary-details .summary-row {
+        font-size: 0.813rem;
+    }
+    
+    .cart-grand-total {
+        font-size: 1.125rem;
     }
 }
 

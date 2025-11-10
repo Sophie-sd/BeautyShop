@@ -5,10 +5,12 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 32px 20px 40px;
+    transform: none;
 }
 
 .profile-wrapper {
     width: 100%;
+    transform: none;
 }
 
 /* Header */
@@ -262,6 +264,11 @@
 @media (max-width: 768px) {
     .profile-container {
         padding: 20px 15px 32px;
+        transform: none;
+    }
+    
+    .profile-wrapper {
+        transform: none;
     }
     
     .profile-header {
@@ -565,6 +572,11 @@
 @media (max-width: 576px) {
     .profile-container {
         padding: 16px 10px calc(80px + env(safe-area-inset-bottom)) 10px;
+        transform: none;
+    }
+    
+    .profile-wrapper {
+        transform: none;
     }
     
     .profile-header {

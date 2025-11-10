@@ -484,31 +484,62 @@
         transform: translate3d(0, 0, 0);
         -webkit-backface-visibility: hidden;
         backface-visibility: hidden;
-        will-change: transform;
         pointer-events: auto;
         z-index: 9999;
     }
     
-    /* Забороняємо батьківським елементам мати transform для iOS Safari */
+    /* Забороняємо всім батьківським елементам мати transform для iOS Safari */
+    html,
+    body,
+    body > *,
+    main,
+    .main-content,
+    .container,
+    .profile-container,
+    .profile-wrapper,
     .profile-page,
-    .profile-page body,
-    .profile-page main,
-    .profile-page .profile-container,
     .auth-page,
-    .auth-page body,
-    .auth-page main {
+    .cart-page,
+    .wishlist-page,
+    .cart-section,
+    .auth-container,
+    .auth-wrapper {
         -webkit-transform: none;
         transform: none;
-        overflow-y: visible;
+        -webkit-perspective: none;
+        perspective: none;
+        -webkit-transform-style: flat;
+        transform-style: flat;
     }
     
-    /* Гарантуємо що mobile-bottom-nav завжди на місці */
-    body.profile-page .mobile-bottom-nav,
-    body.auth-page .mobile-bottom-nav {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
+    /* Перезаписуємо будь-які інші transform стилі */
+    * {
+        -webkit-transform-style: flat;
+        transform-style: flat;
+    }
+    
+    /* Додатково для всіх сторінок з mobile-bottom-nav */
+    @media (max-width: 768px) {
+        html,
+        body,
+        body.profile-page,
+        body.auth-page,
+        body.cart-page,
+        body.wishlist-page,
+        body.wholesale-user {
+            -webkit-transform: none;
+            transform: none;
+        }
+        
+        .mobile-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+            z-index: 9999;
+        }
     }
     
     /* Mobile Menu Optimizations */

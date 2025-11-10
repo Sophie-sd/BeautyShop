@@ -407,6 +407,11 @@
 @media (max-width: 768px) {
     .auth-container {
         padding: 20px 15px;
+        transform: none;
+    }
+    
+    .auth-wrapper {
+        transform: none;
     }
     
     .auth-card {
@@ -427,6 +432,11 @@
 @media (max-width: 576px) {
     .auth-container {
         padding: 15px 10px;
+        transform: none;
+    }
+    
+    .auth-wrapper {
+        transform: none;
     }
     
     .auth-card {
