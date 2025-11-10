@@ -198,13 +198,10 @@ class ShoppingCart {
             const data = await response.json();
 
             if (data.success) {
-                quantitySpan.textContent = newQuantity;
-                this.updateCartDisplay(data.cart);
-                this.updateItemPrice(productId, data.item);
+                location.reload();
             }
         } catch (error) {
             this.showErrorMessage('Помилка оновлення кількості');
-        } finally {
             button.disabled = false;
         }
     }
