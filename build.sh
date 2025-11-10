@@ -25,8 +25,8 @@ echo ""
 
 # Застосовуємо міграції
 echo "🗄️  Застосування міграцій бази даних..."
-python manage.py migrate blog zero --fake --no-input || true
-python manage.py migrate blog --no-input || true
+python manage.py fix_blog_migrations || true
+python manage.py migrate blog --fake --no-input || true
 python manage.py migrate --no-input
 echo "✅ Міграції застосовано"
 echo ""
