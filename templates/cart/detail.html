@@ -128,7 +128,7 @@
                         </div>
                     </div>
                     
-                    {% if user.is_authenticated %}
+                    {% if user.is_authenticated and user.is_wholesale and not user.is_staff and not user.is_superuser %}
                         {% if cart.get_total_price < 5000 %}
                             <div class="cart-warning">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

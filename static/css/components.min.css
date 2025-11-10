@@ -1147,7 +1147,6 @@
     padding: var(--spacing-lg);
     border: 1px solid var(--neutral-light);
     border-radius: var(--border-radius-md);
-    margin-bottom: var(--spacing-md);
 }
 
 @media (max-width: 767.98px) {
@@ -1332,7 +1331,6 @@
     align-items: center;
     font-size: 1.25rem;
     font-weight: 600;
-    margin-bottom: var(--spacing-lg);
 }
 
 .cart-actions {
