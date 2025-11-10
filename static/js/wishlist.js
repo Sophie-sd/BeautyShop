@@ -134,6 +134,13 @@ class WishlistManager {
             return;
         }
         
+        const csrfToken = this.getCookie('csrftoken');
+        if (!csrfToken) {
+            console.error('CSRF token not found');
+            this.showNotification('Помилка безпеки. Оновіть сторінку.', 'error');
+            return;
+        }
+        
         const isInWishlist = button.classList.contains('active');
         button.disabled = true;
 
@@ -142,19 +149,25 @@ class WishlistManager {
                 ? `/wishlist/remove/${productId}/`
                 : `/wishlist/add/${productId}/`;
 
+            console.log('Wishlist request:', url, 'Product ID:', productId);
+
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
-                    'X-CSRFToken': this.getCookie('csrftoken'),
+                    'X-CSRFToken': csrfToken,
                     'X-Requested-With': 'XMLHttpRequest',
                 },
             });
 
+            console.log('Response status:', response.status);
+
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
+            console.log('Response data:', data);
 
             if (data.success) {
                 button.classList.toggle('active');
@@ -169,7 +182,7 @@ class WishlistManager {
             }
         } catch (error) {
             console.error('Wishlist error:', error);
-            this.showNotification('Виникла помилка. Спробуйте ще раз.', 'error');
+            this.showNotification(error.message || 'Виникла помилка. Спробуйте ще раз.', 'error');
         } finally {
             button.disabled = false;
         }
@@ -313,6 +326,12 @@ class WishlistManager {
 
     getCookie(name) {
         let cookieValue = null;
+        
+        const csrfInput = document.querySelector('input[name=csrfmiddlewaretoken]');
+        if (csrfInput && name === 'csrftoken') {
+            return csrfInput.value;
+        }
+        
         if (document.cookie && document.cookie !== '') {
             const cookies = document.cookie.split(';');
             for (let i = 0; i < cookies.length; i++) {

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="uk" class="no-js">
 <head>
@@ -130,6 +131,7 @@
     </script>
 </head>
 <body class="{% block body_class %}{% endblock %}{% if user.is_authenticated and user.is_wholesale and not user.is_staff and not user.is_superuser %} wholesale-user{% endif %}">
+    {% csrf_token %}
     <!-- Skip link для accessibility -->
     <a href="#main-content" class="skip-link">Перейти до основного вмісту</a>
     

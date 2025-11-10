@@ -1,9 +1,12 @@
 from django.views.generic import ListView, DetailView
 from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.utils.decorators import method_decorator
 from django.db.models import Count, Min, Max, Q
 from .models import Product, Category
 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class CategoryView(ListView):
     """Перегляд товарів категорії"""
     model = Product
@@ -131,6 +134,7 @@ class CategoryView(ListView):
         return context
 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class ProductDetailView(DetailView):
     """Детальна сторінка товару"""
     model = Product
@@ -141,6 +145,7 @@ class ProductDetailView(DetailView):
         return Product.objects.filter(is_active=True)
 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class SaleProductsView(ListView):
     """Акції - показує тільки товари з активними акціями"""
     model = Product

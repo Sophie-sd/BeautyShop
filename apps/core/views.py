@@ -3,12 +3,15 @@ Core Views - основні представлення сайту
 """
 from django.shortcuts import render
 from django.views.generic import TemplateView
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.utils.decorators import method_decorator
 from django.db.models import Q
 from apps.products.models import Product, Category, NewProduct
 from apps.blog.models import Article
 from .models import Banner
 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class HomeView(TemplateView):
     """Головна сторінка"""
     template_name = 'core/home.html'
@@ -91,6 +94,7 @@ class PrivacyView(TemplateView):
     template_name = 'core/privacy.html'
 
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class SearchView(TemplateView):
     """Пошук товарів"""
     template_name = 'core/search.html'
