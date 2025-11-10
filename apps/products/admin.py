@@ -485,12 +485,23 @@ class ProductAdmin(admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         """Налаштування падаючого списку для категорій"""
         if db_field.name == "category":
-            kwargs["queryset"] = Category.objects.filter(is_active=True).order_by('sort_order', 'name')
+            main_categories = Category.objects.filter(parent__isnull=True, is_active=True).order_by('sort_order', 'name')
+            categories_list = []
+            for main_cat in main_categories:
+                categories_list.append(main_cat.id)
+                subcategories = main_cat.children.filter(is_active=True).order_by('sort_order', 'name')
+                for subcat in subcategories:
+                    categories_list.append(subcat.id)
+            
+            kwargs["queryset"] = Category.objects.filter(id__in=categories_list, is_active=True)
+            from django.db.models import Case, When
+            preserved_order = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(categories_list)])
+            kwargs["queryset"] = kwargs["queryset"].order_by(preserved_order)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
     
     class Media:
         css = {
-            'all': ('admin/css/custom_admin.css',)
+            'all': ('admin/css/custom_admin.css', 'admin/css/product_admin.css')
         }
         js = ('admin/js/custom_admin.js',)
 

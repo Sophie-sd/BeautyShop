@@ -313,10 +313,6 @@
     }
     
     /* Ще менші розміри для маленьких екранів */
-    .logo-img {
-        max-width: 60px;
-    }
-    
     .header-content {
         gap: 8px;
         padding: 0 8px;
@@ -437,11 +433,6 @@
     
     .logo {
         flex: 0 0 auto;
-    }
-    
-    .logo-img {
-        max-width: 70px;
-        height: auto;
     }
     
     /* Ховаємо мобільне меню overlay */
