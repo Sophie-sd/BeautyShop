@@ -424,13 +424,6 @@
     transform: translateX(-2px);
 }
 
-.product-card__price-tiers {
-    display: block;
-    font-size: 0.85rem;
-    color: #27ae60;
-    font-weight: 500;
-    margin-top: 4px;
-}
 
 .attribute-row {
     display: flex;

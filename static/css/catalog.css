@@ -800,10 +800,20 @@
 
 .product-card__price {
   display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.product-card__price-row {
+  display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  margin-bottom: var(--space-xs);
-  flex-wrap: wrap;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.product-card__price-row--tiers {
+  display: block;
 }
 
 .product-card__price-current {
