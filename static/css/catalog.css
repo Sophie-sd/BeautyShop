@@ -52,9 +52,10 @@
   position: sticky;
   top: var(--space-lg);
   height: fit-content;
-  max-height: calc(100vh - var(--space-xl));
+  max-height: calc(100vh - 120px);
   overflow-y: auto;
-  margin-bottom: var(--space-xxxl); /* Додаємо відступ від футера */
+  padding-bottom: var(--space-md);
+  -webkit-overflow-scrolling: touch;
 }
 
 .filters-panel {
@@ -62,6 +63,9 @@
   border: 1px solid var(--color-gray-200);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 120px);
 }
 
 .filters-header {
@@ -99,6 +103,9 @@
 
 .filters-content {
   padding: 0;
+  max-height: calc(100vh - 240px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Секції фільтрів */
@@ -197,11 +204,14 @@
 
 /* Дії фільтрів */
 .filters-actions {
-  padding: var(--space-md); /* Зменшено відступи */
+  padding: var(--space-md);
   border-top: 1px solid var(--color-gray-200);
-  background: var(--color-white); /* Змінено фон */
+  background: var(--color-white);
   display: flex;
-  gap: var(--space-sm); /* Зменшено відстань між кнопками */
+  gap: var(--space-sm);
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
 }
 
 .filters-clear-btn {
@@ -1266,8 +1276,9 @@
 
 .modal-filters__body {
   flex: 1;
-  padding: var(--space-md); /* Зменшено з var(--space-lg) */
+  padding: var(--space-md);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Стилі фільтрів всередині модального вікна */
@@ -1420,6 +1431,18 @@
     grid-template-columns: repeat(3, 1fr);
   }
   
+  .catalog-sidebar {
+    max-height: calc(100vh - 100px);
+  }
+  
+  .filters-panel {
+    max-height: calc(100vh - 100px);
+  }
+  
+  .filters-content {
+    max-height: calc(100vh - 220px);
+  }
+  
   .filters-bar__container {
     flex-direction: column;
     align-items: stretch;
@@ -1511,8 +1534,16 @@
   .catalog-sidebar .filters-panel {
     width: 100%;
     max-width: 400px;
-    max-height: 80vh;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .catalog-sidebar .filters-content {
+    max-height: none;
+    flex: 1;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   
   /* Показуємо мобільні контроли */
