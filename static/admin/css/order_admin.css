@@ -1,12 +1,30 @@
 .completed-row td {
-    background-color: #e6f4ea !important;
+    background-color: #e6f4ea;
 }
 
 .completed-row:hover td {
-    background-color: #d4ead8 !important;
+    background-color: #d4ead8;
 }
 
 #changelist table tr.completed-row {
     border-left: 4px solid #28a745;
+}
+
+#changelist-form table th.column-get_status_colored {
+    min-width: 200px;
+}
+
+#changelist-form table th.column-get_total_display {
+    min-width: 120px;
+}
+
+#changelist-form table th.column-get_payment_colored {
+    min-width: 140px;
+}
+
+#changelist-form table td.field-get_status_colored,
+#changelist-form table td.field-get_total_display,
+#changelist-form table td.field-get_payment_colored {
+    white-space: nowrap;
 }
 
