@@ -14,7 +14,6 @@ class Order(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Очікує підтвердження'),
         ('confirmed', 'Підтверджено'),
-        ('processing', 'В обробці'),
         ('shipped', 'Відправлено'),
         ('delivered', 'Доставлено'),
         ('completed', 'Завершено'),

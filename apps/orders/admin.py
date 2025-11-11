@@ -83,7 +83,7 @@ class OrderAdmin(admin.ModelAdmin):
     
     actions = [
         'mark_as_confirmed', 'mark_as_shipped', 'mark_as_delivered',
-        'export_orders_csv', 'send_order_confirmation'
+        'mark_as_completed', 'mark_as_cancelled'
     ]
     
     def get_queryset(self, request):
@@ -101,18 +101,41 @@ class OrderAdmin(admin.ModelAdmin):
         return ''
     
     def get_status_colored(self, obj):
-        """Статус з кольоровим кодуванням"""
+        """Статус з кольоровим бейджем"""
         colors = {
-            'pending': '#dc3545',
-            'confirmed': '#0056b3', 
-            'processing': '#17a2b8',
-            'shipped': '#fd7e14',
-            'delivered': '#28a745',
-            'completed': '#218838',
-            'cancelled': '#6c757d',
+            'pending': {'bg': '#fff3cd', 'border': '#ffc107', 'text': '#856404', 'dot': '#dc3545'},
+            'confirmed': {'bg': '#d1ecf1', 'border': '#17a2b8', 'text': '#0c5460', 'dot': '#0056b3'}, 
+            'shipped': {'bg': '#ffe5cc', 'border': '#fd7e14', 'text': '#8b4513', 'dot': '#fd7e14'},
+            'delivered': {'bg': '#d4edda', 'border': '#28a745', 'text': '#155724', 'dot': '#28a745'},
+            'completed': {'bg': '#d4edda', 'border': '#218838', 'text': '#0d4721', 'dot': '#218838'},
+            'cancelled': {'bg': '#f8d7da', 'border': '#dc3545', 'text': '#721c24', 'dot': '#6c757d'},
         }
-        color = colors.get(obj.status, '#6c757d')
-        return mark_safe(f'<span style="color: {color}; font-weight: 600;">●</span> {obj.get_status_display()}')
+        style = colors.get(obj.status, colors['pending'])
+        
+        badge = f'''
+        <span style="
+            display: inline-flex; 
+            align-items: center; 
+            gap: 6px;
+            padding: 4px 12px; 
+            background: {style['bg']}; 
+            border: 2px solid {style['border']}; 
+            border-radius: 12px;
+            color: {style['text']};
+            font-weight: 600;
+            font-size: 13px;
+        ">
+            <span style="
+                width: 8px; 
+                height: 8px; 
+                background: {style['dot']}; 
+                border-radius: 50%;
+                display: inline-block;
+            "></span>
+            {obj.get_status_display()}
+        </span>
+        '''
+        return mark_safe(badge)
     get_status_colored.short_description = 'Статус'
     
     def get_payment_colored(self, obj):
@@ -260,19 +283,31 @@ class OrderAdmin(admin.ModelAdmin):
         """Підтвердити замовлення"""
         updated = queryset.update(status='confirmed')
         self.message_user(request, f"Підтверджено {updated} замовлень")
-    mark_as_confirmed.short_description = "Підтвердити замовлення"
+    mark_as_confirmed.short_description = "✓ Підтвердити замовлення"
     
     def mark_as_shipped(self, request, queryset):
         """Відправити замовлення"""
         updated = queryset.update(status='shipped')
         self.message_user(request, f"Відправлено {updated} замовлень")
-    mark_as_shipped.short_description = "Відправити замовлення"
+    mark_as_shipped.short_description = "📦 Відправити замовлення"
     
     def mark_as_delivered(self, request, queryset):
         """Доставлено замовлення"""
         updated = queryset.update(status='delivered')
         self.message_user(request, f"Доставлено {updated} замовлень")
-    mark_as_delivered.short_description = "Доставлено замовлення"
+    mark_as_delivered.short_description = "🚚 Доставлено"
+    
+    def mark_as_completed(self, request, queryset):
+        """Завершити замовлення"""
+        updated = queryset.update(status='completed')
+        self.message_user(request, f"Завершено {updated} замовлень")
+    mark_as_completed.short_description = "✅ Завершено замовлення"
+    
+    def mark_as_cancelled(self, request, queryset):
+        """Скасувати замовлення"""
+        updated = queryset.update(status='cancelled')
+        self.message_user(request, f"Скасовано {updated} замовлень")
+    mark_as_cancelled.short_description = "✗ Скасувати замовлення"
     
     class Media:
         css = {

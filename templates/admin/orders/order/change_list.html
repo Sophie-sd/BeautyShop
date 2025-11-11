@@ -1,0 +1,96 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+{% block content %}
+{% if order_stats %}
+<div class="order-stats" style="
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+    padding: 20px;
+    background: #f7fafc;
+    border-radius: 8px;
+">
+    <div class="stat-card" style="
+        background: white;
+        padding: 16px;
+        border-radius: 8px;
+        border-left: 4px solid #4299e1;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    ">
+        <div style="color: #718096; font-size: 12px; margin-bottom: 4px;">Всього замовлень</div>
+        <div style="color: #2d3748; font-size: 28px; font-weight: 700;">{{ order_stats.total }}</div>
+    </div>
+    
+    <div class="stat-card" style="
+        background: white;
+        padding: 16px;
+        border-radius: 8px;
+        border-left: 4px solid #dc3545;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    ">
+        <div style="color: #718096; font-size: 12px; margin-bottom: 4px;">Не підтверджені</div>
+        <div style="color: #dc3545; font-size: 28px; font-weight: 700;">{{ order_stats.pending }}</div>
+    </div>
+    
+    <div class="stat-card" style="
+        background: white;
+        padding: 16px;
+        border-radius: 8px;
+        border-left: 4px solid #fd7e14;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    ">
+        <div style="color: #718096; font-size: 12px; margin-bottom: 4px;">Не відправлені</div>
+        <div style="color: #fd7e14; font-size: 28px; font-weight: 700;">{{ order_stats.not_shipped }}</div>
+    </div>
+    
+    <div class="stat-card" style="
+        background: white;
+        padding: 16px;
+        border-radius: 8px;
+        border-left: 4px solid #28a745;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    ">
+        <div style="color: #718096; font-size: 12px; margin-bottom: 4px;">Оплачені</div>
+        <div style="color: #28a745; font-size: 28px; font-weight: 700;">{{ order_stats.paid }}</div>
+    </div>
+    
+    <div class="stat-card" style="
+        background: white;
+        padding: 16px;
+        border-radius: 8px;
+        border-left: 4px solid #dc3545;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    ">
+        <div style="color: #718096; font-size: 12px; margin-bottom: 4px;">Не оплачені</div>
+        <div style="color: #dc3545; font-size: 28px; font-weight: 700;">{{ order_stats.unpaid }}</div>
+    </div>
+    
+    <div class="stat-card" style="
+        background: white;
+        padding: 16px;
+        border-radius: 8px;
+        border-left: 4px solid #218838;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    ">
+        <div style="color: #718096; font-size: 12px; margin-bottom: 4px;">Завершені</div>
+        <div style="color: #218838; font-size: 28px; font-weight: 700;">{{ order_stats.completed }}</div>
+    </div>
+    
+    <div class="stat-card" style="
+        background: white;
+        padding: 16px;
+        border-radius: 8px;
+        border-left: 4px solid #6c757d;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    ">
+        <div style="color: #718096; font-size: 12px; margin-bottom: 4px;">Скасовані</div>
+        <div style="color: #6c757d; font-size: 28px; font-weight: 700;">{{ order_stats.cancelled }}</div>
+    </div>
+</div>
+{% endif %}
+
+{{ block.super }}
+{% endblock %}
+
