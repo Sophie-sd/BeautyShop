@@ -299,8 +299,8 @@ class OrderAdmin(admin.ModelAdmin):
     
     def mark_as_completed(self, request, queryset):
         """Завершити замовлення"""
-        updated = queryset.update(status='completed')
-        self.message_user(request, f"Завершено {updated} замовлень")
+        updated = queryset.update(status='completed', is_paid=True)
+        self.message_user(request, f"Завершено {updated} замовлень (автоматично позначено як оплачені)")
     mark_as_completed.short_description = "✅ Завершено замовлення"
     
     def mark_as_cancelled(self, request, queryset):
@@ -311,6 +311,9 @@ class OrderAdmin(admin.ModelAdmin):
     
     def changelist_view(self, request, extra_context=None):
         """Додаємо статистику зверху"""
+        from django.utils import timezone
+        from datetime import datetime
+        
         response = super().changelist_view(request, extra_context)
         
         try:
@@ -318,18 +321,26 @@ class OrderAdmin(admin.ModelAdmin):
         except (AttributeError, KeyError):
             return response
         
+        today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        today_qs = qs.filter(created_at__gte=today_start)
+        
         stats = {
-            'total': qs.count(),
             'pending': qs.filter(status='pending').count(),
-            'not_shipped': qs.exclude(status__in=['shipped', 'delivered', 'completed', 'cancelled']).count(),
-            'paid': qs.filter(is_paid=True).count(),
-            'unpaid': qs.filter(is_paid=False).count(),
+            'in_progress': qs.filter(status__in=['confirmed', 'shipped', 'delivered']).count(),
             'completed': qs.filter(status='completed').count(),
-            'cancelled': qs.filter(status='cancelled').count(),
+        }
+        
+        today_stats = {
+            'new_orders': today_qs.count(),
+            'total_amount': sum(order.total for order in today_qs),
+            'shipped': today_qs.filter(status='shipped').count(),
+            'cancelled': today_qs.filter(status='cancelled').count(),
+            'date': timezone.now().strftime('%d.%m.%Y'),
         }
         
         extra_context = extra_context or {}
         extra_context['order_stats'] = stats
+        extra_context['today_stats'] = today_stats
         response.context_data.update(extra_context)
         
         return response
