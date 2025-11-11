@@ -31,7 +31,6 @@ class Order(models.Model):
     DELIVERY_METHOD_CHOICES = [
         ('nova_poshta', 'Нова Пошта'),
         ('ukrposhta', 'Укрпошта'),
-        ('courier', 'Кур\'єр'),
         ('pickup', 'Самовивіз'),
     ]
     

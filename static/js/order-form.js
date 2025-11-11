@@ -68,17 +68,6 @@ document.addEventListener('DOMContentLoaded', function() {
             pickupInfo.style.display = 'block';
             deliveryAddressInput.value = PICKUP_ADDRESS;
             deliveryCityInput.value = 'Монастирище';
-        } else if (deliveryMethod === 'courier') {
-            deliveryCityInput.parentElement.style.display = 'block';
-            deliveryAddressWrapper.style.display = 'block';
-            
-            deliveryCityInput.setAttribute('required', 'required');
-            deliveryAddressInput.setAttribute('required', 'required');
-            
-            deliveryAddressLabel.textContent = 'Адреса *';
-            deliveryCityInput.placeholder = 'Місто доставки';
-            deliveryAddressInput.placeholder = 'Вулиця, будинок, квартира';
-            deliveryAddressInput.readOnly = false;
         }
         
         updatePaymentOptions();

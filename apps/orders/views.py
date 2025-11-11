@@ -92,6 +92,13 @@ def order_create(request):
             return render(request, 'orders/create.html', context)
         
         try:
+            print(f"DEBUG: Creating order with data:")
+            print(f"  - User: {request.user if request.user.is_authenticated else 'Anonymous'}")
+            print(f"  - Name: {first_name} {last_name} {middle_name}")
+            print(f"  - Delivery: {delivery_method}, {delivery_city}, {delivery_address}")
+            print(f"  - NP refs: city={np_city_ref}, warehouse={np_warehouse_ref}, type={delivery_type}")
+            print(f"  - Payment: {payment_method}")
+            
             order = Order.objects.create(
                 user=request.user if request.user.is_authenticated else None,
                 first_name=first_name,
@@ -112,6 +119,8 @@ def order_create(request):
                 notes=notes
             )
             
+            print(f"DEBUG: Order created with ID: {order.id}")
+            
             for item in cart:
                 OrderItem.objects.create(
                     order=order,
@@ -123,6 +132,8 @@ def order_create(request):
             order.order_number = f"BS{order.id:06d}"
             order.save(update_fields=['order_number'])
             
+            print(f"DEBUG: Order number set: {order.order_number}")
+            
             if payment_method == 'liqpay':
                 request.session['pending_order_id'] = order.id
                 return redirect('orders:liqpay_payment', order_id=order.id)
@@ -133,9 +144,10 @@ def order_create(request):
             
         except Exception as e:
             import traceback
+            error_details = traceback.format_exc()
             print(f"Order creation error: {e}")
-            print(traceback.format_exc())
-            messages.error(request, f'Помилка при створенні замовлення. Будь ласка, спробуйте ще раз.')
+            print(f"Traceback: {error_details}")
+            messages.error(request, f'Помилка при створенні замовлення: {str(e)}')
             context = {
                 'cart': cart,
                 'user': request.user,
