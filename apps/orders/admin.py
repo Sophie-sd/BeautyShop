@@ -309,6 +309,31 @@ class OrderAdmin(admin.ModelAdmin):
         self.message_user(request, f"Скасовано {updated} замовлень")
     mark_as_cancelled.short_description = "✗ Скасувати замовлення"
     
+    def changelist_view(self, request, extra_context=None):
+        """Додаємо статистику зверху"""
+        response = super().changelist_view(request, extra_context)
+        
+        try:
+            qs = response.context_data['cl'].queryset
+        except (AttributeError, KeyError):
+            return response
+        
+        stats = {
+            'total': qs.count(),
+            'pending': qs.filter(status='pending').count(),
+            'not_shipped': qs.exclude(status__in=['shipped', 'delivered', 'completed', 'cancelled']).count(),
+            'paid': qs.filter(is_paid=True).count(),
+            'unpaid': qs.filter(is_paid=False).count(),
+            'completed': qs.filter(status='completed').count(),
+            'cancelled': qs.filter(status='cancelled').count(),
+        }
+        
+        extra_context = extra_context or {}
+        extra_context['order_stats'] = stats
+        response.context_data.update(extra_context)
+        
+        return response
+    
     class Media:
         css = {
             'all': ('admin/css/custom_admin.css',)
