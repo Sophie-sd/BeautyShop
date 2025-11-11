@@ -1,0 +1,12 @@
+.completed-row td {
+    background-color: #e6f4ea !important;
+}
+
+.completed-row:hover td {
+    background-color: #d4ead8 !important;
+}
+
+#changelist table tr.completed-row {
+    border-left: 4px solid #28a745;
+}
+

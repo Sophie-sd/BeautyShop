@@ -30,8 +30,8 @@ class OrderAdmin(admin.ModelAdmin):
     """Адміністрування замовлень з розширеними фільтрами"""
     
     list_display = [
-        'order_number', 'get_customer_name', 'get_status_badge',
-        'get_total_display', 'payment_method', 'get_payment_status', 'created_at'
+        'order_number', 'get_customer_name', 'get_status_colored',
+        'get_total_display', 'get_payment_colored', 'created_at'
     ]
     list_filter = [
         'status', 
@@ -46,14 +46,14 @@ class OrderAdmin(admin.ModelAdmin):
     ]
     readonly_fields = [
         'order_number', 'created_at', 'updated_at',
-        'get_total_cost', 'get_customer_info', 'get_items_list',
-        'np_city_ref', 'np_warehouse_ref'
+        'get_customer_full_info', 'get_delivery_full_info',
+        'get_payment_full_info', 'get_items_table'
     ]
     date_hierarchy = 'created_at'
     ordering = ['-created_at']
     list_per_page = 50
     
-    inlines = [OrderItemInline]
+    inlines = []
     
     def has_add_permission(self, request):
         """Заборонити створення замовлень через адмінку"""
@@ -61,27 +61,19 @@ class OrderAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('📋 Основна інформація', {
-            'fields': ('order_number', 'user', 'status', 'created_at', 'updated_at')
+            'fields': ('order_number', 'status', 'created_at', 'updated_at')
         }),
         ('🛒 Товари', {
-            'fields': ('get_items_list',),
-            'description': 'Товари в замовленні'
+            'fields': ('get_items_table',),
         }),
         ('👤 Клієнт', {
-            'fields': ('first_name', 'last_name', 'middle_name', 'email', 'phone', 'get_customer_info')
+            'fields': ('get_customer_full_info',)
         }),
         ('🚚 Доставка', {
-            'fields': (
-                'delivery_method', 'delivery_city', 
-                'delivery_address', 'delivery_cost',
-                'delivery_type', 'np_city_ref', 'np_warehouse_ref'
-            )
+            'fields': ('get_delivery_full_info',)
         }),
         ('💳 Оплата', {
-            'fields': (
-                'payment_method', 'is_paid', 'payment_date',
-                'subtotal', 'discount', 'total'
-            )
+            'fields': ('get_payment_full_info',)
         }),
         ('📝 Примітки', {
             'fields': ('notes', 'admin_notes'),
@@ -98,134 +90,188 @@ class OrderAdmin(admin.ModelAdmin):
         """Оптимізуємо запити"""
         return super().get_queryset(request).select_related('user').prefetch_related('items__product')
     
-    def get_status_badge(self, obj):
-        """Відображення статусу з кольоровим бейджем"""
-        status_colors = {
-            'pending': 'warning',
-            'confirmed': 'info',
-            'processing': 'info',
-            'shipped': 'primary',
-            'delivered': 'success',
-            'cancelled': 'danger',
-            'completed': 'success',
-        }
-        color = status_colors.get(obj.status, 'secondary')
-        return format_html(
-            '<span class="badge badge-{}">{}</span>',
-            color,
-            obj.get_status_display()
-        )
-    get_status_badge.short_description = 'Статус'
+    def get_list_display_links(self, request, list_display):
+        """Робимо весь рядок кліка бельним"""
+        return ('order_number',)
     
-    def get_payment_status(self, obj):
-        """Статус оплати"""
+    def get_row_css(self, obj):
+        """CSS класи для рядків таблиці"""
+        if obj.status == 'completed':
+            return 'completed-row'
+        return ''
+    
+    def get_status_colored(self, obj):
+        """Статус з кольоровим кодуванням"""
+        colors = {
+            'pending': '#dc3545',
+            'confirmed': '#0056b3', 
+            'processing': '#17a2b8',
+            'shipped': '#fd7e14',
+            'delivered': '#28a745',
+            'completed': '#218838',
+            'cancelled': '#6c757d',
+        }
+        color = colors.get(obj.status, '#6c757d')
+        return mark_safe(f'<span style="color: {color}; font-weight: 600;">●</span> {obj.get_status_display()}')
+    get_status_colored.short_description = 'Статус'
+    
+    def get_payment_colored(self, obj):
+        """Оплата з кольоровим кодуванням"""
         if obj.is_paid:
-            return format_html('<span class="badge badge-success">✓ Оплачено</span>')
-        return format_html('<span class="badge badge-warning">⏳ Не оплачено</span>')
-    get_payment_status.short_description = 'Оплата'
+            return mark_safe('<span style="color: #28a745; font-weight: 600;">✓ Оплачено</span>')
+        return mark_safe('<span style="color: #dc3545; font-weight: 600;">✗ Не оплачено</span>')
+    get_payment_colored.short_description = 'Оплата'
     
     def get_total_display(self, obj):
         """Загальна сума"""
         return mark_safe(f'<strong>{float(obj.total):.2f} ₴</strong>')
     get_total_display.short_description = 'Сума'
     
-    def get_customer_info(self, obj):
-        """Інформація про клієнта"""
+    def get_customer_full_info(self, obj):
+        """Повна інформація про клієнта - тільки для читання"""
+        client_type = "Гість"
         if obj.user:
-            return format_html(
-                '<strong>{}</strong><br>📧 {}<br>📞 {}<br>🔥 Оптовий клієнт',
-                obj.get_customer_name(),
-                obj.email,
-                obj.phone
-            )
-        return format_html(
-            '<strong>{}</strong><br>📧 {}<br>📞 {}<br>👤 Гість',
-            obj.get_customer_name(),
-            obj.email,
-            obj.phone
-        )
-    get_customer_info.short_description = "Інформація про клієнта"
+            if obj.user.is_staff or obj.user.is_superuser:
+                client_type = "Адміністратор"
+            else:
+                client_type = "Оптовий клієнт"
+        else:
+            client_type = "Роздрібний клієнт"
+        
+        html = f'''
+        <div style="background: #f7fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #4299e1;">
+            <div style="margin-bottom: 12px;">
+                <strong style="color: #2d3748;">ПІБ:</strong> 
+                <span style="color: #1a202c;">{obj.get_customer_name()}</span>
+            </div>
+            <div style="margin-bottom: 12px;">
+                <strong style="color: #2d3748;">Email:</strong> 
+                <span style="color: #1a202c;">{obj.email}</span>
+            </div>
+            <div style="margin-bottom: 12px;">
+                <strong style="color: #2d3748;">Телефон:</strong> 
+                <span style="color: #1a202c;">{obj.phone}</span>
+            </div>
+            <div>
+                <strong style="color: #2d3748;">Тип клієнта:</strong> 
+                <span style="color: #4299e1; font-weight: 600;">{client_type}</span>
+            </div>
+        </div>
+        '''
+        return mark_safe(html)
+    get_customer_full_info.short_description = "Інформація про клієнта"
     
-    def get_items_list(self, obj):
-        """Список товарів в замовленні"""
+    def get_delivery_full_info(self, obj):
+        """Повна інформація про доставку - тільки для читання"""
+        delivery_method_display = obj.get_delivery_method_display()
+        
+        html = f'''
+        <div style="background: #f7fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #48bb78;">
+            <div style="margin-bottom: 12px;">
+                <strong style="color: #2d3748;">Спосіб доставки:</strong> 
+                <span style="color: #1a202c;">{delivery_method_display}</span>
+            </div>
+            <div style="margin-bottom: 12px;">
+                <strong style="color: #2d3748;">Місто:</strong> 
+                <span style="color: #1a202c;">{obj.delivery_city}</span>
+            </div>
+            <div style="margin-bottom: 12px;">
+                <strong style="color: #2d3748;">Адреса:</strong> 
+                <span style="color: #1a202c;">{obj.delivery_address}</span>
+            </div>
+        </div>
+        '''
+        return mark_safe(html)
+    get_delivery_full_info.short_description = "Інформація про доставку"
+    
+    def get_payment_full_info(self, obj):
+        """Повна інформація про оплату - тільки для читання"""
+        payment_method_display = obj.get_payment_method_display()
+        payment_status = "Оплачено ✓" if obj.is_paid else "Не оплачено ✗"
+        payment_status_color = "#28a745" if obj.is_paid else "#dc3545"
+        payment_date_display = obj.payment_date.strftime('%d.%m.%Y %H:%M') if obj.payment_date else "—"
+        
+        html = f'''
+        <div style="background: #f7fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #f6ad55;">
+            <div style="margin-bottom: 12px;">
+                <strong style="color: #2d3748;">Спосіб оплати:</strong> 
+                <span style="color: #1a202c;">{payment_method_display}</span>
+            </div>
+            <div style="margin-bottom: 12px;">
+                <strong style="color: #2d3748;">Статус оплати:</strong> 
+                <span style="color: {payment_status_color}; font-weight: 600;">{payment_status}</span>
+                {f'<span style="color: #718096;"> ({payment_date_display})</span>' if obj.is_paid else ''}
+            </div>
+            <div style="margin-bottom: 12px;">
+                <strong style="color: #2d3748;">Сума товарів:</strong> 
+                <span style="color: #1a202c;">{float(obj.subtotal):.2f} ₴</span>
+            </div>
+        '''
+        
+        if obj.discount > 0:
+            html += f'''
+            <div style="margin-bottom: 12px;">
+                <strong style="color: #2d3748;">Знижка:</strong> 
+                <span style="color: #f56565;">-{float(obj.discount):.2f} ₴</span>
+            </div>
+            '''
+        
+        html += f'''
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 2px solid #e2e8f0;">
+                <strong style="color: #2d3748; font-size: 16px;">Загальна сума:</strong> 
+                <span style="color: #4299e1; font-weight: 700; font-size: 18px;">{float(obj.total):.2f} ₴</span>
+            </div>
+        </div>
+        '''
+        return mark_safe(html)
+    get_payment_full_info.short_description = "Інформація про оплату"
+    
+    def get_items_table(self, obj):
+        """Таблиця товарів в замовленні"""
         items = obj.items.all()
         if not items:
-            return "Немає товарів"
+            return mark_safe('<p style="color: #718096;">Немає товарів</p>')
         
-        html = '<table style="width:100%; border-collapse: collapse;">'
-        html += '<tr style="background: #f7fafc;"><th style="padding: 8px; text-align: left;">Товар</th><th style="padding: 8px;">Кількість</th><th style="padding: 8px;">Ціна</th><th style="padding: 8px;">Сума</th></tr>'
+        html = '<table style="width:100%; border-collapse: collapse; margin-top: 10px;">'
+        html += '<tr style="background: #f7fafc;"><th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0;">Товар</th><th style="padding: 12px; text-align: center; border-bottom: 2px solid #e2e8f0;">Кількість</th><th style="padding: 12px; text-align: right; border-bottom: 2px solid #e2e8f0;">Ціна</th><th style="padding: 12px; text-align: right; border-bottom: 2px solid #e2e8f0;">Сума</th></tr>'
         
         for item in items:
             html += f'''
                 <tr style="border-bottom: 1px solid #e2e8f0;">
-                    <td style="padding: 8px;">{item.product.name}</td>
-                    <td style="padding: 8px; text-align: center;">{item.quantity} шт</td>
-                    <td style="padding: 8px; text-align: right;">{item.price} ₴</td>
-                    <td style="padding: 8px; text-align: right;"><strong>{item.get_cost()} ₴</strong></td>
+                    <td style="padding: 12px;">{item.product.name}</td>
+                    <td style="padding: 12px; text-align: center;">{item.quantity} шт</td>
+                    <td style="padding: 12px; text-align: right;">{float(item.price):.2f} ₴</td>
+                    <td style="padding: 12px; text-align: right;"><strong>{float(item.get_cost()):.2f} ₴</strong></td>
                 </tr>
             '''
         
         html += f'''
-            <tr style="background: #f7fafc; font-weight: bold;">
-                <td colspan="3" style="padding: 8px; text-align: right;">Разом:</td>
-                <td style="padding: 8px; text-align: right;">{obj.subtotal} ₴</td>
-            </tr>
-        '''
-        
-        if obj.delivery_cost > 0:
-            html += f'''
-                <tr>
-                    <td colspan="3" style="padding: 8px; text-align: right;">Доставка:</td>
-                    <td style="padding: 8px; text-align: right;">{obj.delivery_cost} ₴</td>
-                </tr>
-            '''
-        
-        if obj.discount > 0:
-            html += f'''
-                <tr style="color: #f56565;">
-                    <td colspan="3" style="padding: 8px; text-align: right;">Знижка:</td>
-                    <td style="padding: 8px; text-align: right;">-{obj.discount} ₴</td>
-                </tr>
-            '''
-        
-        html += f'''
-            <tr style="background: #ebf8ff; font-weight: bold; font-size: 16px;">
-                <td colspan="3" style="padding: 8px; text-align: right;">Всього до сплати:</td>
-                <td style="padding: 8px; text-align: right; color: #4299e1;">{obj.total} ₴</td>
+            <tr style="background: #ebf8ff; font-weight: 600;">
+                <td colspan="3" style="padding: 12px; text-align: right;">Разом:</td>
+                <td style="padding: 12px; text-align: right; color: #4299e1;">{float(obj.subtotal):.2f} ₴</td>
             </tr>
         '''
         
         html += '</table>'
-        return format_html(html)
-    get_items_list.short_description = "Товари в замовленні"
-    
-    def get_total_cost(self, obj):
-        """Загальна вартість з доставкою"""
-        return format_html(
-            '<strong style="color: green;">{:.2f} грн</strong>',
-            obj.get_total_cost()
-        )
-    get_total_cost.short_description = "Загальна вартість"
+        return mark_safe(html)
+    get_items_table.short_description = "Товари в замовленні"
     
     def mark_as_confirmed(self, request, queryset):
         """Підтвердити замовлення"""
         updated = queryset.update(status='confirmed')
         self.message_user(request, f"Підтверджено {updated} замовлень")
-    
     mark_as_confirmed.short_description = "Підтвердити замовлення"
     
     def mark_as_shipped(self, request, queryset):
         """Відправити замовлення"""
         updated = queryset.update(status='shipped')
         self.message_user(request, f"Відправлено {updated} замовлень")
-    
     mark_as_shipped.short_description = "Відправити замовлення"
     
     def mark_as_delivered(self, request, queryset):
         """Доставлено замовлення"""
         updated = queryset.update(status='delivered')
         self.message_user(request, f"Доставлено {updated} замовлень")
-    
     mark_as_delivered.short_description = "Доставлено замовлення"
     
     class Media:

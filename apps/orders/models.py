@@ -17,8 +17,8 @@ class Order(models.Model):
         ('processing', 'В обробці'),
         ('shipped', 'Відправлено'),
         ('delivered', 'Доставлено'),
-        ('cancelled', 'Скасовано'),
         ('completed', 'Завершено'),
+        ('cancelled', 'Скасовано'),
     ]
     
     PAYMENT_METHOD_CHOICES = [
