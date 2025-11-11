@@ -3,11 +3,11 @@
 """
 from django.contrib import admin
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django.db.models import Q, Count, Max
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.urls import path, reverse
-from django.utils.safestring import mark_safe
 from datetime import datetime, timedelta
 from .models import Order, OrderItem, RetailClient, EmailCampaign, Newsletter
 
@@ -126,7 +126,7 @@ class OrderAdmin(admin.ModelAdmin):
     
     def get_total_display(self, obj):
         """Загальна сума"""
-        return format_html('<strong>{:.2f} ₴</strong>', float(obj.total))
+        return mark_safe(f'<strong>{float(obj.total):.2f} ₴</strong>')
     get_total_display.short_description = 'Сума'
     
     def get_customer_info(self, obj):
