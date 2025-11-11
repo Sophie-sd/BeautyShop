@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
         deliveryAddressWrapper.style.display = 'none';
         cityResultsContainer.style.display = 'none';
         warehouseResultsContainer.style.display = 'none';
+        warehouseResultsContainer.innerHTML = '';
         pickupInfo.style.display = 'none';
         deliveryAddressInput.style.display = 'block';
         
@@ -156,6 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function selectCity(city) {
+        console.log('Місто обрано:', city);
         deliveryCityInput.value = city.mainDescription;
         npCityRefInput.value = city.ref;
         selectedCityRef = city.ref;
@@ -166,24 +168,42 @@ document.addEventListener('DOMContentLoaded', function() {
         warehouseResultsContainer.innerHTML = '';
         warehouseResultsContainer.style.display = 'none';
         
-        if (deliveryTypeSelect.value) {
+        const deliveryType = deliveryTypeSelect.value;
+        console.log('Тип доставки:', deliveryType);
+        
+        if (deliveryType) {
+            console.log('Викликаємо loadWarehouses');
             loadWarehouses();
+        } else {
+            console.log('Тип доставки не обрано, loadWarehouses не викликаємо');
         }
     }
     
     function loadWarehouses() {
-        if (!selectedCityRef) return;
+        if (!selectedCityRef) {
+            console.warn('loadWarehouses: selectedCityRef порожній');
+            return;
+        }
         
         const warehouseType = deliveryTypeSelect.value;
+        console.log('loadWarehouses викликано:', {selectedCityRef, warehouseType});
         
         warehouseResultsContainer.innerHTML = '<div class="loading">Завантаження...</div>';
         warehouseResultsContainer.style.display = 'block';
         
-        fetch(`/orders/np/get-warehouses/?city_ref=${encodeURIComponent(selectedCityRef)}&type=${warehouseType}`)
-            .then(response => response.json())
+        const url = `/orders/np/get-warehouses/?city_ref=${encodeURIComponent(selectedCityRef)}&type=${warehouseType}`;
+        console.log('Запит до:', url);
+        
+        fetch(url)
+            .then(response => {
+                console.log('Відповідь отримано:', response.status);
+                return response.json();
+            })
             .then(data => {
-                if (data.success && data.warehouses.length > 0) {
+                console.log('Дані отримано:', data);
+                if (data.success && data.warehouses && data.warehouses.length > 0) {
                     warehouseResultsContainer.innerHTML = '';
+                    console.log(`Завантажено ${data.warehouses.length} відділень`);
                     data.warehouses.forEach(warehouse => {
                         const item = document.createElement('div');
                         item.className = 'warehouse-item';
@@ -199,12 +219,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         warehouseResultsContainer.appendChild(item);
                     });
                 } else {
+                    console.warn('Відділення не знайдено або порожній масив');
                     warehouseResultsContainer.innerHTML = '<div class="no-results">Відділення не знайдено</div>';
                 }
             })
             .catch(error => {
                 console.error('Помилка завантаження відділень:', error);
-                warehouseResultsContainer.innerHTML = '<div class="error">Помилка завантаження</div>';
+                warehouseResultsContainer.innerHTML = '<div class="error">Помилка завантаження. Перевірте консоль.</div>';
             });
     }
     
