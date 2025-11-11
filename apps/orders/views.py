@@ -129,10 +129,7 @@ def order_create(request):
                     price=item['price']
                 )
             
-            order.order_number = f"BS{order.id:06d}"
-            order.save(update_fields=['order_number'])
-            
-            print(f"DEBUG: Order number set: {order.order_number}")
+            print(f"DEBUG: Order items created, order number: {order.order_number}")
             
             if payment_method == 'liqpay':
                 request.session['pending_order_id'] = order.id

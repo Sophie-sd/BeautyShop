@@ -318,6 +318,61 @@ textarea.form-control {
     }
 }
 
+.messages {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 90%;
+    max-width: 600px;
+}
+
+.messages .alert {
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    font-size: 15px;
+    line-height: 1.5;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.messages .alert-error {
+    background: #fff;
+    border-left: 4px solid #dc3545;
+    color: #721c24;
+}
+
+.messages .alert-success {
+    background: #fff;
+    border-left: 4px solid #28a745;
+    color: #155724;
+}
+
+.messages .alert-info {
+    background: #fff;
+    border-left: 4px solid #17a2b8;
+    color: #0c5460;
+}
+
+.messages .alert-warning {
+    background: #fff;
+    border-left: 4px solid #ffc107;
+    color: #856404;
+}
+
 @media screen and (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
     .autocomplete-results,
     .warehouse-results {

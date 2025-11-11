@@ -92,9 +92,12 @@ class Order(models.Model):
         ordering = ['-created_at']
     
     def save(self, *args, **kwargs):
-        if not self.order_number:
-            self.order_number = f"BS{self.id or '000'}{self.created_at.strftime('%Y%m%d') if hasattr(self, 'created_at') else ''}"
+        is_new = self.pk is None
         super().save(*args, **kwargs)
+        
+        if is_new and not self.order_number:
+            self.order_number = f"BS{self.id:06d}"
+            super().save(update_fields=['order_number'])
     
     def get_total_cost(self):
         """Повертає загальну вартість замовлення"""
