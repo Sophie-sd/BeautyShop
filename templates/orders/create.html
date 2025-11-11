@@ -12,6 +12,9 @@
     .autocomplete-container {
         position: relative;
     }
+    .warehouse-container {
+        position: relative;
+    }
     .autocomplete-results,
     .warehouse-results {
         position: absolute;
@@ -149,20 +152,12 @@
                             <input type="hidden" id="np_city_ref" name="np_city_ref">
                         </div>
                         
-                        <div class="form-group delivery-type-wrapper">
-                            <label for="delivery_type">Тип доставки *</label>
-                            <select id="delivery_type" name="delivery_type" class="form-control">
-                                <option value="">Оберіть тип доставки</option>
-                                <option value="warehouse">Відділення</option>
-                                <option value="postomat">Поштомат</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group delivery-address-wrapper">
-                            <label for="delivery_address" id="delivery_address_label">Адреса *</label>
-                            <input type="text" id="delivery_address" name="delivery_address" class="form-control">
+                        <div class="form-group delivery-address-wrapper warehouse-container">
+                            <label for="delivery_address" id="delivery_address_label">Відділення/Поштомат *</label>
+                            <input type="text" id="delivery_address" name="delivery_address" class="form-control" placeholder="Введіть номер або адресу для пошуку, або оберіть зі списку">
                             <div id="warehouse_results" class="warehouse-results"></div>
                             <input type="hidden" id="np_warehouse_ref" name="np_warehouse_ref">
+                            <input type="hidden" id="delivery_type" name="delivery_type">
                             <div id="pickup_info" class="pickup-info" style="display: none;">
                                 <p class="pickup-message">Будемо чекати вас за адресою:</p>
                                 <p class="pickup-address">Україна, Черкаська область, м.Монастирище, вул. Соборна 126Д</p>

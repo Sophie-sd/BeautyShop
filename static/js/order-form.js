@@ -1,9 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     const deliveryMethodSelect = document.getElementById('delivery_method');
     const deliveryCityInput = document.getElementById('delivery_city');
-    const deliveryTypeSelect = document.getElementById('delivery_type');
+    const deliveryTypeInput = document.getElementById('delivery_type');
     const deliveryAddressInput = document.getElementById('delivery_address');
-    const deliveryTypeWrapper = document.querySelector('.delivery-type-wrapper');
     const deliveryAddressWrapper = document.querySelector('.delivery-address-wrapper');
     const cityResultsContainer = document.getElementById('city_results');
     const warehouseResultsContainer = document.getElementById('warehouse_results');
@@ -15,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let selectedCityRef = '';
     let searchTimeout = null;
+    let allWarehouses = [];
     
     const PICKUP_ADDRESS = 'Україна, Черкаська область, м.Монастирище, вул. Соборна 126Д';
     
@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const deliveryMethod = deliveryMethodSelect.value;
         
         deliveryCityInput.parentElement.style.display = 'none';
-        deliveryTypeWrapper.style.display = 'none';
         deliveryAddressWrapper.style.display = 'none';
         cityResultsContainer.style.display = 'none';
         warehouseResultsContainer.style.display = 'none';
@@ -32,28 +31,26 @@ document.addEventListener('DOMContentLoaded', function() {
         
         deliveryCityInput.value = '';
         deliveryAddressInput.value = '';
-        deliveryTypeSelect.value = '';
+        deliveryTypeInput.value = '';
         npCityRefInput.value = '';
         npWarehouseRefInput.value = '';
         selectedCityRef = '';
+        allWarehouses = [];
         
         deliveryCityInput.removeAttribute('required');
         deliveryAddressInput.removeAttribute('required');
-        deliveryTypeSelect.removeAttribute('required');
         
         if (deliveryMethod === 'nova_poshta') {
             deliveryCityInput.parentElement.style.display = 'block';
-            deliveryTypeWrapper.style.display = 'block';
             deliveryAddressWrapper.style.display = 'block';
             
             deliveryCityInput.setAttribute('required', 'required');
-            deliveryTypeSelect.setAttribute('required', 'required');
             deliveryAddressInput.setAttribute('required', 'required');
             
             deliveryAddressLabel.textContent = 'Відділення/Поштомат *';
             deliveryCityInput.placeholder = 'Почніть вводити назву міста...';
-            deliveryAddressInput.placeholder = 'Оберіть відділення або поштомат зі списку нижче';
-            deliveryAddressInput.readOnly = true;
+            deliveryAddressInput.placeholder = 'Введіть номер або адресу для пошуку';
+            deliveryAddressInput.readOnly = false;
         } else if (deliveryMethod === 'ukrposhta') {
             deliveryCityInput.parentElement.style.display = 'block';
             deliveryAddressWrapper.style.display = 'block';
@@ -166,17 +163,9 @@ document.addEventListener('DOMContentLoaded', function() {
         deliveryAddressInput.value = '';
         npWarehouseRefInput.value = '';
         warehouseResultsContainer.innerHTML = '';
-        warehouseResultsContainer.style.display = 'none';
         
-        const deliveryType = deliveryTypeSelect.value;
-        console.log('Тип доставки:', deliveryType);
-        
-        if (deliveryType) {
-            console.log('Викликаємо loadWarehouses');
-            loadWarehouses();
-        } else {
-            console.log('Тип доставки не обрано, loadWarehouses не викликаємо');
-        }
+        console.log('Викликаємо loadWarehouses');
+        loadWarehouses();
     }
     
     function loadWarehouses() {
@@ -185,13 +174,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        const warehouseType = deliveryTypeSelect.value;
-        console.log('loadWarehouses викликано:', {selectedCityRef, warehouseType});
+        console.log('loadWarehouses викликано для міста:', selectedCityRef);
         
-        warehouseResultsContainer.innerHTML = '<div class="loading">Завантаження...</div>';
+        warehouseResultsContainer.innerHTML = '<div class="loading">Завантаження відділень...</div>';
         warehouseResultsContainer.style.display = 'block';
         
-        const url = `/orders/np/get-warehouses/?city_ref=${encodeURIComponent(selectedCityRef)}&type=${warehouseType}`;
+        const url = `/orders/np/get-warehouses/?city_ref=${encodeURIComponent(selectedCityRef)}&type=`;
         console.log('Запит до:', url);
         
         fetch(url)
@@ -202,22 +190,9 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 console.log('Дані отримано:', data);
                 if (data.success && data.warehouses && data.warehouses.length > 0) {
-                    warehouseResultsContainer.innerHTML = '';
-                    console.log(`Завантажено ${data.warehouses.length} відділень`);
-                    data.warehouses.forEach(warehouse => {
-                        const item = document.createElement('div');
-                        item.className = 'warehouse-item';
-                        item.innerHTML = `
-                            <div class="warehouse-number">#${warehouse.number}</div>
-                            <div class="warehouse-address">${warehouse.description}</div>
-                        `;
-                        item.dataset.ref = warehouse.ref;
-                        item.dataset.description = warehouse.description;
-                        item.addEventListener('click', function() {
-                            selectWarehouse(warehouse);
-                        });
-                        warehouseResultsContainer.appendChild(item);
-                    });
+                    allWarehouses = data.warehouses;
+                    console.log(`Завантажено ${data.warehouses.length} відділень та поштоматів`);
+                    displayWarehouses(allWarehouses);
                 } else {
                     console.warn('Відділення не знайдено або порожній масив');
                     warehouseResultsContainer.innerHTML = '<div class="no-results">Відділення не знайдено</div>';
@@ -225,21 +200,71 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Помилка завантаження відділень:', error);
-                warehouseResultsContainer.innerHTML = '<div class="error">Помилка завантаження. Перевірте консоль.</div>';
+                warehouseResultsContainer.innerHTML = '<div class="error">Помилка завантаження</div>';
             });
     }
     
-    function selectWarehouse(warehouse) {
-        deliveryAddressInput.value = warehouse.description;
-        npWarehouseRefInput.value = warehouse.ref;
+    function displayWarehouses(warehouses) {
+        warehouseResultsContainer.innerHTML = '';
         
-        const selectedItems = warehouseResultsContainer.querySelectorAll('.warehouse-item');
-        selectedItems.forEach(item => item.classList.remove('selected'));
-        
-        const selectedItem = warehouseResultsContainer.querySelector(`[data-ref="${warehouse.ref}"]`);
-        if (selectedItem) {
-            selectedItem.classList.add('selected');
+        if (warehouses.length === 0) {
+            warehouseResultsContainer.innerHTML = '<div class="no-results">Нічого не знайдено</div>';
+            warehouseResultsContainer.style.display = 'block';
+            return;
         }
+        
+        warehouses.forEach(warehouse => {
+            const item = document.createElement('div');
+            item.className = 'warehouse-item';
+            
+            const warehouseType = warehouse.categoryOfWarehouse === 'Postomat' ? 'Поштомат' : 'Відділення';
+            
+            item.innerHTML = `
+                <div class="warehouse-number">${warehouseType} #${warehouse.number}</div>
+                <div class="warehouse-address">${warehouse.description}</div>
+            `;
+            item.dataset.ref = warehouse.ref;
+            item.dataset.description = warehouse.description;
+            item.dataset.type = warehouse.categoryOfWarehouse === 'Postomat' ? 'postomat' : 'warehouse';
+            item.addEventListener('click', function() {
+                selectWarehouse(warehouse);
+            });
+            warehouseResultsContainer.appendChild(item);
+        });
+        
+        warehouseResultsContainer.style.display = 'block';
+    }
+    
+    function filterWarehouses(searchText) {
+        if (!searchText || searchText.length < 1) {
+            displayWarehouses(allWarehouses);
+            return;
+        }
+        
+        const searchLower = searchText.toLowerCase();
+        const filtered = allWarehouses.filter(warehouse => {
+            return warehouse.number.toString().includes(searchLower) ||
+                   warehouse.description.toLowerCase().includes(searchLower) ||
+                   warehouse.shortAddress.toLowerCase().includes(searchLower);
+        });
+        
+        console.log(`Фільтрація: знайдено ${filtered.length} з ${allWarehouses.length}`);
+        displayWarehouses(filtered);
+    }
+    
+    function selectWarehouse(warehouse) {
+        const warehouseType = warehouse.categoryOfWarehouse === 'Postomat' ? 'Поштомат' : 'Відділення';
+        deliveryAddressInput.value = `${warehouseType} №${warehouse.number}: ${warehouse.description}`;
+        npWarehouseRefInput.value = warehouse.ref;
+        deliveryTypeInput.value = warehouse.categoryOfWarehouse === 'Postomat' ? 'postomat' : 'warehouse';
+        
+        warehouseResultsContainer.style.display = 'none';
+        
+        console.log('Обрано:', {
+            type: deliveryTypeInput.value,
+            ref: warehouse.ref,
+            address: deliveryAddressInput.value
+        });
     }
     
     deliveryMethodSelect.addEventListener('change', updateDeliveryFields);
@@ -255,33 +280,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    deliveryTypeSelect.addEventListener('change', function() {
-        deliveryAddressInput.value = '';
-        npWarehouseRefInput.value = '';
-        warehouseResultsContainer.innerHTML = '';
+    deliveryAddressInput.addEventListener('input', function() {
+        const searchText = this.value.trim();
         
-        const selectedType = deliveryTypeSelect.value;
-        if (selectedType === 'warehouse') {
-            deliveryAddressLabel.textContent = 'Відділення *';
-        } else if (selectedType === 'postomat') {
-            deliveryAddressLabel.textContent = 'Поштомат *';
-        } else {
-            deliveryAddressLabel.textContent = 'Відділення/Поштомат *';
+        if (deliveryMethodSelect.value === 'nova_poshta' && allWarehouses.length > 0) {
+            filterWarehouses(searchText);
         }
-        
-        if (selectedCityRef && selectedType) {
-            loadWarehouses();
-        } else if (!selectedCityRef) {
-            warehouseResultsContainer.innerHTML = '<div class="loading">Спочатку оберіть місто</div>';
-            warehouseResultsContainer.style.display = 'block';
-        } else {
-            warehouseResultsContainer.style.display = 'none';
+    });
+    
+    deliveryAddressInput.addEventListener('focus', function() {
+        if (deliveryMethodSelect.value === 'nova_poshta' && allWarehouses.length > 0) {
+            const searchText = this.value.trim();
+            filterWarehouses(searchText);
         }
     });
     
     document.addEventListener('click', function(e) {
         if (!e.target.closest('#delivery_city') && !e.target.closest('#city_results')) {
             cityResultsContainer.style.display = 'none';
+        }
+        
+        if (!e.target.closest('#delivery_address') && !e.target.closest('#warehouse_results')) {
+            warehouseResultsContainer.style.display = 'none';
         }
     });
     
