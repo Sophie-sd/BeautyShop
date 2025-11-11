@@ -105,6 +105,8 @@ class Order(models.Model):
     
     def get_customer_name(self):
         """Повертає повне ім'я клієнта"""
+        if self.middle_name:
+            return f"{self.first_name} {self.last_name} {self.middle_name}"
         return f"{self.first_name} {self.last_name}"
     
     def can_be_cancelled(self):
