@@ -126,7 +126,7 @@ class OrderAdmin(admin.ModelAdmin):
     
     def get_total_display(self, obj):
         """Загальна сума"""
-        return format_html('<strong>{:.2f} ₴</strong>', obj.total)
+        return format_html('<strong>{:.2f} ₴</strong>', float(obj.total))
     get_total_display.short_description = 'Сума'
     
     def get_customer_info(self, obj):
