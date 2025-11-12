@@ -8,12 +8,12 @@
 ==================== */
 
 .wishlist-page {
-    padding: var(--spacing-xxl) 0;
+    padding: 120px 0 var(--spacing-xxl);
     min-height: calc(100vh - 400px);
 }
 
 .wishlist-page .container {
-    padding-top: var(--spacing-xl);
+    padding-top: 0;
 }
 
 .wishlist-page .product-card {

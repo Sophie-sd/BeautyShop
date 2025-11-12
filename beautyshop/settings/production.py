@@ -88,15 +88,19 @@ SECURE_HSTS_PRELOAD = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 
-# Session і CSRF cookies для iOS Safari сумісності
-SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_HTTPONLY = True
-SESSION_SAVE_EVERY_REQUEST = True
+# Session і CSRF cookies для production - посилена безпека та сумісність
+SESSION_COOKIE_SECURE = True  # Тільки HTTPS
+SESSION_COOKIE_SAMESITE = 'Lax'  # Захист від CSRF, сумісно з iOS Safari та платіжними редіректами
+SESSION_COOKIE_HTTPONLY = True  # Захист від XSS
+SESSION_SAVE_EVERY_REQUEST = True  # Продовжує сесію при кожному запиті (sliding expiration)
+SESSION_COOKIE_DOMAIN = None  # Автоматично визначається з ALLOWED_HOSTS
+SESSION_COOKIE_PATH = '/'  # Доступна для всього сайту
 
-CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SECURE = True  # Тільки HTTPS
+CSRF_COOKIE_SAMESITE = 'Lax'  # Захист від CSRF
+CSRF_COOKIE_HTTPONLY = False  # JS має доступ для AJAX
+CSRF_COOKIE_DOMAIN = None  # Автоматично визначається з ALLOWED_HOSTS
+CSRF_COOKIE_PATH = '/'  # Доступна для всього сайту
 
 X_FRAME_OPTIONS = 'DENY'
 

@@ -165,12 +165,13 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # Session settings
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 14  # 14 днів
-SESSION_SAVE_EVERY_REQUEST = True  # Важливо для iOS Safari
+SESSION_SAVE_EVERY_REQUEST = True  # Важливо для iOS Safari - продовжує сесію при кожному запиті
 SESSION_COOKIE_SECURE = not DEBUG  # HTTPS only в production
 SESSION_COOKIE_HTTPONLY = True  # Захист від XSS
 SESSION_COOKIE_SAMESITE = 'Lax'  # Захист від CSRF, сумісно з iOS Safari
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Сесія зберігається після закриття браузера
 SESSION_COOKIE_NAME = 'beautyshop_sessionid'  # Унікальна назва для запобігання конфліктів
+SESSION_COOKIE_PATH = '/'  # Доступна для всього сайту
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Зберігаємо в БД
 
 # Окремі налаштування для адмінки
@@ -196,11 +197,13 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
 # CSRF settings
-CSRF_COOKIE_HTTPONLY = False
-CSRF_USE_SESSIONS = False
-CSRF_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_NAME = 'beautyshop_csrftoken'
+CSRF_COOKIE_HTTPONLY = False  # False щоб JS міг читати токен
+CSRF_USE_SESSIONS = False  # Не зберігати CSRF токен в сесії
+CSRF_COOKIE_SAMESITE = 'Lax'  # Захист від CSRF атак
+CSRF_COOKIE_SECURE = not DEBUG  # HTTPS only в production
+CSRF_COOKIE_NAME = 'beautyshop_csrftoken'  # Унікальна назва
+CSRF_COOKIE_PATH = '/'  # Доступна для всього сайту
+CSRF_TRUSTED_ORIGINS = []  # Буде налаштовано в production.py
 
 # Storage settings для Django 4.2+
 STORAGES = {
