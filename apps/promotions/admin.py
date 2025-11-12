@@ -230,10 +230,11 @@ class PromoCodeAdmin(admin.ModelAdmin):
     
     def get_discount(self, obj):
         """Відображення знижки"""
+        value = float(obj.discount_value)
         if obj.discount_type == 'percentage':
-            return format_html('<strong>-{:.2f}%</strong>', float(obj.discount_value))
+            return format_html('<strong>-{}%</strong>', f'{value:.2f}')
         else:
-            return format_html('<strong>-{:.2f} ₴</strong>', float(obj.discount_value))
+            return format_html('<strong>-{} ₴</strong>', f'{value:.2f}')
     get_discount.short_description = 'Знижка'
     
     def get_usage(self, obj):
