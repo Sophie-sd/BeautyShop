@@ -200,10 +200,10 @@ class PromoCodeAdmin(admin.ModelAdmin):
     
     list_display = [
         'code', 'get_discount', 'get_usage', 'get_period', 
-        'get_status', 'min_order_amount', 'is_active'
+        'get_status', 'min_order_amount'
     ]
-    list_filter = ['is_active', 'discount_type', 'start_date', 'end_date']
-    search_fields = ['code', 'description']
+    list_filter = ['discount_type', 'start_date', 'end_date']
+    search_fields = ['code']
     readonly_fields = ['used_count']
     date_hierarchy = 'start_date'
     ordering = ['-created_at']
@@ -211,7 +211,7 @@ class PromoCodeAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('📋 Основна інформація', {
-            'fields': ('code', 'description', 'is_active')
+            'fields': ('code',)
         }),
         ('💰 Знижка', {
             'fields': (

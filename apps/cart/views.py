@@ -102,7 +102,7 @@ def apply_promo_code(request):
     from apps.promotions.models import PromoCode
     from django.utils import timezone
     
-    promo_code = request.POST.get('code', '').strip().upper()
+    promo_code = request.POST.get('code', '').strip()
     
     if not promo_code:
         return JsonResponse({
@@ -111,46 +111,51 @@ def apply_promo_code(request):
         })
     
     try:
-        promo = PromoCode.objects.get(
-            code=promo_code,
-            is_active=True,
-            start_date__lte=timezone.now(),
-            end_date__gte=timezone.now()
-        )
+        promo = PromoCode.objects.get(code__iexact=promo_code)
         
-        cart = Cart(request)
-        total = cart.get_total_price()
+        now = timezone.now()
         
-        # Перевірка мінімальної суми
-        if promo.min_order_amount and total < promo.min_order_amount:
+        if now < promo.start_date:
             return JsonResponse({
                 'success': False,
-                'message': f'Мінімальна сума замовлення для цього промокоду: {promo.min_order_amount} ₴'
+                'message': 'Промокод ще не активний'
             })
         
-        # Перевірка ліміту використань
-        if promo.usage_limit and promo.used_count >= promo.usage_limit:
+        if now > promo.end_date:
+            return JsonResponse({
+                'success': False,
+                'message': 'Термін дії промокоду закінчився'
+            })
+        
+        if promo.max_uses and promo.used_count >= promo.max_uses:
             return JsonResponse({
                 'success': False,
                 'message': 'Промокод вичерпано'
             })
         
-        # Розрахунок знижки
-        if promo.discount_type == 'percent':
+        cart = Cart(request)
+        total = cart.get_total_price()
+        
+        if promo.min_order_amount and total < promo.min_order_amount:
+            return JsonResponse({
+                'success': False,
+                'message': f'Мінімальна сума замовлення для цього промокоду: {promo.min_order_amount} ₴. Ваша сума: {total} ₴'
+            })
+        
+        if promo.discount_type == 'percentage':
             discount = total * (Decimal(str(promo.discount_value)) / Decimal('100'))
-        else:  # fixed
+        else:
             discount = Decimal(str(promo.discount_value))
         
-        discount = min(discount, total)  # Знижка не може бути більше суми
+        discount = min(discount, total)
         
-        # Зберігаємо в сесії
-        request.session['promo_code'] = promo_code
-        request.session['promo_discount'] = float(-discount)
+        request.session['promo_code'] = promo.code
+        request.session['promo_discount'] = float(discount)
         request.session['promo_id'] = promo.id
         
         return JsonResponse({
             'success': True,
-            'message': f'Промокод "{promo_code}" застосовано',
+            'message': f'Промокод "{promo.code}" застосовано',
             'discount': float(discount),
             'new_total': float(total - discount)
         })
@@ -158,7 +163,7 @@ def apply_promo_code(request):
     except PromoCode.DoesNotExist:
         return JsonResponse({
             'success': False,
-            'message': 'Невірний промокод'
+            'message': f'Промокод "{promo_code}" не знайдено'
         })
 
 

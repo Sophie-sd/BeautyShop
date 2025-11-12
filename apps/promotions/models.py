@@ -164,7 +164,6 @@ class PromoCode(models.Model):
     """Промокоди для знижок"""
     
     code = models.CharField('Код', max_length=50, unique=True, help_text='Промокод для введення користувачем')
-    description = models.TextField('Опис', blank=True)
     
     discount_type = models.CharField(
         'Тип знижки',
@@ -204,8 +203,6 @@ class PromoCode(models.Model):
     start_date = models.DateTimeField('Дата початку')
     end_date = models.DateTimeField('Дата закінчення')
     
-    is_active = models.BooleanField('Активний', default=True)
-    
     created_at = models.DateTimeField('Створено', auto_now_add=True)
     updated_at = models.DateTimeField('Оновлено', auto_now=True)
     
@@ -220,14 +217,12 @@ class PromoCode(models.Model):
     def is_valid(self):
         """Перевіряє чи дійсний промокод"""
         now = timezone.now()
-        if not self.is_active:
-            return False, "Промокод неактивний"
         
         if now < self.start_date:
             return False, "Промокод ще не активний"
         
         if now > self.end_date:
-            return False, "Промокод закінчився"
+            return False, "Термін дії промокоду закінчився"
         
         if self.max_uses and self.used_count >= self.max_uses:
             return False, "Промокод вичерпано"
