@@ -364,11 +364,42 @@ class ShoppingCart {
     }
 
     showSuccessMessage(message) {
-        this.showMessage(message, 'success');
+        this.showToast(message, 'success');
     }
 
     showErrorMessage(message) {
-        this.showMessage(message, 'error');
+        this.showToast(message, 'error');
+    }
+
+    showToast(message, type = 'success') {
+        const existingToasts = document.querySelectorAll('.cart-toast');
+        existingToasts.forEach((toast) => toast.remove());
+
+        const toast = document.createElement('div');
+        toast.className = `cart-toast cart-toast-${type}`;
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'polite');
+        
+        const icon = document.createElement('span');
+        icon.className = 'cart-toast-icon';
+        icon.textContent = type === 'success' ? '✓' : '✕';
+        
+        const text = document.createElement('span');
+        text.className = 'cart-toast-text';
+        text.textContent = message;
+        
+        toast.appendChild(icon);
+        toast.appendChild(text);
+        document.body.appendChild(toast);
+
+        requestAnimationFrame(() => {
+            toast.classList.add('cart-toast-show');
+        });
+
+        setTimeout(() => {
+            toast.classList.remove('cart-toast-show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
     }
 
     async handleApplyPromo() {
@@ -414,26 +445,6 @@ class ShoppingCart {
                 promoMessage.style.display = 'none';
             }, 5000);
         }
-    }
-
-    showMessage(message, type = 'info') {
-        const existingMessages = document.querySelectorAll('.cart-message');
-        existingMessages.forEach((msg) => msg.remove());
-
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `cart-message cart-message-${type}`;
-        messageDiv.textContent = message;
-
-        document.body.appendChild(messageDiv);
-
-        setTimeout(() => {
-            messageDiv.classList.add('show');
-        }, 10);
-
-        setTimeout(() => {
-            messageDiv.classList.remove('show');
-            setTimeout(() => messageDiv.remove(), 300);
-        }, 3000);
     }
 
     getCsrfToken() {
