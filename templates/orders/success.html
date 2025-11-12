@@ -6,7 +6,7 @@
 {% block body_class %}cart-page{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/cart.css' %}">
+<link rel="stylesheet" href="{% static 'css/order-form.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -47,55 +47,7 @@
         </div>
     </div>
 </section>
-
-<style>
-.order-success-section {
-    min-height: 60vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.success-content {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 40px 20px;
-}
-
-.success-icon {
-    font-size: 80px;
-    margin-bottom: 20px;
-}
-
-.order-details {
-    background: var(--bg-light, #f5f5f5);
-    padding: 24px;
-    border-radius: 12px;
-    margin-bottom: 24px;
-}
-
-.order-number {
-    font-size: 1.2rem;
-    color: var(--color-primary, #FF1493);
-    margin-bottom: 16px;
-}
-
-.success-title {
-    font-size: 2rem;
-    margin-bottom: 20px;
-    color: var(--dark);
-}
-
-.success-message {
-    font-size: 1.1rem;
-    color: var(--gray-600);
-    margin-bottom: 30px;
-    line-height: 1.6;
-}
-
-.success-actions {
-    display: flex;
-    gap: 15px;
+{% endblock %}
     justify-content: center;
     flex-wrap: wrap;
 }

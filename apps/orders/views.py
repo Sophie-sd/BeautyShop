@@ -170,6 +170,44 @@ def order_create(request):
             
             logger.info(f"Creating order with data: first_name={first_name}, last_name={last_name}, email={email}, payment={payment_method}")
             
+            # КРИТИЧНА ЗМІНА: Для LiqPay НЕ створюємо замовлення відразу
+            if payment_method == 'liqpay':
+                # Зберігаємо дані замовлення в сесію для створення після оплати
+                # ВАЖЛИВО: Зберігаємо тільки ID продуктів, а не об'єкти
+                serializable_items = []
+                for item_data in order_items_data:
+                    serializable_items.append({
+                        'product_id': item_data['product'].id,
+                        'quantity': item_data['quantity'],
+                        'price': str(item_data['price'])
+                    })
+                
+                request.session['pending_order_data'] = {
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'middle_name': middle_name,
+                    'email': email,
+                    'phone': phone,
+                    'delivery_method': delivery_method,
+                    'delivery_city': delivery_city or 'Не вказано',
+                    'delivery_address': delivery_address,
+                    'np_city_ref': np_city_ref,
+                    'np_warehouse_ref': np_warehouse_ref,
+                    'delivery_type': delivery_type,
+                    'payment_method': payment_method,
+                    'subtotal': str(recalculated_subtotal),
+                    'discount': str(discount),
+                    'total': str(final_total),
+                    'notes': notes,
+                    'order_items': serializable_items,
+                    'user_id': request.user.id if request.user.is_authenticated else None
+                }
+                
+                # НЕ очищаємо кошик - очистимо тільки після успішної оплати
+                logger.info(f"Pending LiqPay order data saved to session, redirecting to payment")
+                return redirect('orders:liqpay_payment_pending')
+            
+            # Для готівкової оплати - створюємо замовлення як раніше
             order = Order.objects.create(
                 user=request.user if request.user.is_authenticated else None,
                 first_name=first_name,
@@ -202,12 +240,6 @@ def order_create(request):
                 )
             
             logger.info(f"Order items created for order #{order.order_number}")
-            
-            if payment_method == 'liqpay':
-                request.session['pending_order_id'] = order.id
-                # НЕ очищаємо кошик - очистимо тільки після успішної оплати
-                logger.info(f"Redirecting to LiqPay payment for order #{order.order_number}")
-                return redirect('orders:liqpay_payment', order_id=order.id)
             
             # Для готівкової оплати - очищаємо кошик відразу
             cart.clear()
@@ -248,13 +280,6 @@ def order_success(request):
     if order_id:
         try:
             order = Order.objects.get(id=order_id)
-            
-            # КРИТИЧНО: Якщо це LiqPay замовлення і воно НЕ оплачене - перенаправити на оплату
-            if order.payment_method == 'liqpay' and not order.is_paid:
-                logger.warning(f"Order #{order.order_number} - LiqPay payment not completed, redirecting to payment page")
-                messages.warning(request, 'Оплата не була проведена. Будь ласка, завершіть оплату.')
-                return redirect('orders:liqpay_payment', order_id=order.id)
-            
         except Order.DoesNotExist:
             logger.error(f"Order {order_id} not found in success page")
             pass
@@ -297,8 +322,81 @@ def np_get_warehouses(request):
     })
 
 
+def liqpay_payment_pending(request):
+    """Сторінка оплати через LiqPay (до створення замовлення)"""
+    order_data = request.session.get('pending_order_data')
+    
+    if not order_data:
+        messages.error(request, 'Дані замовлення не знайдено. Будь ласка, оформіть замовлення заново.')
+        return redirect('orders:create')
+    
+    # Формуємо правильний URL для callback
+    protocol = 'https' if request.is_secure() or 'render.com' in request.get_host() else 'http'
+    host = request.get_host()
+    callback_url = f'{protocol}://{host}/orders/liqpay-callback/'
+    result_url = f'{protocol}://{host}/orders/success/'
+    
+    logger.info(f"LiqPay payment initiated for pending order, callback: {callback_url}")
+    
+    # Генеруємо унікальний ID для транзакції (використовуємо timestamp)
+    import time
+    transaction_ref = f"temp_{int(time.time() * 1000)}"
+    
+    data_dict = {
+        'version': 3,
+        'public_key': LIQPAY_PUBLIC_KEY,
+        'action': 'pay',
+        'amount': order_data['total'],
+        'currency': 'UAH',
+        'description': f'Оплата замовлення',
+        'order_id': transaction_ref,
+        'result_url': result_url,
+        'server_url': callback_url
+    }
+    
+    data_json = json.dumps(data_dict)
+    data = base64.b64encode(data_json.encode('utf-8')).decode('utf-8')
+    
+    sign_string = LIQPAY_PRIVATE_KEY + data + LIQPAY_PRIVATE_KEY
+    signature = base64.b64encode(hashlib.sha1(sign_string.encode('utf-8')).digest()).decode('utf-8')
+    
+    logger.info(f"LiqPay data generated for pending order")
+    
+    # Створюємо псевдо-об'єкт order для відображення
+    class PendingOrder:
+        def __init__(self, data):
+            self.order_number = "очікується"
+            self.total = data['total']
+            self.email = data['email']
+            self.phone = data['phone']
+            self.first_name = data['first_name']
+            self.last_name = data['last_name']
+            self.middle_name = data.get('middle_name', '')
+            self.delivery_method = data['delivery_method']
+            
+        def get_customer_name(self):
+            if self.middle_name:
+                return f"{self.first_name} {self.last_name} {self.middle_name}"
+            return f"{self.first_name} {self.last_name}"
+            
+        def get_delivery_method_display(self):
+            methods = {
+                'nova_poshta': 'Нова Пошта',
+                'ukrposhta': 'Укрпошта',
+                'pickup': 'Самовивіз'
+            }
+            return methods.get(self.delivery_method, self.delivery_method)
+    
+    return render(request, 'orders/liqpay_payment.html', {
+        'order': PendingOrder(order_data),
+        'data': data,
+        'signature': signature,
+        'public_key': LIQPAY_PUBLIC_KEY
+    })
+
+
 def liqpay_payment(request, order_id):
-    """Сторінка оплати через LiqPay"""
+    """Сторінка оплати через LiqPay (для існуючого замовлення)"""
     try:
         order = Order.objects.get(id=order_id)
     except Order.DoesNotExist:
@@ -376,34 +474,123 @@ def liqpay_callback(request):
             logger.error('LiqPay callback: missing order_id')
             return JsonResponse({'success': False, 'error': 'Missing order_id'})
         
-        order = Order.objects.get(id=order_id)
+        logger.info(f'LiqPay callback: order_id={order_id}, status={status}, transaction={transaction_id}')
         
-        # Захист від повторної обробки платежу
-        if order.is_paid:
-            logger.info(f'Order #{order.order_number} already paid, skipping')
-            return JsonResponse({'success': True, 'message': 'Already processed'})
-        
-        logger.info(f'LiqPay callback for order #{order.order_number}: status={status}, transaction={transaction_id}')
-        
-        if status == 'success':
-            order.is_paid = True
-            order.payment_date = timezone.now()
-            order.status = 'confirmed'
-            order.save(update_fields=['is_paid', 'payment_date', 'status'])
-            
-            logger.info(f'✅ Order #{order.order_number} PAID successfully at {order.payment_date.strftime("%Y-%m-%d %H:%M:%S")} (transaction: {transaction_id})')
-            
-            # Очищаємо кошик ТІЛЬКИ після успішної оплати
-            cart = Cart(request)
-            cart.clear()
-            
-            request.session['completed_order_id'] = order.id
-            
-            return JsonResponse({'success': True})
+        # Перевіряємо чи це pending order (починається з temp_)
+        if str(order_id).startswith('temp_'):
+            # Це pending order - створюємо замовлення ТІЛЬКИ якщо оплата успішна
+            if status == 'success':
+                order_data = request.session.get('pending_order_data')
+                
+                if not order_data:
+                    logger.error('LiqPay callback: pending_order_data not found in session')
+                    return JsonResponse({'success': False, 'error': 'Order data not found'})
+                
+                # Відтворюємо order_items_data з product_id
+                from apps.products.models import Product
+                order_items_data = []
+                for item_data in order_data.get('order_items', []):
+                    try:
+                        product = Product.objects.get(id=item_data['product_id'])
+                        order_items_data.append({
+                            'product': product,
+                            'quantity': item_data['quantity'],
+                            'price': Decimal(str(item_data['price']))
+                        })
+                    except Product.DoesNotExist:
+                        logger.error(f"Product {item_data['product_id']} not found")
+                        continue
+                
+                if not order_items_data:
+                    logger.error('LiqPay callback: no valid products found')
+                    return JsonResponse({'success': False, 'error': 'No valid products'})
+                
+                # Створюємо замовлення
+                from django.contrib.auth import get_user_model
+                User = get_user_model()
+                user = None
+                if order_data.get('user_id'):
+                    try:
+                        user = User.objects.get(id=order_data['user_id'])
+                    except User.DoesNotExist:
+                        pass
+                
+                order = Order.objects.create(
+                    user=user,
+                    first_name=order_data['first_name'],
+                    last_name=order_data['last_name'],
+                    middle_name=order_data.get('middle_name', ''),
+                    email=order_data['email'],
+                    phone=order_data['phone'],
+                    delivery_method=order_data['delivery_method'],
+                    delivery_city=order_data['delivery_city'],
+                    delivery_address=order_data['delivery_address'],
+                    np_city_ref=order_data.get('np_city_ref', ''),
+                    np_warehouse_ref=order_data.get('np_warehouse_ref', ''),
+                    delivery_type=order_data.get('delivery_type', ''),
+                    payment_method=order_data['payment_method'],
+                    subtotal=Decimal(order_data['subtotal']),
+                    discount=Decimal(order_data['discount']),
+                    total=Decimal(order_data['total']),
+                    notes=order_data.get('notes', ''),
+                    is_paid=True,
+                    payment_date=timezone.now(),
+                    status='confirmed'
+                )
+                
+                logger.info(f'✅ Order #{order.order_number} CREATED and PAID at {order.payment_date.strftime("%Y-%m-%d %H:%M:%S")} (transaction: {transaction_id})')
+                
+                # Створюємо items
+                for item_data in order_items_data:
+                    OrderItem.objects.create(
+                        order=order,
+                        product=item_data['product'],
+                        quantity=item_data['quantity'],
+                        price=item_data['price']
+                    )
+                
+                # Очищаємо кошик ТІЛЬКИ після успішної оплати
+                cart = Cart(request)
+                cart.clear()
+                
+                # Очищаємо pending_order_data
+                if 'pending_order_data' in request.session:
+                    del request.session['pending_order_data']
+                request.session['completed_order_id'] = order.id
+                
+                return JsonResponse({'success': True})
+            else:
+                # Оплата не пройшла - НЕ створюємо замовлення
+                logger.warning(f'❌ Pending order payment FAILED: status={status}')
+                return JsonResponse({'success': False, 'status': status, 'message': 'Payment not successful'})
         else:
-            # Оплата не пройшла - логуємо статус
-            logger.warning(f'❌ Order #{order.order_number} payment FAILED: status={status}')
-            return JsonResponse({'success': False, 'status': status, 'message': 'Payment not successful'})
+            # Це існуюче замовлення
+            order = Order.objects.get(id=order_id)
+            
+            # Захист від повторної обробки платежу
+            if order.is_paid:
+                logger.info(f'Order #{order.order_number} already paid, skipping')
+                return JsonResponse({'success': True, 'message': 'Already processed'})
+            
+            if status == 'success':
+                order.is_paid = True
+                order.payment_date = timezone.now()
+                order.status = 'confirmed'
+                order.save(update_fields=['is_paid', 'payment_date', 'status'])
+                
+                logger.info(f'✅ Order #{order.order_number} PAID successfully at {order.payment_date.strftime("%Y-%m-%d %H:%M:%S")} (transaction: {transaction_id})')
+                
+                # Очищаємо кошик ТІЛЬКИ після успішної оплати
+                cart = Cart(request)
+                cart.clear()
+                
+                request.session['completed_order_id'] = order.id
+                
+                return JsonResponse({'success': True})
+            else:
+                # Оплата не пройшла - логуємо статус
+                logger.warning(f'❌ Order #{order.order_number} payment FAILED: status={status}')
+                return JsonResponse({'success': False, 'status': status, 'message': 'Payment not successful'})
             
     except Order.DoesNotExist:
         logger.error(f'LiqPay callback: order {order_id} not found')
