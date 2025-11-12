@@ -157,10 +157,10 @@
     </div>
     
     <div class="liqpay-button-wrapper">
-        <form method="POST" action="https://www.liqpay.ua/api/3/checkout" accept-charset="utf-8" class="liqpay-form">
+        <form method="POST" action="https://www.liqpay.ua/api/3/checkout" accept-charset="utf-8" class="liqpay-form" id="liqpay-form">
             <input type="hidden" name="data" value="{{ data }}">
             <input type="hidden" name="signature" value="{{ signature }}">
-            <button type="submit" class="btn-liqpay">
+            <button type="submit" class="btn-liqpay" id="liqpay-submit-btn">
                 Оплатити {{ order.total }} ₴
             </button>
         </form>
@@ -174,5 +174,64 @@
         <a href="{% url 'orders:create' %}">← Повернутись до оформлення</a>
     </div>
 </div>
+
+<script>
+(function() {
+    'use strict';
+    
+    // Фікс для iOS Safari - форсуємо submit форми
+    const form = document.getElementById('liqpay-form');
+    const submitBtn = document.getElementById('liqpay-submit-btn');
+    
+    if (form && submitBtn) {
+        // Додаємо обробник на кнопку
+        submitBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Логуємо для дебагу
+            console.log('LiqPay button clicked, submitting form...');
+            
+            // Примусово відправляємо форму
+            try {
+                form.submit();
+            } catch (err) {
+                console.error('Form submit error:', err);
+                // Альтернативний метод для iOS
+                const formData = new FormData(form);
+                const data = formData.get('data');
+                const signature = formData.get('signature');
+                
+                // Створюємо тимчасову форму
+                const tempForm = document.createElement('form');
+                tempForm.method = 'POST';
+                tempForm.action = 'https://www.liqpay.ua/api/3/checkout';
+                tempForm.acceptCharset = 'utf-8';
+                
+                const dataInput = document.createElement('input');
+                dataInput.type = 'hidden';
+                dataInput.name = 'data';
+                dataInput.value = data;
+                
+                const signInput = document.createElement('input');
+                signInput.type = 'hidden';
+                signInput.name = 'signature';
+                signInput.value = signature;
+                
+                tempForm.appendChild(dataInput);
+                tempForm.appendChild(signInput);
+                document.body.appendChild(tempForm);
+                tempForm.submit();
+            }
+            
+            return false;
+        });
+        
+        // Також обробляємо submit форми
+        form.addEventListener('submit', function(e) {
+            console.log('Form submitting...');
+        });
+    }
+})();
+</script>
 {% endblock %}
 
