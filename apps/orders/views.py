@@ -147,7 +147,8 @@ def order_create(request):
                     promo = PromoCode.objects.get(id=request.session['promo_id'])
                     is_valid, _ = promo.is_valid()
                     if is_valid:
-                        discount_amount, _ = promo.apply_discount(float(recalculated_subtotal))
+                        # ВАЖЛИВО: передаємо Decimal, а не float
+                        discount_amount, _ = promo.apply_discount(recalculated_subtotal)
                         discount = Decimal(str(discount_amount))
                         
                         # Збільшуємо лічильник використань
@@ -156,6 +157,9 @@ def order_create(request):
                         logger.info(f"Promo code {promo.code} applied: {discount}")
                 except PromoCode.DoesNotExist:
                     logger.warning(f"Promo code {request.session.get('promo_id')} not found")
+                    discount = Decimal('0')
+                except (ValueError, TypeError) as e:
+                    logger.error(f"Promo code calculation error: {e}")
                     discount = Decimal('0')
             
             final_total = recalculated_subtotal - discount

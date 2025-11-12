@@ -232,17 +232,25 @@ class PromoCode(models.Model):
     
     def apply_discount(self, order_amount):
         """Розраховує знижку для суми замовлення"""
+        from decimal import Decimal
+        
         is_valid, message = self.is_valid()
         if not is_valid:
             return 0, message
+        
+        # Конвертуємо order_amount в Decimal для коректних обчислень
+        if isinstance(order_amount, (int, float)):
+            order_amount = Decimal(str(order_amount))
         
         if self.min_order_amount and order_amount < self.min_order_amount:
             return 0, f"Мінімальна сума замовлення {float(self.min_order_amount):.2f} ₴"
         
         if self.discount_type == 'percentage':
-            discount = order_amount * (self.discount_value / 100)
+            # Конвертуємо discount_value в Decimal для коректних обчислень
+            discount_percent = Decimal(str(self.discount_value)) / Decimal('100')
+            discount = order_amount * discount_percent
         else:
-            discount = self.discount_value
+            discount = Decimal(str(self.discount_value))
         
         return float(min(discount, order_amount)), "OK"
 
