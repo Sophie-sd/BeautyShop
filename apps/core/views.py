@@ -115,8 +115,8 @@ class SearchView(TemplateView):
             # Підраховуємо загальну кількість
             total_count = all_products.count()
             
-            # Берем тільки перші 20 для відображення
-            products = all_products[:20]
+            # Берем тільки перші 20 для відображення з оптимізацією запитів
+            products = all_products.select_related('category').prefetch_related('images')[:20]
             
             context.update({
                 'products': products,
