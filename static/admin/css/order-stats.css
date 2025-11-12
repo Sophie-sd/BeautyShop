@@ -1,0 +1,114 @@
+/* Order Statistics Styles for Admin */
+
+.order-stats-wrapper {
+    margin: 20px 0;
+}
+
+.main-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.stat-card {
+    padding: 16px;
+    border-radius: 8px;
+    color: white;
+}
+
+.stat-card.pending {
+    background: linear-gradient(135deg, #a8b5d1 0%, #9ba5c1 100%);
+    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.15);
+}
+
+.stat-card.in-progress {
+    background: linear-gradient(135deg, #f5a3b8 0%, #e88ca0 100%);
+    box-shadow: 0 2px 6px rgba(245, 87, 108, 0.15);
+}
+
+.stat-card.completed {
+    background: linear-gradient(135deg, #80c5f5 0%, #6bb5eb 100%);
+    box-shadow: 0 2px 6px rgba(79, 172, 254, 0.15);
+}
+
+.stat-card .stat-label {
+    font-size: 12px;
+    opacity: 0.9;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.stat-card .stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.stat-card .stat-description {
+    font-size: 11px;
+    opacity: 0.8;
+}
+
+.today-stats {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-left: 4px solid #4299e1;
+}
+
+.today-stats .today-header {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.today-stats .today-header .icon {
+    font-size: 18px;
+}
+
+.today-stats .today-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.today-stat-card {
+    padding: 16px;
+    background: #f7fafc;
+    border-radius: 8px;
+}
+
+.today-stat-card.new-orders {
+    border-left: 3px solid #4299e1;
+}
+
+.today-stat-card.total-amount {
+    border-left: 3px solid #48bb78;
+}
+
+.today-stat-card.shipped {
+    border-left: 3px solid #ed8936;
+}
+
+.today-stat-card.cancelled {
+    border-left: 3px solid #f56565;
+}
+
+.today-stat-card .stat-label {
+    color: #718096;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.today-stat-card .stat-value {
+    color: #2d3748;
+    font-size: 28px;
+    font-weight: 700;
+}
+

@@ -1,116 +1,60 @@
 {% extends "admin/change_list.html" %}
 {% load static %}
 
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'admin/css/order-stats.css' %}">
+{% endblock %}
+
 {% block content %}
 {% if order_stats %}
-<div class="order-stats-wrapper" style="margin: 20px 0;">
-    <div class="main-stats" style="
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        margin-bottom: 16px;
-    ">
-        <div class="stat-card" style="
-            background: linear-gradient(135deg, #a8b5d1 0%, #9ba5c1 100%);
-            padding: 16px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(102, 126, 234, 0.15);
-            color: white;
-        ">
-            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 6px; font-weight: 500;">Очікують підтвердження</div>
-            <div style="font-size: 32px; font-weight: 700; margin-bottom: 2px;">{{ order_stats.pending }}</div>
-            <div style="font-size: 11px; opacity: 0.8;">Нові замовлення</div>
+<div class="order-stats-wrapper">
+    <div class="main-stats">
+        <div class="stat-card pending">
+            <div class="stat-label">Очікують підтвердження</div>
+            <div class="stat-value">{{ order_stats.pending }}</div>
+            <div class="stat-description">Нові замовлення</div>
         </div>
         
-        <div class="stat-card" style="
-            background: linear-gradient(135deg, #f5a3b8 0%, #e88ca0 100%);
-            padding: 16px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(245, 87, 108, 0.15);
-            color: white;
-        ">
-            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 6px; font-weight: 500;">Незавершені</div>
-            <div style="font-size: 32px; font-weight: 700; margin-bottom: 2px;">{{ order_stats.in_progress }}</div>
-            <div style="font-size: 11px; opacity: 0.8;">В роботі</div>
+        <div class="stat-card in-progress">
+            <div class="stat-label">Незавершені</div>
+            <div class="stat-value">{{ order_stats.in_progress }}</div>
+            <div class="stat-description">В роботі</div>
         </div>
         
-        <div class="stat-card" style="
-            background: linear-gradient(135deg, #80c5f5 0%, #6bb5eb 100%);
-            padding: 16px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(79, 172, 254, 0.15);
-            color: white;
-        ">
-            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 6px; font-weight: 500;">Завершені</div>
-            <div style="font-size: 32px; font-weight: 700; margin-bottom: 2px;">{{ order_stats.completed }}</div>
-            <div style="font-size: 11px; opacity: 0.8;">Виконано</div>
+        <div class="stat-card completed">
+            <div class="stat-label">Завершені</div>
+            <div class="stat-value">{{ order_stats.completed }}</div>
+            <div class="stat-description">Виконано</div>
         </div>
     </div>
     
     {% if today_stats %}
-    <div class="today-stats" style="
-        background: white;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        border-left: 4px solid #4299e1;
-    ">
-        <div style="
-            font-size: 16px;
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        ">
-            <span style="font-size: 18px;">📅</span>
+    <div class="today-stats">
+        <div class="today-header">
+            <span class="icon">📅</span>
             Сьогодні: {{ today_stats.date }}
         </div>
         
-        <div style="
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-        ">
-            <div style="
-                padding: 16px;
-                background: #f7fafc;
-                border-radius: 8px;
-                border-left: 3px solid #4299e1;
-            ">
-                <div style="color: #718096; font-size: 13px; margin-bottom: 6px;">🆕 Нових замовлень</div>
-                <div style="color: #2d3748; font-size: 28px; font-weight: 700;">{{ today_stats.new_orders }}</div>
+        <div class="today-grid">
+            <div class="today-stat-card new-orders">
+                <div class="stat-label">🆕 Нових замовлень</div>
+                <div class="stat-value">{{ today_stats.new_orders }}</div>
             </div>
             
-            <div style="
-                padding: 16px;
-                background: #f7fafc;
-                border-radius: 8px;
-                border-left: 3px solid #48bb78;
-            ">
-                <div style="color: #718096; font-size: 13px; margin-bottom: 6px;">💰 Сума</div>
-                <div style="color: #2d3748; font-size: 28px; font-weight: 700;">{{ today_stats.total_amount|floatformat:0 }} ₴</div>
+            <div class="today-stat-card total-amount">
+                <div class="stat-label">💰 Сума</div>
+                <div class="stat-value">{{ today_stats.total_amount|floatformat:0 }} ₴</div>
             </div>
             
-            <div style="
-                padding: 16px;
-                background: #f7fafc;
-                border-radius: 8px;
-                border-left: 3px solid #ed8936;
-            ">
-                <div style="color: #718096; font-size: 13px; margin-bottom: 6px;">📦 Відправлено</div>
-                <div style="color: #2d3748; font-size: 28px; font-weight: 700;">{{ today_stats.shipped }}</div>
+            <div class="today-stat-card shipped">
+                <div class="stat-label">📦 Відправлено</div>
+                <div class="stat-value">{{ today_stats.shipped }}</div>
             </div>
             
-            <div style="
-                padding: 16px;
-                background: #f7fafc;
-                border-radius: 8px;
-                border-left: 3px solid #f56565;
-            ">
-                <div style="color: #718096; font-size: 13px; margin-bottom: 6px;">❌ Скасовано</div>
-                <div style="color: #2d3748; font-size: 28px; font-weight: 700;">{{ today_stats.cancelled }}</div>
+            <div class="today-stat-card cancelled">
+                <div class="stat-label">❌ Скасовано</div>
+                <div class="stat-value">{{ today_stats.cancelled }}</div>
             </div>
         </div>
     </div>
