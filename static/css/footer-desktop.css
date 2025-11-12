@@ -391,3 +391,9 @@
     }
 }
 
+
+/* Subscribe message - hidden by default, shown by JS */
+.subscribe-message {
+    display: none;
+    margin-top: 10px;
+}
