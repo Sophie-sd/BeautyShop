@@ -288,6 +288,14 @@ def liqpay_payment(request, order_id):
         messages.info(request, 'Це замовлення вже оплачено')
         return redirect('orders:success')
     
+    # Формуємо правильний URL для callback
+    protocol = 'https' if request.is_secure() or 'render.com' in request.get_host() else 'http'
+    host = request.get_host()
+    callback_url = f'{protocol}://{host}/orders/liqpay-callback/'
+    result_url = f'{protocol}://{host}/orders/success/'
+    
+    logger.info(f"LiqPay payment initiated for order #{order.order_number}, callback: {callback_url}")
+    
     data_dict = {
         'version': 3,
         'public_key': LIQPAY_PUBLIC_KEY,
@@ -296,8 +304,8 @@ def liqpay_payment(request, order_id):
         'currency': 'UAH',
         'description': f'Оплата замовлення #{order.order_number}',
         'order_id': str(order.id),
-        'result_url': request.build_absolute_uri('/orders/liqpay-callback/'),
-        'server_url': request.build_absolute_uri('/orders/liqpay-callback/')
+        'result_url': result_url,
+        'server_url': callback_url
     }
     
     data_json = json.dumps(data_dict)
@@ -305,6 +313,8 @@ def liqpay_payment(request, order_id):
     
     sign_string = LIQPAY_PRIVATE_KEY + data + LIQPAY_PRIVATE_KEY
     signature = base64.b64encode(hashlib.sha1(sign_string.encode('utf-8')).digest()).decode('utf-8')
+    
+    logger.info(f"LiqPay data generated for order #{order.order_number}")
     
     return render(request, 'orders/liqpay_payment.html', {
         'order': order,

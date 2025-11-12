@@ -115,6 +115,10 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 # Додаткові налаштування для Gmail
 EMAIL_TIMEOUT = 30  # 30 секунд таймаут
 
+# LiqPay налаштування
+LIQPAY_PUBLIC_KEY = os.getenv('LIQPAY_PUBLIC_KEY', '')
+LIQPAY_PRIVATE_KEY = os.getenv('LIQPAY_PRIVATE_KEY', '')
+
 # Виводимо налаштування email для діагностики (без паролю!)
 import logging
 email_logger = logging.getLogger('django.core.mail')

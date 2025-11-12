@@ -183,6 +183,10 @@ CART_SESSION_ID = 'cart'
 # Wishlist settings
 WISHLIST_SESSION_ID = 'wishlist'
 
+# LiqPay налаштування (fallback на sandbox для розробки)
+LIQPAY_PUBLIC_KEY = os.getenv('LIQPAY_PUBLIC_KEY', 'sandbox_i69925457912')
+LIQPAY_PRIVATE_KEY = os.getenv('LIQPAY_PRIVATE_KEY', 'sandbox_d7fYUF83CUeVdBqHyEeYbjNM65B77RcjnWAIVkUm')
+
 # Security settings
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True

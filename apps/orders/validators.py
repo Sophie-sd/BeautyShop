@@ -34,11 +34,19 @@ def validate_order_data(data: dict) -> tuple[bool, str]:
     Returns:
         tuple: (is_valid, error_message)
     """
-    required_fields = ['first_name', 'last_name', 'middle_name', 'email', 'phone', 'delivery_method', 'payment_method']
+    required_fields = ['first_name', 'last_name', 'email', 'phone', 'delivery_method', 'payment_method']
     
     for field in required_fields:
         if not data.get(field):
-            return False, f"Поле '{field}' є обов'язковим"
+            field_names = {
+                'first_name': 'Ім\'я',
+                'last_name': 'Прізвище',
+                'email': 'Email',
+                'phone': 'Телефон',
+                'delivery_method': 'Спосіб доставки',
+                'payment_method': 'Спосіб оплати'
+            }
+            return False, f"Поле '{field_names.get(field, field)}' є обов'язковим"
     
     # Валідація email
     if not validate_order_email(data['email']):
@@ -51,8 +59,13 @@ def validate_order_data(data: dict) -> tuple[bool, str]:
     # Валідація імені (без цифр та спецсимволів)
     name_pattern = r'^[а-яА-ЯіІїЇєЄa-zA-Z\s\'-]+$'
     for field in ['first_name', 'last_name', 'middle_name']:
-        if data.get(field) and not re.match(name_pattern, data[field]):
-            return False, f"Поле '{field}' містить некоректні символи"
+        if data.get(field) and data[field].strip() and not re.match(name_pattern, data[field]):
+            field_names = {
+                'first_name': 'Ім\'я',
+                'last_name': 'Прізвище',
+                'middle_name': 'По-батькові'
+            }
+            return False, f"Поле '{field_names.get(field, field)}' містить некоректні символи"
     
     return True, ""
 
