@@ -142,7 +142,9 @@ class ProductDetailView(DetailView):
     context_object_name = 'product'
     
     def get_queryset(self):
-        return Product.objects.filter(is_active=True)
+        return Product.objects.filter(
+            is_active=True
+        ).select_related('category').prefetch_related('images')
 
 
 @method_decorator(ensure_csrf_cookie, name='dispatch')
@@ -165,7 +167,7 @@ class SaleProductsView(ListView):
                 Q(sale_start_date__lte=now, sale_end_date__isnull=True) |
                 Q(sale_start_date__lte=now, sale_end_date__gte=now)
             )
-        ).prefetch_related('images')
+        ).select_related('category').prefetch_related('images')
         
         sort = self.request.GET.get('sort', 'default')
         if sort == 'price_asc':
