@@ -80,6 +80,10 @@ WHITENOISE_IMMUTABLE_FILE_TEST = lambda path, url: True  # Всі файли з 
 # Додаємо Whitenoise middleware після SecurityMiddleware
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
+# Додаємо security headers middleware
+MIDDLEWARE.append('apps.core.middleware.SecurityHeadersMiddleware')
+MIDDLEWARE.append('apps.core.middleware.PrivatePagesCacheMiddleware')
+
 # Security settings для продакшну
 SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -104,6 +108,13 @@ CSRF_COOKIE_DOMAIN = None  # Автоматично визначається з 
 CSRF_COOKIE_PATH = '/'  # Доступна для всього сайту
 
 X_FRAME_OPTIONS = 'DENY'
+
+# Content Security Policy (CSP)
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
+
+# Додаткові security headers
+# CSP буде налаштовано через middleware нижче для гнучкості
 
 # Email settings для продакшну
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -216,12 +227,6 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
 # SESSION_ENGINE вже налаштовано в base.py
 # SESSION_SAVE_EVERY_REQUEST = True в base.py - важливо для iOS Safari
 
-# Додаткові налаштування для Render
-SECURE_REFERRER_POLICY = 'same-origin'
-SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
-
 # Налаштування для Django 4.2+ 
 USE_TZ = True
 TIME_ZONE = 'Europe/Kiev'
-
-# Налаштування завершено - STORAGES вже налаштований вище
