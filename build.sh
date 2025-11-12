@@ -10,4 +10,7 @@ python manage.py migrate --noinput
 echo "📊 Collecting static files..."
 python manage.py collectstatic --noinput --clear
 
+echo "👤 Resetting admin credentials..."
+python manage.py reset_admin
+
 echo "✅ Build completed successfully!"
