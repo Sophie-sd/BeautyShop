@@ -392,3 +392,24 @@ textarea.form-control {
     }
 }
 
+/* Pickup info section - hidden by default, shown by JS */
+.pickup-info {
+    display: none;
+    margin-top: 20px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 2px solid #0ea5e9;
+    border-radius: 12px;
+}
+
+.pickup-message {
+    font-weight: 600;
+    color: #0369a1;
+    margin-bottom: 8px;
+}
+
+.pickup-address {
+    color: #0c4a6e;
+    font-size: 15px;
+}
+

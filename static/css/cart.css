@@ -424,6 +424,7 @@
 }
 
 .promo-message {
+    display: none;
     margin-top: var(--spacing-sm);
     padding: 8px 12px;
     border-radius: var(--border-radius);
