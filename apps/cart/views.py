@@ -139,7 +139,7 @@ def apply_promo_code(request):
         if promo.min_order_amount and total < promo.min_order_amount:
             return JsonResponse({
                 'success': False,
-                'message': f'Мінімальна сума замовлення для цього промокоду: {promo.min_order_amount} ₴. Ваша сума: {total} ₴'
+                'message': f'Мінімальна сума замовлення для цього промокоду: {float(promo.min_order_amount):.2f} ₴. Ваша сума: {float(total):.2f} ₴'
             })
         
         if promo.discount_type == 'percentage':
@@ -148,16 +148,18 @@ def apply_promo_code(request):
             discount = Decimal(str(promo.discount_value))
         
         discount = min(discount, total)
+        final_price = total - discount
         
         request.session['promo_code'] = promo.code
-        request.session['promo_discount'] = float(discount)
+        request.session['promo_discount'] = round(float(discount), 2)
         request.session['promo_id'] = promo.id
+        request.session['final_price'] = round(float(final_price), 2)
         
         return JsonResponse({
             'success': True,
             'message': f'Промокод "{promo.code}" застосовано',
-            'discount': float(discount),
-            'new_total': float(total - discount)
+            'discount': round(float(discount), 2),
+            'new_total': round(float(final_price), 2)
         })
         
     except PromoCode.DoesNotExist:
@@ -175,6 +177,8 @@ def remove_promo_code(request):
         del request.session['promo_discount']
     if 'promo_id' in request.session:
         del request.session['promo_id']
+    if 'final_price' in request.session:
+        del request.session['final_price']
     
     return JsonResponse({
         'success': True,

@@ -212,7 +212,8 @@ class PromoCode(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"{self.code} (-{self.discount_value}{'%' if self.discount_type == 'percentage' else '₴'})"
+        discount_str = f"{float(self.discount_value):.2f}"
+        return f"{self.code} (-{discount_str}{'%' if self.discount_type == 'percentage' else '₴'})"
     
     def is_valid(self):
         """Перевіряє чи дійсний промокод"""
@@ -236,12 +237,12 @@ class PromoCode(models.Model):
             return 0, message
         
         if self.min_order_amount and order_amount < self.min_order_amount:
-            return 0, f"Мінімальна сума замовлення {self.min_order_amount} ₴"
+            return 0, f"Мінімальна сума замовлення {float(self.min_order_amount):.2f} ₴"
         
         if self.discount_type == 'percentage':
             discount = order_amount * (self.discount_value / 100)
         else:
             discount = self.discount_value
         
-        return min(discount, order_amount), "OK"
+        return float(min(discount, order_amount)), "OK"
 

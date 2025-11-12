@@ -210,25 +210,19 @@
                 <div class="order-totals">
                     <div class="total-row">
                         <span>Товари:</span>
-                        <span>{{ cart.get_total_price }} ₴</span>
+                        <span>{{ cart.get_total_price|floatformat:2 }} ₴</span>
                     </div>
                     
                     {% if request.session.promo_discount %}
                     <div class="total-row promo-row">
                         <span>Промокод ({{ request.session.promo_code }}):</span>
-                        <span>{{ request.session.promo_discount }} ₴</span>
+                        <span>{{ request.session.promo_discount|floatformat:2 }} ₴</span>
                     </div>
                     {% endif %}
                     
                     <div class="total-row total-final">
                         <span>До сплати:</span>
-                        <span class="total-amount">
-                            {% if request.session.promo_discount %}
-                                {{ cart.get_total_price|add:request.session.promo_discount|floatformat:2 }} ₴
-                            {% else %}
-                                {{ cart.get_total_price }} ₴
-                            {% endif %}
-                        </span>
+                        <span class="total-amount">{{ request.session.final_price|default:cart.get_total_price|floatformat:2 }} ₴</span>
                     </div>
                 </div>
                 

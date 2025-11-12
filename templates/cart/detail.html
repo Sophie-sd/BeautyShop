@@ -99,32 +99,26 @@
                     <div class="summary-details">
                         <div class="summary-row">
                             <span>Сума товарів:</span>
-                            <span class="cart-subtotal">{{ cart.get_original_total_price }} ₴</span>
+                            <span class="cart-subtotal">{{ cart.get_original_total_price|floatformat:2 }} ₴</span>
                         </div>
                         
                         {% if cart.get_savings_amount > 0 %}
                         <div class="summary-row summary-savings">
                             <span>Сума економії:</span>
-                            <span class="cart-savings">-{{ cart.get_savings_amount }} ₴</span>
+                            <span class="cart-savings">-{{ cart.get_savings_amount|floatformat:2 }} ₴</span>
                         </div>
                         {% endif %}
                         
                         {% if request.session.promo_discount %}
                         <div class="summary-row summary-promo">
                             <span>Промокод ({{ request.session.promo_code }}):</span>
-                            <span class="promo-discount">{{ request.session.promo_discount }} ₴</span>
+                            <span class="promo-discount">{{ request.session.promo_discount|floatformat:2 }} ₴</span>
                         </div>
                         {% endif %}
                         
                         <div class="summary-row summary-total">
                             <span>До сплати:</span>
-                            <span class="cart-grand-total">
-                                {% if request.session.promo_discount %}
-                                    {{ cart.get_total_price|add:request.session.promo_discount|floatformat:2 }} ₴
-                                {% else %}
-                                    {{ cart.get_total_price }} ₴
-                                {% endif %}
-                            </span>
+                            <span class="cart-grand-total">{{ request.session.final_price|default:cart.get_total_price|floatformat:2 }} ₴</span>
                         </div>
                     </div>
                     
@@ -138,7 +132,7 @@
                                 </svg>
                                 <div>
                                     <strong>Мінімальна сума замовлення для оптових клієнтів — 5000 грн.</strong>
-                                    <p>Поточна сума: {{ cart.get_total_price }} ₴. Будь ласка, додайте ще товарів або <a href="{% url 'users:logout' %}">вийдіть з кабінету</a> для замовлення без обмежень.</p>
+                                    <p>Поточна сума: {{ cart.get_total_price|floatformat:2 }} ₴. Будь ласка, додайте ще товарів або <a href="{% url 'users:logout' %}">вийдіть з кабінету</a> для замовлення без обмежень.</p>
                                 </div>
                             </div>
                         {% endif %}
