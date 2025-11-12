@@ -103,7 +103,7 @@ class ShoppingCart {
             }
 
             if (data.success) {
-                this.showSuccessMessage(`${productName} додано в кошик`);
+                this.showSuccessMessage('Товар додано до кошика');
                 this.updateCartDisplay(data.cart);
                 this.animateCartIcon();
             } else {
