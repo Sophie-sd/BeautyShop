@@ -312,8 +312,18 @@
 }
 
 .empty-cart-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 5rem;
-    margin-bottom: var(--spacing-lg);
+    margin: 0 auto var(--spacing-lg);
+}
+
+.empty-cart-icon .icon-cart {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-style: normal;
 }
 
 .empty-cart h2 {

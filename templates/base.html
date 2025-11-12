@@ -158,11 +158,7 @@
                     <div class="dropdown-menu">
                         <div class="dropdown-content">
                             {% for category in main_categories %}
-                                {% if category.name == 'Акційні товари' %}
-                                    <a href="{% url 'products:sale' %}" class="dropdown-link">
-                                        {{ category.name }}
-                                    </a>
-                                {% else %}
+                                {% if category.name != 'Акційні товари' %}
                                     <a href="{{ category.get_absolute_url }}" class="dropdown-link">
                                         {{ category.name }}
                                     </a>
