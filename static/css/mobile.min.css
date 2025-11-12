@@ -826,15 +826,14 @@
     }
     
     .contact-info-section {
-        margin-bottom: var(--spacing-lg);
+        margin-bottom: 0;
         border-radius: var(--border-radius-lg);
         background: var(--white);
         box-shadow: var(--shadow-sm);
     }
     
-    .schedule-card,
-    .contact-form-card {
-        margin-bottom: var(--spacing-md);
+    .schedule-card {
+        margin-bottom: 0;
         width: 100%;
     }
 }
@@ -851,7 +850,7 @@
     
     .contact-info-section {
         padding: var(--spacing-lg);
-        margin-bottom: var(--spacing-md);
+        margin-bottom: 0;
     }
     
     .company-header {
@@ -895,13 +894,11 @@
         margin-bottom: var(--spacing-xs);
     }
     
-    .schedule-card,
-    .contact-form-card {
-        margin-bottom: var(--spacing-md);
+    .schedule-card {
+        margin-bottom: 0;
     }
     
-    .schedule-card .card-header,
-    .contact-form-card .card-header {
+    .schedule-card .card-header {
         padding: var(--spacing-md);
         text-align: center;
         border-bottom: 1px solid var(--neutral-light);
@@ -942,23 +939,6 @@
         color: var(--primary-pink);
     }
     
-    .contact-form .form-group {
-        margin-bottom: var(--spacing-md);
-    }
-    
-    .contact-form .form-control {
-        padding: var(--spacing-md);
-        font-size: 16px;
-        min-height: 48px;
-        width: 100%;
-    }
-    
-    .contact-form .btn {
-        min-height: 48px;
-        width: 100%;
-        font-size: 1rem;
-    }
-    
     .newsletter-form .input-group {
         display: flex;
         flex-direction: column;
@@ -990,7 +970,7 @@
     
     .contact-info-section {
         padding: var(--spacing-md);
-        margin-bottom: var(--spacing-sm);
+        margin-bottom: 0;
     }
     
     .company-name {
@@ -1019,26 +999,16 @@
         font-size: 1rem;
     }
     
-    .schedule-card,
-    .contact-form-card {
-        margin-bottom: var(--spacing-sm);
+    .schedule-card {
+        margin-bottom: 0;
     }
     
-    .schedule-card .card-header,
-    .contact-form-card .card-header {
+    .schedule-card .card-header {
         padding: var(--spacing-sm);
         display: flex;
         align-items: center;
         justify-content: center;
         text-align: center;
-    }
-    
-    .contact-form-card .card-header {
-        flex-direction: column;
-        gap: 0;
-    }
-    
-    .schedule-card .card-header {
         flex-direction: row;
         gap: var(--spacing-sm);
     }
@@ -1059,20 +1029,6 @@
     
     .schedule-time {
         font-size: 1rem;
-    }
-    
-    .contact-form .form-group {
-        margin-bottom: var(--spacing-sm);
-    }
-    
-    .contact-form .form-control {
-        padding: var(--spacing-sm);
-        min-height: 44px;
-    }
-    
-    .contact-form .btn {
-        min-height: 44px;
-        font-size: 0.875rem;
     }
     
     .newsletter-form .input-group {

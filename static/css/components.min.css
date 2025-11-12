@@ -805,8 +805,7 @@
     color: var(--primary-pink-dark);
 }
 
-.schedule-card,
-.contact-form-card {
+.schedule-card {
     margin-bottom: var(--spacing-lg);
 }
 
@@ -863,15 +862,6 @@
     color: var(--primary-pink);
 }
 
-.contact-form .form-control {
-    border: 2px solid var(--neutral-light);
-    transition: all var(--transition-fast);
-}
-
-.contact-form .form-control:focus {
-    border-color: var(--primary-pink);
-    box-shadow: 0 0 0 3px rgba(255, 20, 147, 0.1);
-}
 
 /* Contact Responsive Tablet */
 @media (max-width: 991.98px) {
@@ -963,8 +953,7 @@
         font-size: 0.875rem;
     }
     
-    .schedule-card,
-    .contact-form-card {
+    .schedule-card {
         margin-bottom: var(--spacing-md);
     }
     
@@ -1541,8 +1530,19 @@
 }
 
 /* Contact Page Specific Styles */
-.contacts-main .section-padding {
+.contacts-main {
     padding: var(--spacing-xxl) 0;
+}
+
+.contacts-main .row {
+    gap: var(--spacing-xl);
+    align-items: stretch;
+}
+
+.contacts-main .col-lg-7,
+.contacts-main .col-lg-5 {
+    display: flex;
+    flex-direction: column;
 }
 
 .contacts-main .contact-info-section {
@@ -1634,10 +1634,10 @@
     color: var(--primary-pink-dark);
 }
 
-.contacts-main .schedule-card,
-.contacts-main .contact-form-card {
-    margin-bottom: var(--spacing-lg);
+.contacts-main .schedule-card {
+    margin-bottom: 0;
     width: 100%;
+    flex: 1;
 }
 
 .contacts-main .card-header {
@@ -1695,21 +1695,3 @@
     color: var(--primary-pink);
 }
 
-.contacts-main .contact-form .form-control {
-    border: 2px solid var(--neutral-light);
-    transition: all var(--transition-fast);
-    width: 100%;
-}
-
-.contacts-main .contact-form .form-control:focus {
-    border-color: var(--primary-pink);
-    box-shadow: 0 0 0 3px rgba(255, 20, 147, 0.1);
-}
-
-.contacts-main .contact-form .btn {
-    width: 100%;
-    min-height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
