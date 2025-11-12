@@ -153,64 +153,6 @@ class Newsletter(models.Model):
         return self.email
 
 
-class Promotion(models.Model):
-    """Акції та промокоди"""
-    
-    name = models.CharField('Назва акції', max_length=200)
-    code = models.CharField('Промокод', max_length=50, unique=True, blank=True)
-    discount_type = models.CharField('Тип знижки', max_length=20, choices=[
-        ('percentage', 'Відсоток'),
-        ('fixed', 'Фіксована сума'),
-        ('free_shipping', 'Безкоштовна доставка'),
-    ])
-    discount_value = models.DecimalField('Розмір знижки', max_digits=10, decimal_places=2)
-    min_order_amount = models.DecimalField('Мінімальна сума замовлення', max_digits=10, decimal_places=2, default=0)
-    max_uses = models.PositiveIntegerField('Максимальна кількість використань', null=True, blank=True)
-    uses_count = models.PositiveIntegerField('Кількість використань', default=0)
-    
-    is_active = models.BooleanField('Активна', default=True)
-    start_date = models.DateTimeField('Дата початку')
-    end_date = models.DateTimeField('Дата закінчення')
-    
-    created_at = models.DateTimeField('Створено', auto_now_add=True)
-    
-    class Meta:
-        verbose_name = 'Акція'
-        verbose_name_plural = 'Акції'
-        ordering = ['-created_at']
-    
-    def is_valid(self):
-        """Перевіряє чи дійсна акція"""
-        from django.utils import timezone
-        now = timezone.now()
-        
-        if not self.is_active:
-            return False
-        
-        if now < self.start_date or now > self.end_date:
-            return False
-        
-        if self.max_uses and self.uses_count >= self.max_uses:
-            return False
-        
-        return True
-    
-    def apply_discount(self, order_total):
-        """Застосовує знижку до суми замовлення"""
-        if order_total < self.min_order_amount:
-            return 0
-        
-        if self.discount_type == 'percentage':
-            return order_total * (self.discount_value / 100)
-        elif self.discount_type == 'fixed':
-            return min(self.discount_value, order_total)
-        
-        return 0
-    
-    def __str__(self):
-        return self.name
-
-
 class RetailClient(Order):
     """Proxy модель для роздрібних клієнтів (гостьові замовлення)"""
     

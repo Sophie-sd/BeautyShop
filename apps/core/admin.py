@@ -7,11 +7,12 @@ from django.utils.safestring import mark_safe
 from django.db import models
 from ckeditor.widgets import CKEditorWidget
 from .models import Banner
+from .admin_utils import get_image_preview, get_yes_no_icon, truncate_text, AdminMediaMixin
 from apps.blog.models import Article
 
 
 @admin.register(Banner)
-class BannerAdmin(admin.ModelAdmin):
+class BannerAdmin(AdminMediaMixin, admin.ModelAdmin):
     """Адмін панель для банерів"""
     
     list_display = [
@@ -80,22 +81,14 @@ class BannerAdmin(admin.ModelAdmin):
     def desktop_preview(self, obj):
         """Превью десктопного зображення в списку"""
         if obj.desktop_image:
-            return format_html(
-                '<img src="{}" alt="{}" class="admin-preview-desktop" />',
-                obj.desktop_image.url,
-                obj.alt_text
-            )
+            return get_image_preview(obj.desktop_image.url, obj.alt_text, 'admin-preview-desktop')
         return "Немає"
     desktop_preview.short_description = "Превью десктоп"
     
     def mobile_preview(self, obj):
         """Превью мобільного зображення в списку"""
         if obj.mobile_image:
-            return format_html(
-                '<img src="{}" alt="{}" class="admin-preview-mobile" />',
-                obj.mobile_image.url,
-                obj.alt_text
-            )
+            return get_image_preview(obj.mobile_image.url, obj.alt_text, 'admin-preview-mobile')
         return "Немає"
     mobile_preview.short_description = "Превью мобільний"
     
@@ -133,28 +126,16 @@ class BannerAdmin(admin.ModelAdmin):
     
     def has_link(self, obj):
         """Чи є посилання"""
-        if obj.link_url:
-            return format_html(
-                '<span class="admin-has-link">✓ Є</span>'
-            )
-        return format_html(
-            '<span class="admin-no-link">Немає</span>'
-        )
+        return get_yes_no_icon(bool(obj.link_url))
     has_link.short_description = "Посилання"
     
     def get_queryset(self, request):
         """Оптимізація запитів"""
         return super().get_queryset(request).select_related()
-        
-    class Media:
-        css = {
-            'all': ('admin/css/custom_admin.css',)
-        }
-        js = ('admin/js/custom_admin.js',)
 
 
 @admin.register(Article)
-class ArticleAdmin(admin.ModelAdmin):
+class ArticleAdmin(AdminMediaMixin, admin.ModelAdmin):
     """Адміністрування статей"""
     
     list_display = [
@@ -194,10 +175,7 @@ class ArticleAdmin(admin.ModelAdmin):
     def get_image_preview(self, obj):
         """Попередній перегляд зображення"""
         if obj.image:
-            return format_html(
-                '<img src="{}" class="admin-thumbnail-small" />',
-                obj.image.url
-            )
+            return get_image_preview(obj.image.url, obj.title, 'admin-thumbnail-small')
         return "📷 Немає"
     get_image_preview.short_description = "Зображення"
     
@@ -205,7 +183,7 @@ class ArticleAdmin(admin.ModelAdmin):
         """Попередній перегляд опису"""
         if obj.excerpt:
             clean_text = strip_tags(obj.excerpt)
-            return clean_text[:50] + "..." if len(clean_text) > 50 else clean_text
+            return truncate_text(clean_text, 50)
         return "Немає опису"
     get_excerpt_preview.short_description = "Короткий опис"
     
@@ -233,12 +211,6 @@ class ArticleAdmin(admin.ModelAdmin):
             duplicated += 1
         self.message_user(request, f"Продубльовано {duplicated} статей")
     duplicate_articles.short_description = "Дублювати вибрані статті"
-    
-    class Media:
-        css = {
-            'all': ('admin/css/custom_admin.css',)
-        }
-        js = ('admin/js/custom_admin.js',)
 
 
 # Налаштування відображення моделей в адмінці

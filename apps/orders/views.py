@@ -1,9 +1,13 @@
+"""
+Views для обробки замовлень, оплати та розсилки
+"""
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+from django.conf import settings
 from apps.cart.cart import Cart
 from decimal import Decimal
 from .models import Newsletter, Order, OrderItem
@@ -11,13 +15,15 @@ from .novaposhta import NovaPoshtaAPI
 import hashlib
 import base64
 import json
+import logging
 
+logger = logging.getLogger(__name__)
 
 MINIMUM_WHOLESALE_ORDER = Decimal('5000.00')
 
-
-LIQPAY_PUBLIC_KEY = 'sandbox_i69925457912'
-LIQPAY_PRIVATE_KEY = 'sandbox_d7fYUF83CUeVdBqHyEeYbjNM65B77RcjnWAIVkUm'
+# Отримуємо ключі з налаштувань, з fallback на sandbox для розробки
+LIQPAY_PUBLIC_KEY = getattr(settings, 'LIQPAY_PUBLIC_KEY', 'sandbox_i69925457912')
+LIQPAY_PRIVATE_KEY = getattr(settings, 'LIQPAY_PRIVATE_KEY', 'sandbox_d7fYUF83CUeVdBqHyEeYbjNM65B77RcjnWAIVkUm')
 
 
 def order_create(request):
@@ -252,12 +258,15 @@ def liqpay_callback(request):
     signature = request.POST.get('signature')
     
     if not data or not signature:
-        return JsonResponse({'success': False})
+        logger.warning('LiqPay callback: missing data or signature')
+        return JsonResponse({'success': False, 'error': 'Missing data'})
     
+    # Перевірка підпису
     sign_string = LIQPAY_PRIVATE_KEY + data + LIQPAY_PRIVATE_KEY
     expected_signature = base64.b64encode(hashlib.sha1(sign_string.encode('utf-8')).digest()).decode('utf-8')
     
     if signature != expected_signature:
+        logger.error('LiqPay callback: invalid signature')
         return JsonResponse({'success': False, 'error': 'Invalid signature'})
     
     try:
@@ -266,14 +275,26 @@ def liqpay_callback(request):
         
         order_id = payment_data.get('order_id')
         status = payment_data.get('status')
+        transaction_id = payment_data.get('transaction_id', '')
+        
+        if not order_id:
+            logger.error('LiqPay callback: missing order_id')
+            return JsonResponse({'success': False, 'error': 'Missing order_id'})
         
         order = Order.objects.get(id=order_id)
+        
+        # Захист від повторної обробки платежу
+        if order.is_paid:
+            logger.info(f'Order #{order.order_number} already paid, skipping')
+            return JsonResponse({'success': True, 'message': 'Already processed'})
         
         if status == 'success':
             order.is_paid = True
             order.payment_date = timezone.now()
             order.status = 'confirmed'
             order.save(update_fields=['is_paid', 'payment_date', 'status'])
+            
+            logger.info(f'Order #{order.order_number} paid successfully (transaction: {transaction_id})')
             
             cart = Cart(request)
             cart.clear()
@@ -282,11 +303,18 @@ def liqpay_callback(request):
             
             return JsonResponse({'success': True})
         else:
+            logger.warning(f'Order #{order.order_number} payment failed: {status}')
             return JsonResponse({'success': False, 'status': status})
             
+    except Order.DoesNotExist:
+        logger.error(f'LiqPay callback: order {order_id} not found')
+        return JsonResponse({'success': False, 'error': 'Order not found'})
+    except json.JSONDecodeError as e:
+        logger.error(f'LiqPay callback: invalid JSON data - {e}')
+        return JsonResponse({'success': False, 'error': 'Invalid data format'})
     except Exception as e:
-        print(f"LiqPay callback error: {e}")
-        return JsonResponse({'success': False, 'error': str(e)})
+        logger.exception(f'LiqPay callback error: {e}')
+        return JsonResponse({'success': False, 'error': 'Internal error'})
 
 
 @require_POST
