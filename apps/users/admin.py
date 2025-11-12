@@ -34,15 +34,15 @@ class WholesaleClientAdmin(AdminMediaMixin, admin.ModelAdmin):
         ('📊 Статистика замовлень', {
             'fields': ('get_orders_stats', 'get_orders_timeline'),
         }),
-        ('📅 Дати та статус', {
-            'fields': ('email_verified', 'is_active', 'date_joined', 'last_login', 'created_at'),
+        ('📅 Дати', {
+            'fields': ('email_verified', 'date_joined', 'last_login', 'created_at'),
         }),
     )
     
     readonly_fields = [
         'get_full_name_readonly', 'email', 'phone', 
         'get_orders_stats', 'get_orders_timeline',
-        'email_verified', 'is_active', 'date_joined', 'last_login', 'created_at'
+        'email_verified', 'date_joined', 'last_login', 'created_at'
     ]
     
     def get_queryset(self, request):
@@ -247,5 +247,5 @@ admin.site.register(WholesaleClient, WholesaleClientAdmin)
 admin.site.unregister(Group)
 
 WholesaleClient._meta.verbose_name = 'Оптовий клієнт'
-WholesaleClient._meta.verbose_name_plural = '💼 2. Оптові клієнти'
+WholesaleClient._meta.verbose_name_plural = 'Оптові клієнти'
 WholesaleClient._meta.app_label = 'users'

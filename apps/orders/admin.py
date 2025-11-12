@@ -349,17 +349,35 @@ class OrderAdmin(AdminMediaMixin, admin.ModelAdmin):
 
 @admin.register(RetailClient)
 class RetailClientAdmin(AdminMediaMixin, admin.ModelAdmin):
-    """Адміністрування роздрібних клієнтів (гості без реєстрації)"""
+    """Адміністрування роздрібних клієнтів (гості без реєстрації) - тільки перегляд"""
     
     list_display = [
         'get_full_name_display', 'email', 'get_phone_display',
-        'get_orders_count', 'get_last_order_date'
+        'get_orders_count', 'get_total_amount', 'get_avg_order', 'get_last_order_date'
     ]
     search_fields = [
         'first_name', 'last_name', 'middle_name', 'email', 'phone'
     ]
     ordering = ['-created_at']
     list_per_page = 50
+    
+    fieldsets = (
+        ('👤 Персональні дані', {
+            'fields': ('get_full_name_readonly', 'email', 'phone'),
+        }),
+        ('🚚 Найчастіше використовувані дані доставки', {
+            'fields': ('get_most_common_delivery',),
+        }),
+        ('📊 Статистика замовлень', {
+            'fields': ('get_retail_orders_stats', 'get_retail_orders_timeline'),
+        }),
+    )
+    
+    readonly_fields = [
+        'get_full_name_readonly', 'email', 'phone',
+        'get_most_common_delivery',
+        'get_retail_orders_stats', 'get_retail_orders_timeline'
+    ]
     
     def get_queryset(self, request):
         """Показуємо тільки замовлення без користувача (унікальні по email)"""
@@ -378,7 +396,7 @@ class RetailClientAdmin(AdminMediaMixin, admin.ModelAdmin):
         return qs.filter(id__in=unique_orders_ids).order_by('-created_at')
     
     def get_full_name_display(self, obj):
-        """Повне ім'я з по-батькові"""
+        """Повне ім'я для таблиці"""
         parts = []
         if obj.last_name:
             parts.append(obj.last_name)
@@ -389,6 +407,14 @@ class RetailClientAdmin(AdminMediaMixin, admin.ModelAdmin):
         return ' '.join(parts) if parts else 'не вказано'
     get_full_name_display.short_description = 'ПІБ'
     
+    def get_full_name_readonly(self, obj):
+        """Повне ім'я для форми"""
+        return format_html(
+            '<strong style="font-size: 16px;">{}</strong>',
+            self.get_full_name_display(obj)
+        )
+    get_full_name_readonly.short_description = 'ПІБ'
+    
     def get_phone_display(self, obj):
         """Телефон"""
         return obj.phone if obj.phone else 'не вказано'
@@ -396,19 +422,165 @@ class RetailClientAdmin(AdminMediaMixin, admin.ModelAdmin):
     
     def get_orders_count(self, obj):
         """Кількість замовлень клієнта"""
-        return Order.objects.filter(user__isnull=True, email=obj.email).count()
-    get_orders_count.short_description = 'Кількість замовлень'
+        count = Order.objects.filter(user__isnull=True, email=obj.email).count()
+        return format_html('<strong>{}</strong>', count)
+    get_orders_count.short_description = 'Замовлень'
+    
+    def get_total_amount(self, obj):
+        """Загальна сума всіх замовлень"""
+        from django.db.models import Sum
+        total = Order.objects.filter(user__isnull=True, email=obj.email).aggregate(Sum('total'))['total__sum']
+        if total:
+            return format_html('<strong>{:.2f} ₴</strong>', float(total))
+        return '—'
+    get_total_amount.short_description = 'Загальна сума'
+    
+    def get_avg_order(self, obj):
+        """Середній чек"""
+        from django.db.models import Avg
+        avg = Order.objects.filter(user__isnull=True, email=obj.email).aggregate(Avg('total'))['total__avg']
+        if avg:
+            return format_html('<strong>{:.2f} ₴</strong>', float(avg))
+        return '—'
+    get_avg_order.short_description = 'Середній чек'
     
     def get_last_order_date(self, obj):
         """Дата останнього замовлення"""
         last_order = Order.objects.filter(user__isnull=True, email=obj.email).order_by('-created_at').first()
         if last_order:
-            return last_order.created_at.strftime('%d.%m.%Y %H:%M')
+            from django.utils import timezone
+            now = timezone.now()
+            diff = now - last_order.created_at
+            days = diff.days
+            
+            date_str = last_order.created_at.strftime('%d.%m.%Y о %H:%M')
+            if days == 0:
+                return format_html('<span style="color: #28a745;">{} (сьогодні)</span>', date_str)
+            elif days < 7:
+                return format_html('<span style="color: #ffc107;">{} ({} дн. тому)</span>', date_str, days)
+            else:
+                return date_str
         return 'немає замовлень'
-    get_last_order_date.short_description = 'Дата останнього замовлення'
+    get_last_order_date.short_description = 'Останнє замовлення'
+    
+    def get_most_common_delivery(self, obj):
+        """Найчастіше використовувані дані доставки"""
+        from collections import Counter
+        
+        orders = Order.objects.filter(user__isnull=True, email=obj.email)
+        
+        if not orders.exists():
+            return format_html('<p style="color: #6c757d;">Немає замовлень</p>')
+        
+        cities = Counter(orders.values_list('delivery_city', flat=True))
+        addresses = Counter(orders.values_list('delivery_address', flat=True))
+        methods = Counter(orders.values_list('delivery_method', flat=True))
+        
+        most_common_city = cities.most_common(1)[0] if cities else ('—', 0)
+        most_common_address = addresses.most_common(1)[0] if addresses else ('—', 0)
+        most_common_method = methods.most_common(1)[0] if methods else ('—', 0)
+        
+        method_display = dict(Order.DELIVERY_METHOD_CHOICES).get(most_common_method[0], most_common_method[0])
+        
+        html = f'''
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #48bb78;">
+            <div style="margin-bottom: 8px;">
+                <strong>Найчастіше місто:</strong> {most_common_city[0]} <span style="color: #6c757d;">({most_common_city[1]} раз)</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+                <strong>Найчастіше адреса:</strong> {most_common_address[0]} <span style="color: #6c757d;">({most_common_address[1]} раз)</span>
+            </div>
+            <div>
+                <strong>Найчастіше спосіб доставки:</strong> {method_display} <span style="color: #6c757d;">({most_common_method[1]} раз)</span>
+            </div>
+        </div>
+        '''
+        return mark_safe(html)
+    get_most_common_delivery.short_description = 'Найчастіші дані доставки'
+    
+    def get_retail_orders_stats(self, obj):
+        """Детальна статистика замовлень роздрібного клієнта"""
+        from django.db.models import Sum
+        
+        orders = Order.objects.filter(user__isnull=True, email=obj.email)
+        count = orders.count()
+        
+        if not count:
+            return format_html('<p style="color: #6c757d;">Клієнт ще не робив замовлень</p>')
+        
+        total = orders.aggregate(Sum('total'))['total__sum']
+        total = float(total) if total else 0
+        avg = total / count if count else 0
+        
+        paid_count = orders.filter(is_paid=True).count()
+        completed_count = orders.filter(status='completed').count()
+        
+        html = f'''
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #007bff;">
+            <div style="margin-bottom: 8px;">
+                <strong>Всього замовлень:</strong> {count}
+            </div>
+            <div style="margin-bottom: 8px;">
+                <strong>Сумарно на суму:</strong> <span style="color: #28a745; font-weight: 600;">{total:.2f} ₴</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+                <strong>Середній чек:</strong> <span style="color: #007bff; font-weight: 600;">{avg:.2f} ₴</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+                <strong>Оплачено:</strong> {paid_count} з {count}
+            </div>
+            <div>
+                <strong>Завершено:</strong> {completed_count} з {count}
+            </div>
+        </div>
+        '''
+        return mark_safe(html)
+    get_retail_orders_stats.short_description = 'Статистика'
+    
+    def get_retail_orders_timeline(self, obj):
+        """Останні 5 замовлень роздрібного клієнта"""
+        orders = Order.objects.filter(user__isnull=True, email=obj.email).order_by('-created_at')[:5]
+        
+        if not orders:
+            return format_html('<p style="color: #6c757d;">Немає замовлень</p>')
+        
+        html = '<div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; overflow: hidden;">'
+        html += '<table style="width: 100%; border-collapse: collapse;">'
+        html += '<tr style="background: #f8f9fa;"><th style="padding: 8px; text-align: left; font-size: 12px;">№</th><th style="padding: 8px; text-align: left; font-size: 12px;">Дата</th><th style="padding: 8px; text-align: right; font-size: 12px;">Сума</th><th style="padding: 8px; text-align: center; font-size: 12px;">Статус</th></tr>'
+        
+        for order in orders:
+            status_colors = {
+                'pending': '#ffc107',
+                'confirmed': '#17a2b8',
+                'shipped': '#fd7e14',
+                'delivered': '#28a745',
+                'completed': '#218838',
+                'cancelled': '#dc3545',
+            }
+            color = status_colors.get(order.status, '#6c757d')
+            
+            html += f'''
+            <tr style="border-bottom: 1px solid #dee2e6;">
+                <td style="padding: 8px; font-size: 12px;">{order.order_number}</td>
+                <td style="padding: 8px; font-size: 12px;">{order.created_at.strftime('%d.%m.%Y %H:%M')}</td>
+                <td style="padding: 8px; text-align: right; font-weight: 600; font-size: 12px;">{float(order.total):.2f} ₴</td>
+                <td style="padding: 8px; text-align: center;"><span style="padding: 2px 8px; background: {color}; color: white; border-radius: 4px; font-size: 11px;">{order.get_status_display()}</span></td>
+            </tr>
+            '''
+        
+        html += '</table></div>'
+        
+        total_count = Order.objects.filter(user__isnull=True, email=obj.email).count()
+        if total_count > 5:
+            from django.urls import reverse
+            url = reverse('admin:orders_order_changelist') + f'?email={obj.email}'
+            html += f'<p style="margin-top: 10px;"><a href="{url}" style="color: #007bff;">Переглянути всі {total_count} замовлень →</a></p>'
+        
+        return mark_safe(html)
+    get_retail_orders_timeline.short_description = 'Останні замовлення'
     
     def has_add_permission(self, request):
-        """Заборона створення через цей розділ"""
+        """Заборона створення"""
         return False
     
     def has_delete_permission(self, request, obj=None):
@@ -416,12 +588,12 @@ class RetailClientAdmin(AdminMediaMixin, admin.ModelAdmin):
         return False
     
     def has_change_permission(self, request, obj=None):
-        """Дозвіл тільки на перегляд"""
-        return False
+        """Тільки перегляд"""
+        return True
     
-    def changelist_view(self, request, extra_context=None):
-        """Переопределяем changelist_view для відображення унікальних клієнтів"""
-        return super().changelist_view(request, extra_context)
+    def save_model(self, request, obj, form, change):
+        """Заборона збереження змін"""
+        pass
 
 
 
@@ -586,11 +758,11 @@ class EmailCampaignAdmin(AdminMediaMixin, admin.ModelAdmin):
 
 # Налаштування відображення в адмінці
 Order._meta.verbose_name = "Замовлення"
-Order._meta.verbose_name_plural = "📦 1. Замовлення"
+Order._meta.verbose_name_plural = "📦 Замовлення"
 
 RetailClient._meta.verbose_name = 'Роздрібний клієнт'
-RetailClient._meta.verbose_name_plural = '🛒 3. Роздрібні клієнти'
+RetailClient._meta.verbose_name_plural = 'Роздрібні клієнти'
 RetailClient._meta.app_label = 'users'
 
 EmailCampaign._meta.verbose_name = 'Email розсилка'
-EmailCampaign._meta.verbose_name_plural = '✉️ 9. Email розсилки'
+EmailCampaign._meta.verbose_name_plural = '✉️ Email розсилки'

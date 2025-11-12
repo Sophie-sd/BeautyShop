@@ -56,5 +56,6 @@ class NewsletterAdmin(AdminMediaMixin, admin.ModelAdmin):
 
 
 Newsletter._meta.verbose_name = 'Підписка на розсилку'
-Newsletter._meta.verbose_name_plural = '📧 4. Підписка на розсилку'
+Newsletter._meta.verbose_name_plural = 'Підписка на розсилку'
+Newsletter._meta.app_label = 'users'
 

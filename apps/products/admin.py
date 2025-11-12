@@ -538,11 +538,11 @@ class NewProductAdmin(AdminMediaMixin, admin.ModelAdmin):
 
 # Додаємо verbose_name_plural для правильного групування
 Product._meta.verbose_name = "Товар"
-Product._meta.verbose_name_plural = "📦 2. Товари"
+Product._meta.verbose_name_plural = "Товари"
 Product._meta.app_label = "products"
 
 Category._meta.verbose_name = "Категорія"
-Category._meta.verbose_name_plural = "📂 3. Категорії"
+Category._meta.verbose_name_plural = "Категорії"
 
 NewProduct._meta.verbose_name = "Новинка"
-NewProduct._meta.verbose_name_plural = "✨ 4. Новинки"
+NewProduct._meta.verbose_name_plural = "Новинки"

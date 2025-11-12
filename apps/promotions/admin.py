@@ -263,7 +263,7 @@ class PromoCodeAdmin(AdminMediaMixin, admin.ModelAdmin):
 
 # Налаштування відображення в адмінці
 Promotion._meta.verbose_name = 'Акція'
-Promotion._meta.verbose_name_plural = '🔥 7. Акції'
+Promotion._meta.verbose_name_plural = 'Акції'
 
 PromoCode._meta.verbose_name = 'Промокод'
-PromoCode._meta.verbose_name_plural = '🎟️ 8. Промокоди'
+PromoCode._meta.verbose_name_plural = 'Промокоди'

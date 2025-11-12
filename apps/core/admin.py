@@ -215,10 +215,10 @@ class ArticleAdmin(AdminMediaMixin, admin.ModelAdmin):
 
 # Налаштування відображення моделей в адмінці
 Banner._meta.verbose_name = "Банер"
-Banner._meta.verbose_name_plural = "📸 5. Банери"
+Banner._meta.verbose_name_plural = "Банери"
 
 Article._meta.verbose_name = "Стаття"
-Article._meta.verbose_name_plural = "📝 6. Статті"
+Article._meta.verbose_name_plural = "Статті"
 Article._meta.app_label = "core"
 
 # Додаткові налаштування адмін панелі
