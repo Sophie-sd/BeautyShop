@@ -627,7 +627,6 @@ RetailClient._meta.app_label = 'users'
 
 Newsletter._meta.verbose_name = 'Підписка на розсилку'
 Newsletter._meta.verbose_name_plural = '📧 Підписка на розсилку'
-Newsletter._meta.app_label = 'users'
 
 EmailCampaign._meta.verbose_name = 'Email розсилка'
 EmailCampaign._meta.verbose_name_plural = '✉️ Email розсилки'
