@@ -33,8 +33,6 @@ THIRD_PARTY_APPS = [
     'cloudinary',  # Cloudinary для зберігання зображень
     'ckeditor',
     'ckeditor_uploader',
-    'crispy_forms',
-    'crispy_bootstrap5',
     'django_extensions',
 ]
 
@@ -155,10 +153,6 @@ CKEDITOR_CONFIGS = {
         'removePlugins': 'stylesheetparser',
     },
 }
-
-# Crispy Forms
-CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
-CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # Email settings - налаштовуються в development.py або production.py
 # DEFAULT_FROM_EMAIL буде налаштовано в specific settings

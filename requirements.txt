@@ -20,9 +20,6 @@ gunicorn==23.0.0
 # Django Extensions
 django-extensions==3.2.3
 django-ckeditor==6.7.3
-django-crispy-forms==2.4
-crispy-bootstrap5==2025.6
-django-robots==6.1
 
 # XML processing
 lxml==6.0.2
