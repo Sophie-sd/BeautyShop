@@ -92,7 +92,8 @@ class WholesaleClientAdmin(AdminMediaMixin, admin.ModelAdmin):
         """Загальна сума замовлень"""
         total = obj.total_spent if hasattr(obj, 'total_spent') else 0
         if total:
-            return format_html('<strong>{:.2f} ₴</strong>', float(total))
+            amount = float(total)
+            return format_html('<strong>{} ₴</strong>', f'{amount:.2f}')
         return '—'
     get_total_amount.short_description = 'Загальна сума'
     get_total_amount.admin_order_field = 'total_spent'
@@ -103,7 +104,7 @@ class WholesaleClientAdmin(AdminMediaMixin, admin.ModelAdmin):
         total = obj.total_spent if hasattr(obj, 'total_spent') else 0
         if count and total:
             avg = float(total) / count
-            return format_html('<strong>{:.2f} ₴</strong>', avg)
+            return format_html('<strong>{} ₴</strong>', f'{avg:.2f}')
         return '—'
     get_avg_order.short_description = 'Середній чек'
     

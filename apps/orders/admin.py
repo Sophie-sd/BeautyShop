@@ -429,18 +429,22 @@ class RetailClientAdmin(AdminMediaMixin, admin.ModelAdmin):
     def get_total_amount(self, obj):
         """Загальна сума всіх замовлень"""
         from django.db.models import Sum
-        total = Order.objects.filter(user__isnull=True, email=obj.email).aggregate(Sum('total'))['total__sum']
+        result = Order.objects.filter(user__isnull=True, email=obj.email).aggregate(Sum('total'))
+        total = result['total__sum']
         if total:
-            return format_html('<strong>{:.2f} ₴</strong>', float(total))
+            amount = float(total)
+            return format_html('<strong>{} ₴</strong>', f'{amount:.2f}')
         return '—'
     get_total_amount.short_description = 'Загальна сума'
     
     def get_avg_order(self, obj):
         """Середній чек"""
         from django.db.models import Avg
-        avg = Order.objects.filter(user__isnull=True, email=obj.email).aggregate(Avg('total'))['total__avg']
+        result = Order.objects.filter(user__isnull=True, email=obj.email).aggregate(Avg('total'))
+        avg = result['total__avg']
         if avg:
-            return format_html('<strong>{:.2f} ₴</strong>', float(avg))
+            amount = float(avg)
+            return format_html('<strong>{} ₴</strong>', f'{amount:.2f}')
         return '—'
     get_avg_order.short_description = 'Середній чек'
     
