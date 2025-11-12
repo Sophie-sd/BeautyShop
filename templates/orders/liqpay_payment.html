@@ -85,7 +85,22 @@
     }
     .back-link {
         text-align: center;
-        margin-top: 20px;
+        margin-top: 30px;
+    }
+    
+    .back-link a {
+        font-size: 13px;
+        color: var(--text-muted, #999);
+        text-decoration: none;
+        padding: 6px 12px;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+    }
+    
+    .back-link a:hover {
+        color: var(--text-dark, #666);
+        border-color: var(--border-color, #ddd);
+        border-radius: 4px;
     }
     
     @media (max-width: 768px) {
@@ -156,7 +171,7 @@
     </p>
     
     <div class="back-link">
-        <a href="{% url 'orders:create' %}" class="btn btn-outline">Повернутись назад</a>
+        <a href="{% url 'orders:create' %}">← Повернутись до оформлення</a>
     </div>
 </div>
 {% endblock %}

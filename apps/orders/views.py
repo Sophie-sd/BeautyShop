@@ -205,9 +205,11 @@ def order_create(request):
             
             if payment_method == 'liqpay':
                 request.session['pending_order_id'] = order.id
+                # НЕ очищаємо кошик - очистимо тільки після успішної оплати
                 logger.info(f"Redirecting to LiqPay payment for order #{order.order_number}")
                 return redirect('orders:liqpay_payment', order_id=order.id)
             
+            # Для готівкової оплати - очищаємо кошик відразу
             cart.clear()
             request.session['completed_order_id'] = order.id
             logger.info(f"Order #{order.order_number} completed (cash payment)")
@@ -242,10 +244,19 @@ def order_success(request):
     """Сторінка успішного замовлення"""
     order_id = request.session.pop('completed_order_id', None)
     order = None
+    
     if order_id:
         try:
             order = Order.objects.get(id=order_id)
+            
+            # КРИТИЧНО: Якщо це LiqPay замовлення і воно НЕ оплачене - перенаправити на оплату
+            if order.payment_method == 'liqpay' and not order.is_paid:
+                logger.warning(f"Order #{order.order_number} - LiqPay payment not completed, redirecting to payment page")
+                messages.warning(request, 'Оплата не була проведена. Будь ласка, завершіть оплату.')
+                return redirect('orders:liqpay_payment', order_id=order.id)
+            
         except Order.DoesNotExist:
+            logger.error(f"Order {order_id} not found in success page")
             pass
     
     return render(request, 'orders/success.html', {'order': order})
@@ -372,14 +383,17 @@ def liqpay_callback(request):
             logger.info(f'Order #{order.order_number} already paid, skipping')
             return JsonResponse({'success': True, 'message': 'Already processed'})
         
+        logger.info(f'LiqPay callback for order #{order.order_number}: status={status}, transaction={transaction_id}')
+        
         if status == 'success':
             order.is_paid = True
             order.payment_date = timezone.now()
             order.status = 'confirmed'
             order.save(update_fields=['is_paid', 'payment_date', 'status'])
             
-            logger.info(f'Order #{order.order_number} paid successfully (transaction: {transaction_id})')
+            logger.info(f'✅ Order #{order.order_number} PAID successfully at {order.payment_date.strftime("%Y-%m-%d %H:%M:%S")} (transaction: {transaction_id})')
             
+            # Очищаємо кошик ТІЛЬКИ після успішної оплати
             cart = Cart(request)
             cart.clear()
             
@@ -387,8 +401,9 @@ def liqpay_callback(request):
             
             return JsonResponse({'success': True})
         else:
-            logger.warning(f'Order #{order.order_number} payment failed: {status}')
-            return JsonResponse({'success': False, 'status': status})
+            # Оплата не пройшла - логуємо статус
+            logger.warning(f'❌ Order #{order.order_number} payment FAILED: status={status}')
+            return JsonResponse({'success': False, 'status': status, 'message': 'Payment not successful'})
             
     except Order.DoesNotExist:
         logger.error(f'LiqPay callback: order {order_id} not found')
