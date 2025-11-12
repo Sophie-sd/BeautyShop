@@ -5,10 +5,11 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.utils import timezone
 from .models import Promotion, PromoCode
+from apps.core.admin_utils import AdminMediaMixin
 
 
 @admin.register(Promotion)
-class PromotionAdmin(admin.ModelAdmin):
+class PromotionAdmin(AdminMediaMixin, admin.ModelAdmin):
     """Адміністрування акцій"""
     
     list_display = [
@@ -186,16 +187,10 @@ class PromotionAdmin(admin.ModelAdmin):
         if 'delete_selected' in actions:
             del actions['delete_selected']
         return actions
-    
-    class Media:
-        css = {
-            'all': ('admin/css/custom_admin.css',)
-        }
-        js = ('admin/js/custom_admin.js',)
 
 
 @admin.register(PromoCode)
-class PromoCodeAdmin(admin.ModelAdmin):
+class PromoCodeAdmin(AdminMediaMixin, admin.ModelAdmin):
     """Адміністрування промокодів"""
     
     list_display = [
@@ -264,10 +259,3 @@ class PromoCodeAdmin(admin.ModelAdmin):
         else:
             return format_html('<span class="badge badge-danger">{}</span>', message)
     get_status.short_description = 'Статус'
-    
-    class Media:
-        css = {
-            'all': ('admin/css/custom_admin.css',)
-        }
-        js = ('admin/js/custom_admin.js',)
-

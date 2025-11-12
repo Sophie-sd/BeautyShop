@@ -16,6 +16,7 @@ from .models import (
     NewProduct, CategoryFilterConfig
 )
 from .forms import ProductAdminForm
+from apps.core.admin_utils import get_image_preview, AdminMediaMixin
 
 
 # ============================================
@@ -64,7 +65,7 @@ class CategoryFilterConfigInline(admin.StackedInline):
 # ============================================
 
 @admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(AdminMediaMixin, admin.ModelAdmin):
     """Адміністрування категорій з конфігурацією фільтрів"""
     
     list_display = ['get_category_image', 'name', 'parent', 'get_products_count', 'get_filter_config', 'is_active', 'sort_order']
@@ -94,10 +95,7 @@ class CategoryAdmin(admin.ModelAdmin):
     def get_category_image(self, obj):
         """Мініатюра зображення категорії"""
         if obj.image:
-            return format_html(
-                '<img src="{}" class="admin-thumbnail-small" />',
-                obj.image.url
-            )
+            return get_image_preview(obj.image.url, obj.name, 'admin-thumbnail-small')
         return format_html('<div class="admin-icon-placeholder">📂</div>')
     get_category_image.short_description = 'Фото'
     
@@ -132,14 +130,7 @@ class CategoryAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         """При збереженні створюємо конфіг фільтрів якщо його немає"""
         super().save_model(request, obj, form, change)
-        # Створюємо конфіг фільтрів за замовчуванням
         CategoryFilterConfig.objects.get_or_create(category=obj)
-    
-    class Media:
-        css = {
-            'all': ('admin/css/custom_admin.css',)
-        }
-        js = ('admin/js/custom_admin.js',)
 
 
 # ============================================
@@ -197,7 +188,7 @@ class StockFilter(admin.SimpleListFilter):
 
 
 @admin.register(Product)
-class ProductAdmin(admin.ModelAdmin):
+class ProductAdmin(AdminMediaMixin, admin.ModelAdmin):
     """Адміністрування товарів з розширеним функціоналом"""
     
     form = ProductAdminForm
@@ -321,10 +312,7 @@ class ProductAdmin(admin.ModelAdmin):
         """Мініатюра головного зображення товару"""
         main_image = obj.images.filter(is_main=True).first() or obj.images.first()
         if main_image:
-            return format_html(
-                '<img src="{}" class="admin-thumbnail-small" />',
-                main_image.image.url
-            )
+            return get_image_preview(main_image.image.url, obj.name, 'admin-thumbnail-small')
         return format_html('<div class="admin-icon-placeholder">📦</div>')
     get_product_image.short_description = 'Фото'
     
@@ -498,19 +486,13 @@ class ProductAdmin(admin.ModelAdmin):
             preserved_order = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(categories_list)])
             kwargs["queryset"] = kwargs["queryset"].order_by(preserved_order)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
-    
-    class Media:
-        css = {
-            'all': ('admin/css/custom_admin.css', 'admin/css/product_admin.css')
-        }
-        js = ('admin/js/custom_admin.js',)
 
 # ============================================
 #       НОВИНКИ, АКЦІЙНІ ПРОПОЗИЦІЇ
 # ============================================
 
 @admin.register(NewProduct)
-class NewProductAdmin(admin.ModelAdmin):
+class NewProductAdmin(AdminMediaMixin, admin.ModelAdmin):
     """Адміністрування новинок на головній сторінці"""
     
     list_display = ['product', 'get_is_new_status', 'sort_order', 'created_at']
@@ -549,12 +531,6 @@ class NewProductAdmin(admin.ModelAdmin):
         obj.product.save(update_fields=['is_new'])
         super().delete_model(request, obj)
         self.message_user(request, f'❌ Товар "{product_name}" видалено з новинок і знято статус NEW')
-    
-    class Media:
-        css = {
-            'all': ('admin/css/custom_admin.css',)
-        }
-        js = ('admin/js/custom_admin.js',)
 
 # ============================================
 #       НАЛАШТУВАННЯ ГРУПУВАННЯ В АДМІНЦІ

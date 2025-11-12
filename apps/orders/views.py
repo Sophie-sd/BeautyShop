@@ -12,6 +12,7 @@ from apps.cart.cart import Cart
 from decimal import Decimal
 from .models import Newsletter, Order, OrderItem
 from .novaposhta import NovaPoshtaAPI
+from .validators import validate_order_data
 import hashlib
 import base64
 import json
@@ -79,8 +80,19 @@ def order_create(request):
             if not delivery_address:
                 delivery_address = 'Україна, Черкаська область, м.Монастирище, вул. Соборна 126Д'
         
-        if not all([first_name, last_name, middle_name, email, phone, delivery_method, payment_method]):
-            messages.error(request, "Будь ласка, заповніть всі обов'язкові поля")
+        # Валідація даних форми
+        is_valid, error_message = validate_order_data({
+            'first_name': first_name,
+            'last_name': last_name,
+            'middle_name': middle_name,
+            'email': email,
+            'phone': phone,
+            'delivery_method': delivery_method,
+            'payment_method': payment_method,
+        })
+        
+        if not is_valid:
+            messages.error(request, error_message)
             context = {
                 'cart': cart,
                 'user': request.user,
@@ -98,12 +110,59 @@ def order_create(request):
             return render(request, 'orders/create.html', context)
         
         try:
-            print(f"DEBUG: Creating order with data:")
-            print(f"  - User: {request.user if request.user.is_authenticated else 'Anonymous'}")
-            print(f"  - Name: {first_name} {last_name} {middle_name}")
-            print(f"  - Delivery: {delivery_method}, {delivery_city}, {delivery_address}")
-            print(f"  - NP refs: city={np_city_ref}, warehouse={np_warehouse_ref}, type={delivery_type}")
-            print(f"  - Payment: {payment_method}")
+            logger.info(f"Creating order - User: {request.user.id if request.user.is_authenticated else 'Guest'}, Total: {total_price}")
+            
+            # БЕЗПЕКА: Перераховуємо ціни на серверній стороні замість довіри сесії
+            recalculated_subtotal = Decimal('0')
+            order_items_data = []
+            
+            for item in cart:
+                product = item['product']
+                quantity = item['quantity']
+                
+                # Перевірка наявності товару
+                if product.stock < quantity:
+                    raise ValueError(f'Недостатньо товару "{product.name}" на складі (доступно: {product.stock})')
+                
+                # КРИТИЧНО: Отримуємо ціну з БД, а не з сесії
+                actual_price = product.get_price_for_user(
+                    request.user if request.user.is_authenticated and not request.user.is_staff and not request.user.is_superuser else None,
+                    quantity
+                )
+                
+                item_total = Decimal(str(actual_price)) * quantity
+                recalculated_subtotal += item_total
+                
+                order_items_data.append({
+                    'product': product,
+                    'quantity': quantity,
+                    'price': actual_price
+                })
+            
+            # Застосовуємо знижку промокоду якщо є
+            discount = Decimal('0')
+            if 'promo_discount' in request.session and 'promo_id' in request.session:
+                from apps.promotions.models import PromoCode
+                try:
+                    promo = PromoCode.objects.get(id=request.session['promo_id'])
+                    is_valid, _ = promo.is_valid()
+                    if is_valid:
+                        discount_amount, _ = promo.apply_discount(float(recalculated_subtotal))
+                        discount = Decimal(str(discount_amount))
+                        
+                        # Збільшуємо лічильник використань
+                        promo.used_count += 1
+                        promo.save(update_fields=['used_count'])
+                        logger.info(f"Promo code {promo.code} applied: {discount}")
+                except PromoCode.DoesNotExist:
+                    logger.warning(f"Promo code {request.session.get('promo_id')} not found")
+                    discount = Decimal('0')
+            
+            final_total = recalculated_subtotal - discount
+            
+            # Перевірка на від'ємну суму (захист від маніпуляцій)
+            if final_total < 0:
+                raise ValueError('Некоректна сума замовлення')
             
             order = Order.objects.create(
                 user=request.user if request.user.is_authenticated else None,
@@ -119,23 +178,22 @@ def order_create(request):
                 np_warehouse_ref=np_warehouse_ref,
                 delivery_type=delivery_type,
                 payment_method=payment_method,
-                subtotal=total_price,
-                discount=Decimal('0'),
-                total=total_price,
+                subtotal=recalculated_subtotal,
+                discount=discount,
+                total=final_total,
                 notes=notes
             )
             
-            print(f"DEBUG: Order created with ID: {order.id}")
+            logger.info(f"Order #{order.order_number} created successfully")
             
-            for item in cart:
+            # Створюємо items з перерахованими цінами
+            for item_data in order_items_data:
                 OrderItem.objects.create(
                     order=order,
-                    product=item['product'],
-                    quantity=item['quantity'],
-                    price=item['price']
+                    product=item_data['product'],
+                    quantity=item_data['quantity'],
+                    price=item_data['price']
                 )
-            
-            print(f"DEBUG: Order items created, order number: {order.order_number}")
             
             if payment_method == 'liqpay':
                 request.session['pending_order_id'] = order.id
@@ -145,12 +203,18 @@ def order_create(request):
             request.session['completed_order_id'] = order.id
             return redirect('orders:success')
             
+        except ValueError as e:
+            logger.warning(f"Order validation error: {e}")
+            messages.error(request, str(e))
+            context = {
+                'cart': cart,
+                'user': request.user,
+                'form_data': request.POST
+            }
+            return render(request, 'orders/create.html', context)
         except Exception as e:
-            import traceback
-            error_details = traceback.format_exc()
-            print(f"Order creation error: {e}")
-            print(f"Traceback: {error_details}")
-            messages.error(request, f'Помилка при створенні замовлення: {str(e)}')
+            logger.exception(f"Order creation error: {e}")
+            messages.error(request, 'Помилка при створенні замовлення. Будь ласка, спробуйте пізніше.')
             context = {
                 'cart': cart,
                 'user': request.user,

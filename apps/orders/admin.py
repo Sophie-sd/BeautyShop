@@ -10,6 +10,7 @@ from django.contrib import messages
 from django.urls import path, reverse
 from datetime import datetime, timedelta
 from .models import Order, OrderItem, RetailClient, EmailCampaign, Newsletter
+from apps.core.admin_utils import AdminMediaMixin
 
 
 class OrderItemInline(admin.TabularInline):
@@ -26,7 +27,7 @@ class OrderItemInline(admin.TabularInline):
 
 
 @admin.register(Order)
-class OrderAdmin(admin.ModelAdmin):
+class OrderAdmin(AdminMediaMixin, admin.ModelAdmin):
     """Адміністрування замовлень з розширеними фільтрами"""
     
     list_display = [
@@ -344,16 +345,10 @@ class OrderAdmin(admin.ModelAdmin):
         response.context_data.update(extra_context)
         
         return response
-    
-    class Media:
-        css = {
-            'all': ('admin/css/custom_admin.css',)
-        }
-        js = ('admin/js/custom_admin.js',)
 
 
 @admin.register(RetailClient)
-class RetailClientAdmin(admin.ModelAdmin):
+class RetailClientAdmin(AdminMediaMixin, admin.ModelAdmin):
     """Адміністрування роздрібних клієнтів (гості без реєстрації)"""
     
     list_display = [
@@ -430,7 +425,7 @@ class RetailClientAdmin(admin.ModelAdmin):
 
 
 @admin.register(Newsletter)
-class NewsletterAdmin(admin.ModelAdmin):
+class NewsletterAdmin(AdminMediaMixin, admin.ModelAdmin):
     """Адміністрування підписників розсилки"""
     
     list_display = ['email', 'name', 'is_active', 'created_at']
@@ -465,7 +460,7 @@ class NewsletterAdmin(admin.ModelAdmin):
 
 
 @admin.register(EmailCampaign)
-class EmailCampaignAdmin(admin.ModelAdmin):
+class EmailCampaignAdmin(AdminMediaMixin, admin.ModelAdmin):
     """Адміністрування email розсилок"""
     
     from .forms import EmailCampaignForm
@@ -620,12 +615,6 @@ class EmailCampaignAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         """Дозволити видалення всім адміністраторам"""
         return request.user.is_superuser or request.user.is_staff
-    
-    class Media:
-        css = {
-            'all': ('admin/css/email_campaign.css',)
-        }
-        js = ('admin/js/email_campaign.js',)
 
 
 # Налаштування відображення в адмінці

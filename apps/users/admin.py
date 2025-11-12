@@ -6,6 +6,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
 from django.db.models import Count, Max
 from .models import CustomUser, UserProfile, WholesaleClient
+from apps.core.admin_utils import AdminMediaMixin
 
 
 class UserProfileInline(admin.StackedInline):
@@ -17,7 +18,7 @@ class UserProfileInline(admin.StackedInline):
     fields = ['company_name', 'tax_number', 'address', 'notes']
 
 
-class WholesaleClientAdmin(UserAdmin):
+class WholesaleClientAdmin(AdminMediaMixin, UserAdmin):
     """Адмінка для оптових клієнтів"""
     
     list_display = ['get_full_name_display', 'email', 'get_phone_display', 'get_orders_count', 'get_last_order_date', 'get_last_login_display']
