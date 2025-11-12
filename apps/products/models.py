@@ -37,6 +37,11 @@ class Category(models.Model):
         verbose_name = 'Категорія'
         verbose_name_plural = 'Категорії'
         ordering = ['sort_order', 'name']
+        indexes = [
+            models.Index(fields=['parent', 'is_active']),
+            models.Index(fields=['slug']),
+            models.Index(fields=['sort_order']),
+        ]
     
     def save(self, *args, **kwargs):
         if not self.slug:
