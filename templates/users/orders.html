@@ -81,13 +81,6 @@
                                 <span class="label">Загальна сума:</span>
                                 <span class="amount">{{ order.total }} ₴</span>
                             </div>
-                            <div class="order-actions">
-                                {% if order.can_be_cancelled %}
-                                    <button class="btn btn-sm btn-outline btn-danger" data-cancel-order="{{ order.id }}">
-                                        Скасувати
-                                    </button>
-                                {% endif %}
-                            </div>
                         </div>
                     </div>
                 {% endfor %}

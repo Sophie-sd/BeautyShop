@@ -76,6 +76,12 @@
     grid-column: 1;
     grid-row: 1 / 3;
     flex-shrink: 0;
+    display: block;
+    transition: opacity 0.2s ease;
+}
+
+.cart-item__image:hover {
+    opacity: 0.8;
 }
 
 .cart-item__image img {
@@ -109,6 +115,16 @@
     margin: 0;
     line-height: 1.4;
     text-align: left;
+}
+
+.cart-item__name-link {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.cart-item__name-link:hover {
+    color: var(--primary);
 }
 
 .cart-item__controls {

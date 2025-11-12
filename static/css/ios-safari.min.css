@@ -112,14 +112,14 @@
         /* КРИТИЧНО: Заборона transform на body для збереження position: fixed */
         html,
         body {
-            -webkit-transform: none;
             transform: none;
-            -webkit-perspective: none;
             perspective: none;
         }
         
         body {
             padding-top: 0;
+            overflow-x: hidden;
+            position: relative;
         }
         
         /* Main content з padding-top для header */
@@ -136,10 +136,9 @@
             right: 0;
             width: 100%;
             z-index: 100;
-            -webkit-transform: translate3d(0, 0, 0);
             transform: translate3d(0, 0, 0);
-            -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
+            will-change: transform;
         }
         
         .main-header {
@@ -155,11 +154,8 @@
         }
         
         .logo-img {
-            -webkit-transform: translateZ(0);
             transform: translateZ(0);
-            -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
-            -webkit-user-select: none;
             user-select: none;
             height: 48px;
             max-width: 160px;
@@ -182,7 +178,6 @@
         
         .cart-link,
         .hamburger {
-            -webkit-transform: translateZ(0);
             transform: translateZ(0);
         }
         
@@ -198,13 +193,12 @@
             left: 0;
             right: 0;
             width: 100%;
-            -webkit-transform: translate3d(0, 0, 0);
             transform: translate3d(0, 0, 0);
-            -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
             pointer-events: auto;
             z-index: 9999;
             padding-bottom: env(safe-area-inset-bottom);
+            will-change: transform;
         }
         
         /* Padding для контенту щоб не перекривався з нижнім меню */
@@ -213,6 +207,21 @@
         .wishlist-section,
         main > section:last-child {
             padding-bottom: calc(70px + env(safe-area-inset-bottom));
+        }
+        
+        /* Критичне виправлення для сторінок профілю */
+        body.profile-page {
+            position: relative;
+            min-height: 100vh;
+            min-height: calc(var(--vh, 1vh) * 100);
+        }
+        
+        body.profile-page .profile-container {
+            padding-bottom: calc(90px + env(safe-area-inset-bottom));
+        }
+        
+        body.profile-page .profile-actions {
+            margin-bottom: calc(20px + env(safe-area-inset-bottom));
         }
     }
     
@@ -231,6 +240,10 @@
         .wishlist-section,
         main > section:last-child {
             padding-bottom: calc(80px + env(safe-area-inset-bottom));
+        }
+        
+        body.profile-page .profile-container {
+            padding-bottom: calc(100px + env(safe-area-inset-bottom));
         }
     }
     

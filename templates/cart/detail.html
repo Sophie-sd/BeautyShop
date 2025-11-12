@@ -24,7 +24,7 @@
                                 &times;
                             </button>
                             
-                            <div class="cart-item__image">
+                            <a href="{% url 'products:detail' item.product.slug %}" class="cart-item__image">
                                 {% if item.product.images.first %}
                                     <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}">
                                 {% else %}
@@ -32,10 +32,12 @@
                                         <i class="icon-product">📦</i>
                                     </div>
                                 {% endif %}
-                            </div>
+                            </a>
                             
                             <div class="cart-item__info">
-                                <h3 class="cart-item__name">{{ item.product.name }}</h3>
+                                <a href="{% url 'products:detail' item.product.slug %}" class="cart-item__name-link">
+                                    <h3 class="cart-item__name">{{ item.product.name }}</h3>
+                                </a>
                             </div>
                             
                             <div class="cart-item__controls">
