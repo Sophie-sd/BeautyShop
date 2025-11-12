@@ -91,10 +91,19 @@ class Order(models.Model):
         ordering = ['-created_at']
     
     def save(self, *args, **kwargs):
-        is_new = self.pk is None
+        """Зберігає замовлення та генерує номер"""
+        # Якщо це нове замовлення і немає номеру - генеруємо тимчасовий
+        if not self.pk and not self.order_number:
+            # Генеруємо унікальний номер на основі часу для уникнення конфліктів
+            import time
+            temp_number = f"TEMP-{int(time.time() * 1000)}"
+            self.order_number = temp_number
+        
+        # Зберігаємо об'єкт
         super().save(*args, **kwargs)
         
-        if is_new and not self.order_number:
+        # Після збереження генеруємо фінальний номер
+        if self.order_number.startswith('TEMP-'):
             self.order_number = f"BS{self.id:06d}"
             super().save(update_fields=['order_number'])
     

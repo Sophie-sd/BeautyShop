@@ -164,6 +164,8 @@ def order_create(request):
             if final_total < 0:
                 raise ValueError('Некоректна сума замовлення')
             
+            logger.info(f"Creating order with data: first_name={first_name}, last_name={last_name}, email={email}, payment={payment_method}")
+            
             order = Order.objects.create(
                 user=request.user if request.user.is_authenticated else None,
                 first_name=first_name,
@@ -184,7 +186,7 @@ def order_create(request):
                 notes=notes
             )
             
-            logger.info(f"Order #{order.order_number} created successfully")
+            logger.info(f"Order #{order.order_number} created successfully (ID: {order.id})")
             
             # Створюємо items з перерахованими цінами
             for item_data in order_items_data:
@@ -195,12 +197,16 @@ def order_create(request):
                     price=item_data['price']
                 )
             
+            logger.info(f"Order items created for order #{order.order_number}")
+            
             if payment_method == 'liqpay':
                 request.session['pending_order_id'] = order.id
+                logger.info(f"Redirecting to LiqPay payment for order #{order.order_number}")
                 return redirect('orders:liqpay_payment', order_id=order.id)
             
             cart.clear()
             request.session['completed_order_id'] = order.id
+            logger.info(f"Order #{order.order_number} completed (cash payment)")
             return redirect('orders:success')
             
         except ValueError as e:
@@ -213,8 +219,8 @@ def order_create(request):
             }
             return render(request, 'orders/create.html', context)
         except Exception as e:
-            logger.exception(f"Order creation error: {e}")
-            messages.error(request, 'Помилка при створенні замовлення. Будь ласка, спробуйте пізніше.')
+            logger.exception(f"Order creation error: {type(e).__name__}: {e}")
+            messages.error(request, f'Помилка при створенні замовлення: {str(e)}. Будь ласка, спробуйте пізніше.')
             context = {
                 'cart': cart,
                 'user': request.user,

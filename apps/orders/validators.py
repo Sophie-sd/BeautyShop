@@ -56,16 +56,19 @@ def validate_order_data(data: dict) -> tuple[bool, str]:
     if not validate_ukrainian_phone(data['phone']):
         return False, "Невірний формат телефону. Використовуйте +380XXXXXXXXX"
     
-    # Валідація імені (без цифр та спецсимволів)
-    name_pattern = r'^[а-яА-ЯіІїЇєЄa-zA-Z\s\'-]+$'
+    # Валідація імені (дозволяємо літери, пробіли, дефіс, апостроф та типографічні апострофи)
+    # Підтримка як ASCII апострофу ('), так і Unicode апострофів (' ' ʼ)
+    name_pattern = r'^[а-яА-ЯіІїЇєЄҐґa-zA-Z\s\'\'\'\`ʼ\-]+$'
     for field in ['first_name', 'last_name', 'middle_name']:
-        if data.get(field) and data[field].strip() and not re.match(name_pattern, data[field]):
-            field_names = {
-                'first_name': 'Ім\'я',
-                'last_name': 'Прізвище',
-                'middle_name': 'По-батькові'
-            }
-            return False, f"Поле '{field_names.get(field, field)}' містить некоректні символи"
+        if data.get(field) and data[field].strip():
+            value = data[field].strip()
+            if not re.match(name_pattern, value):
+                field_names = {
+                    'first_name': 'Ім\'я',
+                    'last_name': 'Прізвище',
+                    'middle_name': 'По-батькові'
+                }
+                return False, f"Поле '{field_names.get(field, field)}' містить некоректні символи. Використовуйте тільки літери, пробіли, дефіс та апостроф."
     
     return True, ""
 
