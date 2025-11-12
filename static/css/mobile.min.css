@@ -810,12 +810,14 @@
 /* Contact Page Mobile Styles */
 .contacts-main {
     padding: var(--spacing-lg) 0;
+    margin-top: 0;
 }
 
 @media (max-width: 991.98px) {
     .contacts-main .row {
         flex-direction: column;
         gap: var(--spacing-lg);
+        align-items: stretch;
     }
     
     .contacts-main .col-lg-7,
@@ -823,6 +825,7 @@
         max-width: 100%;
         flex: 0 0 100%;
         width: 100%;
+        justify-content: flex-start;
     }
     
     .contact-info-section {
