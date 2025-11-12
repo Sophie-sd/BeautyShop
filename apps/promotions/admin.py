@@ -259,3 +259,11 @@ class PromoCodeAdmin(AdminMediaMixin, admin.ModelAdmin):
         else:
             return format_html('<span class="badge badge-danger">{}</span>', message)
     get_status.short_description = 'Статус'
+
+
+# Налаштування відображення в адмінці
+Promotion._meta.verbose_name = 'Акція'
+Promotion._meta.verbose_name_plural = '🔥 7. Акції'
+
+PromoCode._meta.verbose_name = 'Промокод'
+PromoCode._meta.verbose_name_plural = '🎟️ 8. Промокоди'

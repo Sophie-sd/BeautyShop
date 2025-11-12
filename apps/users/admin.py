@@ -247,5 +247,5 @@ admin.site.register(WholesaleClient, WholesaleClientAdmin)
 admin.site.unregister(Group)
 
 WholesaleClient._meta.verbose_name = 'Оптовий клієнт'
-WholesaleClient._meta.verbose_name_plural = '💼 Оптові клієнти'
+WholesaleClient._meta.verbose_name_plural = '💼 2. Оптові клієнти'
 WholesaleClient._meta.app_label = 'users'

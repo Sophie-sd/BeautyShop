@@ -424,39 +424,6 @@ class RetailClientAdmin(AdminMediaMixin, admin.ModelAdmin):
         return super().changelist_view(request, extra_context)
 
 
-@admin.register(Newsletter)
-class NewsletterAdmin(AdminMediaMixin, admin.ModelAdmin):
-    """Адміністрування підписників розсилки"""
-    
-    list_display = ['email', 'name', 'is_active', 'created_at']
-    list_filter = ['is_active', ('created_at', admin.DateFieldListFilter)]
-    search_fields = ['email', 'name']
-    ordering = ['-created_at']
-    list_per_page = 50
-    readonly_fields = ['created_at']
-    actions = ['activate_subscribers', 'deactivate_subscribers']
-    
-    fieldsets = (
-        ('Основна інформація', {
-            'fields': ('email', 'name', 'is_active')
-        }),
-        ('Дата підписки', {
-            'fields': ('created_at',),
-            'classes': ('collapse',)
-        }),
-    )
-    
-    def activate_subscribers(self, request, queryset):
-        """Активувати підписників"""
-        updated = queryset.update(is_active=True)
-        messages.success(request, f'Активовано {updated} підписників')
-    activate_subscribers.short_description = 'Активувати вибрані підписки'
-    
-    def deactivate_subscribers(self, request, queryset):
-        """Деактивувати підписників"""
-        updated = queryset.update(is_active=False)
-        messages.success(request, f'Деактивовано {updated} підписників')
-    deactivate_subscribers.short_description = 'Деактивувати вибрані підписки'
 
 
 @admin.register(EmailCampaign)
@@ -619,14 +586,11 @@ class EmailCampaignAdmin(AdminMediaMixin, admin.ModelAdmin):
 
 # Налаштування відображення в адмінці
 Order._meta.verbose_name = "Замовлення"
-Order._meta.verbose_name_plural = "📦 Замовлення"
+Order._meta.verbose_name_plural = "📦 1. Замовлення"
 
 RetailClient._meta.verbose_name = 'Роздрібний клієнт'
-RetailClient._meta.verbose_name_plural = '🛒 Роздрібні клієнти'
+RetailClient._meta.verbose_name_plural = '🛒 3. Роздрібні клієнти'
 RetailClient._meta.app_label = 'users'
 
-Newsletter._meta.verbose_name = 'Підписка на розсилку'
-Newsletter._meta.verbose_name_plural = '📧 Підписка на розсилку'
-
 EmailCampaign._meta.verbose_name = 'Email розсилка'
-EmailCampaign._meta.verbose_name_plural = '✉️ Email розсилки'
+EmailCampaign._meta.verbose_name_plural = '✉️ 9. Email розсилки'
