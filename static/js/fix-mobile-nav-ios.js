@@ -1,6 +1,7 @@
 /**
  * Фікс для нижнього меню на iOS Safari
- * Проблема: після входу в особистий кабінет меню відкріпляється
+ * Проблема: після навігації меню може відкріплятися від низу екрану
+ * Рішення: видалення всіх transform на батьківських елементах та легкий repaint
  */
 (function() {
     'use strict';
@@ -10,17 +11,25 @@
         
         if (!bottomNav) return;
         
-        // Примусово застосовуємо стилі для фіксації
+        // Примусово застосовуємо стилі для фіксації без transform
         bottomNav.style.position = 'fixed';
         bottomNav.style.bottom = '0';
         bottomNav.style.left = '0';
         bottomNav.style.right = '0';
         bottomNav.style.width = '100%';
-        bottomNav.style.zIndex = '9999';
-        bottomNav.style.transform = 'translate3d(0, 0, 0)';
-        bottomNav.style.webkitTransform = 'translate3d(0, 0, 0)';
-        bottomNav.style.backfaceVisibility = 'hidden';
-        bottomNav.style.webkitBackfaceVisibility = 'hidden';
+        bottomNav.style.zIndex = '1000';
+        
+        // Переконуємось, що на body та html немає transform
+        document.documentElement.style.transform = 'none';
+        document.documentElement.style.perspective = 'none';
+        document.body.style.transform = 'none';
+        document.body.style.perspective = 'none';
+        
+        // Легкий repaint для iOS Safari (тимчасовий translateZ)
+        bottomNav.style.transform = 'translateZ(0)';
+        requestAnimationFrame(function() {
+            bottomNav.style.transform = 'none';
+        });
     }
     
     function checkAndFix() {
@@ -30,7 +39,6 @@
         // Виправляємо після невеликої затримки (для динамічного контенту)
         setTimeout(forceFixBottomNav, 100);
         setTimeout(forceFixBottomNav, 300);
-        setTimeout(forceFixBottomNav, 500);
         
         // Виправляємо при скролі (тільки перший раз)
         let scrollFixed = false;
@@ -46,6 +54,7 @@
         // Виправляємо при зміні орієнтації
         window.addEventListener('orientationchange', function() {
             setTimeout(forceFixBottomNav, 100);
+            setTimeout(forceFixBottomNav, 300);
         });
     }
     
@@ -59,10 +68,24 @@
     // Також запускаємо після повного завантаження
     window.addEventListener('load', checkAndFix);
     
-    // Виправляємо при поверненні до сторінки (bfcache в Safari)
+    // КРИТИЧНО: Виправляємо при поверненні до сторінки (bfcache в Safari)
+    // Це вирішує проблему відкріплення меню при навігації вперед/назад
     window.addEventListener('pageshow', function(event) {
+        // event.persisted === true означає, що сторінка завантажена з кешу
         if (event.persisted) {
-            checkAndFix();
+            forceFixBottomNav();
+            setTimeout(forceFixBottomNav, 100);
+        }
+        // Запускаємо також при звичайному показі сторінки
+        forceFixBottomNav();
+    });
+    
+    // Додатковий обробник для pagehide (перед виходом зі сторінки)
+    window.addEventListener('pagehide', function() {
+        // Видаляємо тимчасові transform, щоб при поверненні не було проблем
+        const bottomNav = document.querySelector('.mobile-bottom-nav');
+        if (bottomNav) {
+            bottomNav.style.transform = 'none';
         }
     });
 })();

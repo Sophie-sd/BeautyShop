@@ -32,15 +32,6 @@
         touch-action: manipulation;
     }
     
-    /* Performance Optimizations */
-    .logo-img,
-    .search-icon {
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
-        -webkit-backface-visibility: hidden;
-        backface-visibility: hidden;
-    }
-    
     /* Form Elements */
     input,
     select,
@@ -109,7 +100,7 @@
     
     /* Mobile Layout для iOS Safari */
     @media (max-width: 767.98px) {
-        /* КРИТИЧНО: Заборона transform на body для збереження position: fixed */
+        /* КРИТИЧНО: Заборона transform на body та html для збереження position: fixed */
         html,
         body {
             transform: none;
@@ -122,10 +113,12 @@
             position: relative;
         }
         
-        /* Main content з padding-top для header */
+        /* Main content з padding-top для header та padding-bottom для меню */
         main,
         .main-content {
             padding-top: 60px;
+            min-height: 100vh;
+            padding-bottom: calc(70px + env(safe-area-inset-bottom));
         }
         
         /* Фіксований Header */
@@ -136,9 +129,6 @@
             right: 0;
             width: 100%;
             z-index: 100;
-            transform: translate3d(0, 0, 0);
-            backface-visibility: hidden;
-            will-change: transform;
         }
         
         .main-header {
@@ -154,8 +144,6 @@
         }
         
         .logo-img {
-            transform: translateZ(0);
-            backface-visibility: hidden;
             user-select: none;
             height: 48px;
             max-width: 160px;
@@ -176,29 +164,21 @@
             border-radius: 1px;
         }
         
-        .cart-link,
-        .hamburger {
-            transform: translateZ(0);
-        }
-        
         .cart-icon {
             font-size: 28px;
             line-height: 1;
         }
         
-        /* Фіксоване нижнє меню */
+        /* Фіксоване нижнє меню - без transform для стабільності */
         .mobile-bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
             width: 100%;
-            transform: translate3d(0, 0, 0);
-            backface-visibility: hidden;
             pointer-events: auto;
-            z-index: 9999;
+            z-index: 1000;
             padding-bottom: env(safe-area-inset-bottom);
-            will-change: transform;
         }
         
         /* Padding для контенту щоб не перекривався з нижнім меню */
@@ -229,6 +209,7 @@
         main,
         .main-content {
             padding-top: 56px;
+            padding-bottom: calc(80px + env(safe-area-inset-bottom));
         }
         
         .header-content {
@@ -251,6 +232,7 @@
         main,
         .main-content {
             padding-top: 52px;
+            padding-bottom: calc(80px + env(safe-area-inset-bottom));
         }
         
         .header-content {
