@@ -265,76 +265,6 @@
     box-shadow: 0 6px 20px rgba(111, 66, 193, 0.6);
 }
 
-/* Contact Delivery Section */
-.contact-delivery-section {
-    background: linear-gradient(135deg, #e91e63 0%, #ff4081 100%);
-    color: white;
-}
-
-.contact-title {
-    font-size: 2em;
-    font-weight: 700;
-    margin: 0 0 15px 0;
-    color: white;
-}
-
-.contact-description {
-    font-size: 1.1em;
-    margin: 0 0 30px 0;
-    opacity: 0.9;
-    color: white;
-}
-
-.contact-buttons .btn {
-    margin: 0 15px 15px 0;
-    min-width: 180px;
-    padding: 12px 24px;
-    font-weight: 600;
-    text-decoration: none;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-}
-
-/* Стилі для кнопки "Подзвонити" (primary) */
-.contact-delivery-section .btn.btn-primary {
-    background: white;
-    color: #e91e63;
-    border: 2px solid white;
-}
-
-.contact-delivery-section .btn.btn-primary:hover {
-    background: rgba(255, 255, 255, 0.9);
-    color: #e91e63;
-    border-color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-/* Стилі для кнопки "Написати нам" (outline) */
-.contact-delivery-section .btn.btn-outline {
-    background: transparent;
-    color: white;
-    border: 2px solid white;
-}
-
-.contact-delivery-section .btn.btn-outline:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    border-color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-/* Стилі для іконок у кнопках */
-.contact-delivery-section .btn-icon {
-    margin-right: 8px;
-    display: inline-block;
-    transform: none;
-    vertical-align: middle;
-    font-style: normal;
-}
-
-
 /* Адаптивність */
 @media (max-width: 768px) {
     .delivery-grid,
@@ -371,27 +301,6 @@
     .payment-title {
         font-size: 1.2em;
     }
-    
-    /* Відділяємо блок "Маєте питання" від footer */
-    .contact-delivery-section {
-        padding: 40px 20px;
-        border-radius: 20px;
-        margin: 50px 15px 60px 15px;
-    }
-    
-    .contact-title {
-        font-size: 1.4em;
-    }
-    
-    .contact-description {
-        font-size: 0.95em;
-    }
-    
-    .contact-buttons .btn {
-        display: block;
-        width: 100%;
-        margin: 0 0 15px 0;
-    }
 }
 
 @media (max-width: 480px) {
@@ -416,22 +325,6 @@
     .delivery-features li::before,
     .payment-features li::before {
         left: 3px;
-    }
-    
-    /* Відділяємо блок "Маєте питання" від footer на маленьких екранах */
-    .contact-delivery-section {
-        padding: 30px 15px;
-        border-radius: 15px;
-        margin: 45px 10px 55px 10px;
-    }
-    
-    .contact-title {
-        font-size: 1.2em;
-    }
-    
-    .contact-description {
-        font-size: 0.9em;
-        margin-bottom: 20px;
     }
 }
 
