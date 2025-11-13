@@ -191,7 +191,6 @@
         
         /* Критичне виправлення для сторінок профілю */
         body.profile-page {
-            position: relative;
             min-height: 100vh;
             min-height: calc(var(--vh, 1vh) * 100);
         }
