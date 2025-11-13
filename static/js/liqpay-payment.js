@@ -6,27 +6,16 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
-    liqpayForm.addEventListener('submit', function(e) {
-        if (submitBtn.disabled) {
-            e.preventDefault();
-            return;
-        }
-        
-        submitBtn.disabled = true;
-        submitBtn.classList.add('loading');
-        
-        const btnText = submitBtn.querySelector('.btn-text');
-        if (!btnText) {
-            const text = submitBtn.textContent;
-            submitBtn.innerHTML = `<span class="spinner"></span><span class="btn-text">${text}</span>`;
-        }
-        
-        setTimeout(function() {
-            if (submitBtn.disabled) {
+    liqpayForm.addEventListener('submit', function() {
+        if (!submitBtn.disabled) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            
+            setTimeout(function() {
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('loading');
-            }
-        }, 30000);
+            }, 30000);
+        }
     });
     
     window.addEventListener('pageshow', function(event) {
