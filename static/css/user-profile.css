@@ -8,7 +8,7 @@
 }
 
 body.profile-page .profile-container {
-    padding-top: 72px;
+    padding-top: 0;
 }
 
 .profile-wrapper {
@@ -554,10 +554,6 @@ body.profile-page .profile-container {
 @media (max-width: 576px) {
     .profile-container {
         padding: 16px 10px 20px 10px;
-    }
-    
-    body.profile-page .profile-container {
-        padding-top: 80px;
     }
     
     .profile-header {

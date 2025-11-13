@@ -403,7 +403,6 @@
 
 /* Media запити */
 @media (max-width: 768px) {
-    /* Показуємо мобільні елементи */
     .mobile-bottom-nav {
         display: flex;
     }
@@ -412,13 +411,11 @@
         display: block;
     }
     
-    /* Ховаємо десктопний футер */
     .footer-main,
     .footer-bottom {
         display: none;
     }
     
-    /* Ховаємо елементи header на мобільних */
     .top-bar,
     .main-nav,
     .desktop-nav {
@@ -436,27 +433,8 @@
         flex: 0 0 auto;
     }
     
-    /* Ховаємо мобільне меню overlay */
-    .mobile-menu,
-    .mobile-menu-overlay {
-        display: none;
-    }
-    
-    /* Ховаємо категорії на мобільних */
     .categories-section {
         display: none;
-    }
-    
-    /* Додаємо відступ знизу для контенту */
-    body {
-        padding-bottom: 0;
-        transform: none;
-    }
-    
-    main,
-    .main-content {
-        min-height: 100vh;
-        padding-bottom: calc(70px + env(safe-area-inset-bottom));
     }
     
     .footer {

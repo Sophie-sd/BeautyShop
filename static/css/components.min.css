@@ -388,6 +388,11 @@
     overflow-y: auto;
 }
 
+body.menu-open {
+    overflow: hidden;
+    height: 100vh;
+}
+
 .mobile-menu.active {
     right: 0;
 }
