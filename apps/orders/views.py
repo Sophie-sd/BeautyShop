@@ -275,6 +275,8 @@ def order_create(request):
 def order_success(request):
     """Сторінка успішного замовлення"""
     order_id = request.session.pop('completed_order_id', None)
+    payment_status = request.session.pop('payment_status', None)
+    payment_error = request.session.pop('payment_error', None)
     order = None
     
     if order_id:
@@ -284,7 +286,11 @@ def order_success(request):
             logger.error(f"Order {order_id} not found in success page")
             pass
     
-    return render(request, 'orders/success.html', {'order': order})
+    return render(request, 'orders/success.html', {
+        'order': order,
+        'payment_status': payment_status,
+        'payment_error': payment_error
+    })
 
 
 @require_GET
@@ -557,11 +563,14 @@ def liqpay_callback(request):
                 if 'pending_order_data' in request.session:
                     del request.session['pending_order_data']
                 request.session['completed_order_id'] = order.id
+                request.session['payment_status'] = 'success'
                 
                 return JsonResponse({'success': True})
             else:
                 # Оплата не пройшла - НЕ створюємо замовлення
                 logger.warning(f'❌ Pending order payment FAILED: status={status}')
+                request.session['payment_status'] = 'failed'
+                request.session['payment_error'] = status
                 return JsonResponse({'success': False, 'status': status, 'message': 'Payment not successful'})
         else:
             # Це існуюче замовлення
@@ -585,11 +594,14 @@ def liqpay_callback(request):
                 cart.clear()
                 
                 request.session['completed_order_id'] = order.id
+                request.session['payment_status'] = 'success'
                 
                 return JsonResponse({'success': True})
             else:
                 # Оплата не пройшла - логуємо статус
                 logger.warning(f'❌ Order #{order.order_number} payment FAILED: status={status}')
+                request.session['payment_status'] = 'failed'
+                request.session['payment_error'] = status
                 return JsonResponse({'success': False, 'status': status, 'message': 'Payment not successful'})
             
     except Order.DoesNotExist:

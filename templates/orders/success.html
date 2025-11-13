@@ -13,6 +13,32 @@
 <section class="order-success-section section-padding">
     <div class="container">
         <div class="success-content text-center">
+            {% if payment_status == 'failed' %}
+            <div class="error-icon">
+                ❌
+            </div>
+            
+            <h1 class="error-title">Оплата не пройшла</h1>
+            
+            <div class="error-details">
+                {% if payment_error %}
+                <p class="error-message">
+                    Статус: {{ payment_error }}<br>
+                    Будь ласка, спробуйте ще раз або оберіть інший спосіб оплати.
+                </p>
+                {% else %}
+                <p class="error-message">
+                    На жаль, оплата не була проведена.<br>
+                    Будь ласка, спробуйте ще раз або оберіть інший спосіб оплати.
+                </p>
+                {% endif %}
+            </div>
+            
+            <div class="error-actions">
+                <a href="{% url 'orders:create' %}" class="btn btn-primary">Спробувати ще раз</a>
+                <a href="{% url 'core:home' %}" class="btn btn-outline">На головну</a>
+            </div>
+            {% else %}
             <div class="success-icon">
                 ✅
             </div>
@@ -44,12 +70,77 @@
                 <a href="{% url 'core:home' %}" class="btn btn-primary">На головну</a>
                 <a href="{% url 'core:catalog' %}" class="btn btn-outline">До каталогу</a>
             </div>
+            {% endif %}
         </div>
     </div>
 </section>
-{% endblock %}
+
+<style>
+.order-success-section {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
     justify-content: center;
-    flex-wrap: wrap;
+}
+
+.success-content {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.success-icon,
+.error-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+}
+
+.order-details,
+.error-details {
+    background: var(--bg-light, #f5f5f5);
+    padding: 24px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+}
+
+.error-details {
+    background: rgba(220, 53, 69, 0.1);
+    border: 2px solid #dc3545;
+}
+
+.order-number {
+    font-size: 1.2rem;
+    color: var(--color-primary, #FF1493);
+    margin-bottom: 16px;
+}
+
+.success-title,
+.error-title {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: var(--text-dark, #333);
+}
+
+.error-title {
+    color: #dc3545;
+}
+
+.success-message,
+.error-message {
+    font-size: 1.1rem;
+    color: var(--text-muted, #666);
+    margin-bottom: 0;
+    line-height: 1.6;
+}
+
+.error-message {
+    color: #721c24;
+}
+
+.success-actions,
+.error-actions {
+    display: flex;
+    gap: 15px;
 }
 
 @media (max-width: 768px) {
