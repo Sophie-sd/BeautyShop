@@ -8,6 +8,29 @@ from django.utils import timezone
 from apps.products.models import Product
 
 
+class PendingPayment(models.Model):
+    """Тимчасове зберігання даних pending платежів для захисту від дублів"""
+    
+    transaction_ref = models.CharField('Transaction ID', max_length=100, unique=True, db_index=True)
+    order_data = models.JSONField('Дані замовлення')
+    is_processed = models.BooleanField('Оброблено', default=False, db_index=True)
+    created_order = models.ForeignKey('Order', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Створене замовлення')
+    created_at = models.DateTimeField('Створено', auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField('Оновлено', auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Pending платіж'
+        verbose_name_plural = 'Pending платежі'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['transaction_ref', 'is_processed']),
+            models.Index(fields=['created_at']),
+        ]
+    
+    def __str__(self):
+        return f"Pending {self.transaction_ref} - {'Оброблено' if self.is_processed else 'Очікує'}"
+
+
 class Order(models.Model):
     """Замовлення"""
     

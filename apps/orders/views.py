@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.conf import settings
 from apps.cart.cart import Cart
 from decimal import Decimal
-from .models import Newsletter, Order, OrderItem
+from .models import Newsletter, Order, OrderItem, PendingPayment
 from .novaposhta import NovaPoshtaAPI
 from .validators import validate_order_data
 import hashlib
@@ -172,8 +172,6 @@ def order_create(request):
             
             # КРИТИЧНА ЗМІНА: Для LiqPay НЕ створюємо замовлення відразу
             if payment_method == 'liqpay':
-                # Зберігаємо дані замовлення в сесію для створення після оплати
-                # ВАЖЛИВО: Зберігаємо тільки ID продуктів, а не об'єкти
                 serializable_items = []
                 for item_data in order_items_data:
                     serializable_items.append({
@@ -182,7 +180,7 @@ def order_create(request):
                         'price': str(item_data['price'])
                     })
                 
-                request.session['pending_order_data'] = {
+                order_data_dict = {
                     'first_name': first_name,
                     'last_name': last_name,
                     'middle_name': middle_name,
@@ -203,8 +201,17 @@ def order_create(request):
                     'user_id': request.user.id if request.user.is_authenticated else None
                 }
                 
-                # НЕ очищаємо кошик - очистимо тільки після успішної оплати
-                logger.info(f"Pending LiqPay order data saved to session, redirecting to payment")
+                import time
+                transaction_ref = f"temp_{int(time.time() * 1000)}"
+                
+                PendingPayment.objects.create(
+                    transaction_ref=transaction_ref,
+                    order_data=order_data_dict
+                )
+                
+                request.session['pending_transaction_ref'] = transaction_ref
+                
+                logger.info(f"Pending LiqPay payment created: {transaction_ref}")
                 return redirect('orders:liqpay_payment_pending')
             
             # Для готівкової оплати - створюємо замовлення як раніше
@@ -330,23 +337,32 @@ def np_get_warehouses(request):
 
 def liqpay_payment_pending(request):
     """Сторінка оплати через LiqPay (до створення замовлення)"""
-    order_data = request.session.get('pending_order_data')
+    transaction_ref = request.session.get('pending_transaction_ref')
     
-    if not order_data:
+    if not transaction_ref:
         messages.error(request, 'Дані замовлення не знайдено. Будь ласка, оформіть замовлення заново.')
         return redirect('orders:create')
     
-    # Формуємо правильний URL для callback
+    try:
+        pending_payment = PendingPayment.objects.get(transaction_ref=transaction_ref)
+    except PendingPayment.DoesNotExist:
+        messages.error(request, 'Дані замовлення не знайдено. Будь ласка, оформіть замовлення заново.')
+        return redirect('orders:create')
+    
+    if pending_payment.is_processed:
+        messages.info(request, 'Це замовлення вже оброблено.')
+        if pending_payment.created_order:
+            request.session['completed_order_id'] = pending_payment.created_order.id
+        return redirect('orders:success')
+    
+    order_data = pending_payment.order_data
+    
     protocol = 'https' if request.is_secure() or 'render.com' in request.get_host() else 'http'
     host = request.get_host()
     callback_url = f'{protocol}://{host}/orders/liqpay-callback/'
     result_url = f'{protocol}://{host}/orders/success/'
     
     logger.info(f"LiqPay payment initiated for pending order, callback: {callback_url}")
-    
-    # Генеруємо унікальний ID для транзакції (використовуємо timestamp)
-    import time
-    transaction_ref = f"temp_{int(time.time() * 1000)}"
     
     data_dict = {
         'version': 3,
@@ -368,7 +384,6 @@ def liqpay_payment_pending(request):
     
     logger.info(f"LiqPay data generated for pending order")
     
-    # Створюємо псевдо-об'єкт order для відображення
     class PendingOrder:
         def __init__(self, data):
             self.order_number = "очікується"
@@ -482,17 +497,19 @@ def liqpay_callback(request):
         
         logger.info(f'LiqPay callback: order_id={order_id}, status={status}, transaction={transaction_id}')
         
-        # Перевіряємо чи це pending order (починається з temp_)
         if str(order_id).startswith('temp_'):
-            # Це pending order - створюємо замовлення ТІЛЬКИ якщо оплата успішна
+            try:
+                pending_payment = PendingPayment.objects.select_for_update().get(
+                    transaction_ref=order_id,
+                    is_processed=False
+                )
+            except PendingPayment.DoesNotExist:
+                logger.warning(f'LiqPay callback: pending payment {order_id} already processed or not found')
+                return JsonResponse({'success': True, 'message': 'Already processed'})
+            
             if status == 'success':
-                order_data = request.session.get('pending_order_data')
+                order_data = pending_payment.order_data
                 
-                if not order_data:
-                    logger.error('LiqPay callback: pending_order_data not found in session')
-                    return JsonResponse({'success': False, 'error': 'Order data not found'})
-                
-                # Відтворюємо order_items_data з product_id
                 from apps.products.models import Product
                 order_items_data = []
                 for item_data in order_data.get('order_items', []):
@@ -511,7 +528,6 @@ def liqpay_callback(request):
                     logger.error('LiqPay callback: no valid products found')
                     return JsonResponse({'success': False, 'error': 'No valid products'})
                 
-                # Створюємо замовлення
                 from django.contrib.auth import get_user_model
                 User = get_user_model()
                 user = None
@@ -544,9 +560,6 @@ def liqpay_callback(request):
                     status='confirmed'
                 )
                 
-                logger.info(f'✅ Order #{order.order_number} CREATED and PAID at {order.payment_date.strftime("%Y-%m-%d %H:%M:%S")} (transaction: {transaction_id})')
-                
-                # Створюємо items
                 for item_data in order_items_data:
                     OrderItem.objects.create(
                         order=order,
@@ -555,19 +568,25 @@ def liqpay_callback(request):
                         price=item_data['price']
                     )
                 
-                # Очищаємо кошик ТІЛЬКИ після успішної оплати
+                pending_payment.is_processed = True
+                pending_payment.created_order = order
+                pending_payment.save(update_fields=['is_processed', 'created_order', 'updated_at'])
+                
+                logger.info(f'✅ Order #{order.order_number} CREATED and PAID (transaction: {transaction_id})')
+                
                 cart = Cart(request)
                 cart.clear()
                 
-                # Очищаємо pending_order_data
-                if 'pending_order_data' in request.session:
-                    del request.session['pending_order_data']
+                if 'pending_transaction_ref' in request.session:
+                    del request.session['pending_transaction_ref']
                 request.session['completed_order_id'] = order.id
                 request.session['payment_status'] = 'success'
                 
                 return JsonResponse({'success': True})
             else:
-                # Оплата не пройшла - НЕ створюємо замовлення
+                pending_payment.is_processed = True
+                pending_payment.save(update_fields=['is_processed', 'updated_at'])
+                
                 logger.warning(f'❌ Pending order payment FAILED: status={status}')
                 request.session['payment_status'] = 'failed'
                 request.session['payment_error'] = status

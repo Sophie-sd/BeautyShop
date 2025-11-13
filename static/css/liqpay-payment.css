@@ -1,0 +1,162 @@
+.payment-container {
+    max-width: 600px;
+    margin: 60px auto;
+    padding: 40px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.payment-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.payment-header h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+    color: var(--text-dark, #333);
+}
+
+.payment-info {
+    background: var(--bg-light, #f5f5f5);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+.payment-info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color, #e0e0e0);
+}
+
+.payment-info-row:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.payment-info-label {
+    color: var(--text-muted, #666);
+}
+
+.payment-info-value {
+    font-weight: 600;
+    color: var(--text-dark, #333);
+}
+
+.payment-total {
+    font-size: 24px;
+    color: var(--color-primary, #FF1493);
+}
+
+.liqpay-button-wrapper {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.liqpay-form {
+    display: inline-block;
+}
+
+.btn-liqpay {
+    background: linear-gradient(135deg, #7DC242 0%, #5FA82E 100%);
+    color: white;
+    padding: 16px 48px;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 12px rgba(125, 194, 66, 0.3);
+    position: relative;
+}
+
+.btn-liqpay:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(125, 194, 66, 0.4);
+}
+
+.btn-liqpay:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.btn-liqpay .spinner {
+    display: none;
+    width: 18px;
+    height: 18px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.btn-liqpay.loading .spinner {
+    display: inline-block;
+}
+
+.btn-liqpay.loading .btn-text {
+    opacity: 0.7;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.payment-note {
+    text-align: center;
+    color: var(--text-muted, #666);
+    font-size: 14px;
+    margin-top: 20px;
+}
+
+.back-link {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.back-link a {
+    font-size: 13px;
+    color: var(--text-muted, #999);
+    text-decoration: none;
+    padding: 6px 12px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+}
+
+.back-link a:hover {
+    color: var(--text-dark, #666);
+    border-color: var(--border-color, #ddd);
+    border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+    .payment-container {
+        margin: 30px 20px;
+        padding: 24px;
+    }
+    
+    .payment-header h1 {
+        font-size: 22px;
+    }
+    
+    .btn-liqpay {
+        padding: 14px 32px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .payment-info-row {
+        flex-direction: column;
+        gap: 4px;
+    }
+}
+

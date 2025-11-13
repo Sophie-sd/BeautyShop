@@ -9,7 +9,7 @@ from django.shortcuts import redirect
 from django.contrib import messages
 from django.urls import path, reverse
 from datetime import datetime, timedelta
-from .models import Order, OrderItem, RetailClient, EmailCampaign, Newsletter
+from .models import Order, OrderItem, RetailClient, EmailCampaign, Newsletter, PendingPayment
 from apps.core.admin_utils import AdminMediaMixin
 
 
@@ -770,3 +770,33 @@ RetailClient._meta.app_label = 'users'
 
 EmailCampaign._meta.verbose_name = 'Email розсилка'
 EmailCampaign._meta.verbose_name_plural = '✉️ Email розсилки'
+
+
+@admin.register(PendingPayment)
+class PendingPaymentAdmin(admin.ModelAdmin):
+    """Адміністрування pending платежів"""
+    
+    list_display = ['transaction_ref', 'is_processed', 'created_order_link', 'created_at', 'get_email']
+    list_filter = ['is_processed', 'created_at']
+    search_fields = ['transaction_ref', 'order_data']
+    readonly_fields = ['transaction_ref', 'order_data', 'is_processed', 'created_order', 'created_at', 'updated_at']
+    date_hierarchy = 'created_at'
+    ordering = ['-created_at']
+    
+    def has_add_permission(self, request):
+        return False
+    
+    def has_delete_permission(self, request, obj=None):
+        return obj and obj.is_processed
+    
+    def created_order_link(self, obj):
+        if obj.created_order:
+            url = reverse('admin:orders_order_change', args=[obj.created_order.id])
+            return format_html('<a href="{}">{}</a>', url, obj.created_order.order_number)
+        return '-'
+    created_order_link.short_description = 'Замовлення'
+    
+    def get_email(self, obj):
+        return obj.order_data.get('email', '-')
+    get_email.short_description = 'Email'
+
