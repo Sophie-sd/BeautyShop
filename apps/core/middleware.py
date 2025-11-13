@@ -14,21 +14,19 @@ class SecurityHeadersMiddleware:
     def __call__(self, request):
         response = self.get_response(request)
         
-        # Додаємо CSP header
         csp_directives = [
             "default-src 'self'",
             "script-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com data:",
-            "img-src 'self' data: https: http:",  # Cloudinary images
+            "img-src 'self' data: https: http:",
             "connect-src 'self'",
             "frame-ancestors 'none'",
             "base-uri 'self'",
-            "form-action 'self'",
+            "form-action 'self' https://www.liqpay.ua",
         ]
         response['Content-Security-Policy'] = '; '.join(csp_directives)
         
-        # Додаємо Permissions-Policy
         response['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
         
         return response
