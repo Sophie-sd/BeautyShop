@@ -101,7 +101,7 @@
         
         <div class="order-content">
             <div class="order-form-wrapper">
-                <form method="post" class="order-form">
+                <form method="post" action="{% url 'orders:create' %}" class="order-form">
                     {% csrf_token %}
                     
                     <div class="form-section">
@@ -109,32 +109,32 @@
                         <div class="form-group">
                             <label for="first_name">Ім'я *</label>
                             <input type="text" id="first_name" name="first_name" class="form-control" 
-                                   value="{% if form_data %}{{ form_data.first_name }}{% elif user.is_authenticated %}{{ user.first_name }}{% endif %}" required>
+                                   value="{% if form_data %}{{ form_data.first_name }}{% elif user.is_authenticated and not user.is_staff and not user.is_superuser %}{{ user.first_name }}{% endif %}" required>
                         </div>
                         
                         <div class="form-group">
                             <label for="last_name">Прізвище *</label>
                             <input type="text" id="last_name" name="last_name" class="form-control" 
-                                   value="{% if form_data %}{{ form_data.last_name }}{% elif user.is_authenticated %}{{ user.last_name }}{% endif %}" required>
+                                   value="{% if form_data %}{{ form_data.last_name }}{% elif user.is_authenticated and not user.is_staff and not user.is_superuser %}{{ user.last_name }}{% endif %}" required>
                         </div>
                         
                         <div class="form-group">
                             <label for="middle_name">По-батькові</label>
                             <input type="text" id="middle_name" name="middle_name" class="form-control" 
-                                   value="{% if form_data %}{{ form_data.middle_name }}{% elif user.is_authenticated %}{{ user.middle_name }}{% endif %}">
+                                   value="{% if form_data %}{{ form_data.middle_name }}{% elif user.is_authenticated and not user.is_staff and not user.is_superuser %}{{ user.middle_name }}{% endif %}">
                         </div>
                         
                         <div class="form-group">
                             <label for="phone">Телефон *</label>
                             <input type="tel" id="phone" name="phone" class="form-control" 
-                                   value="{% if form_data %}{{ form_data.phone }}{% elif user.is_authenticated %}{{ user.phone }}{% endif %}" required 
+                                   value="{% if form_data %}{{ form_data.phone }}{% elif user.is_authenticated and not user.is_staff and not user.is_superuser %}{{ user.phone }}{% endif %}" required 
                                    placeholder="+380">
                         </div>
                         
                         <div class="form-group">
                             <label for="email">Email *</label>
                             <input type="email" id="email" name="email" class="form-control" 
-                                   value="{% if form_data %}{{ form_data.email }}{% elif user.is_authenticated %}{{ user.email }}{% endif %}" required>
+                                   value="{% if form_data %}{{ form_data.email }}{% elif user.is_authenticated and not user.is_staff and not user.is_superuser %}{{ user.email }}{% endif %}" required>
                         </div>
                     </div>
                     

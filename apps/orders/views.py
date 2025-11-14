@@ -469,6 +469,7 @@ def order_create(request):
     })
 
 
+@require_GET
 def liqpay_return(request):
     """Обробка повернення з LiqPay (result_url)"""
     import time
@@ -504,7 +505,7 @@ def liqpay_return(request):
     
     # Відновлюємо дані форми якщо є
     if 'liqpay_form_data' in request.session:
-        context['form_data'] = request.session.pop('liqpay_form_data')
+        context['form_data'] = request.session.get('liqpay_form_data')
     
     # Рендеримо форму напряму (НЕ редірект) щоб CSRF токен був свіжим
     return render(request, 'orders/create.html', context)
