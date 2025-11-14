@@ -27,6 +27,154 @@ LIQPAY_PUBLIC_KEY = getattr(settings, 'LIQPAY_PUBLIC_KEY', 'sandbox_i69925457912
 LIQPAY_PRIVATE_KEY = getattr(settings, 'LIQPAY_PRIVATE_KEY', 'sandbox_d7fYUF83CUeVdBqHyEeYbjNM65B77RcjnWAIVkUm')
 
 
+def calculate_discount_breakdown(order_items_data, user, promo_code_obj=None, promo_discount=Decimal('0')):
+    """
+    Розраховує детальну розшифровку знижок для замовлення
+    
+    Args:
+        order_items_data: список словників з інформацією про товари
+        user: користувач (або None для гостей)
+        promo_code_obj: об'єкт промокоду (або None)
+        promo_discount: сума знижки по промокоду
+    
+    Returns:
+        dict: детальна розшифровка знижок
+    """
+    items_discounts = []
+    
+    # Визначаємо чи це оптовий клієнт
+    is_wholesale_user = (
+        user and 
+        user.is_authenticated and 
+        hasattr(user, 'is_wholesale') and 
+        user.is_wholesale and
+        not user.is_staff and
+        not user.is_superuser
+    )
+    
+    # Лічильники для summary
+    original_total = Decimal('0')
+    price_gradation_3_discount = Decimal('0')
+    price_gradation_5_discount = Decimal('0')
+    wholesale_discount = Decimal('0')
+    promotion_discount = Decimal('0')
+    
+    for item_data in order_items_data:
+        product = item_data['product']
+        quantity = item_data['quantity']
+        final_price = Decimal(str(item_data['price']))
+        
+        # Базова ціна - завжди retail_price
+        base_price = product.retail_price
+        original_total += base_price * quantity
+        
+        # Визначаємо тип знижки
+        discount_type = None
+        discount_reason = None
+        discount_amount = (base_price - final_price) * quantity
+        
+        if is_wholesale_user:
+            # Для оптових клієнтів
+            if product.wholesale_price:
+                if product.is_sale_active() and product.sale_wholesale_price:
+                    # Акційна оптова ціна
+                    discount_type = 'sale_wholesale'
+                    discount_reason = 'Акційна оптова ціна'
+                    # Знижка складається з оптової + акційної
+                    wholesale_diff = base_price - product.wholesale_price
+                    sale_diff = product.wholesale_price - product.sale_wholesale_price
+                    wholesale_discount += wholesale_diff * quantity
+                    promotion_discount += sale_diff * quantity
+                else:
+                    # Звичайна оптова ціна
+                    discount_type = 'wholesale'
+                    discount_reason = 'Оптова ціна'
+                    wholesale_discount += discount_amount
+        else:
+            # Для роздрібних клієнтів (включно з адміністраторами)
+            if quantity >= 5:
+                if product.is_sale_active() and product.sale_price_5_qty:
+                    # Акційна градація від 5
+                    discount_type = 'sale_price_5_qty'
+                    discount_reason = 'Акційна ціна від 5 шт'
+                    # Розділяємо на градацію та акцію
+                    if product.price_5_qty:
+                        grad_diff = base_price - product.price_5_qty
+                        sale_diff = product.price_5_qty - product.sale_price_5_qty
+                        price_gradation_5_discount += grad_diff * quantity
+                        promotion_discount += sale_diff * quantity
+                    else:
+                        # Немає звичайної градації, вся знижка - акційна
+                        promotion_discount += discount_amount
+                elif product.price_5_qty:
+                    # Звичайна градація від 5
+                    discount_type = 'price_5_qty'
+                    discount_reason = 'Градація цін від 5 шт'
+                    price_gradation_5_discount += discount_amount
+            elif quantity >= 3:
+                if product.is_sale_active() and product.sale_price_3_qty:
+                    # Акційна градація від 3
+                    discount_type = 'sale_price_3_qty'
+                    discount_reason = 'Акційна ціна від 3 шт'
+                    # Розділяємо на градацію та акцію
+                    if product.price_3_qty:
+                        grad_diff = base_price - product.price_3_qty
+                        sale_diff = product.price_3_qty - product.sale_price_3_qty
+                        price_gradation_3_discount += grad_diff * quantity
+                        promotion_discount += sale_diff * quantity
+                    else:
+                        # Немає звичайної градації, вся знижка - акційна
+                        promotion_discount += discount_amount
+                elif product.price_3_qty:
+                    # Звичайна градація від 3
+                    discount_type = 'price_3_qty'
+                    discount_reason = 'Градація цін від 3 шт'
+                    price_gradation_3_discount += discount_amount
+            else:
+                # Кількість < 3, перевіряємо акційну ціну
+                if product.is_sale_active() and product.sale_price:
+                    discount_type = 'sale_price'
+                    discount_reason = 'Акційна ціна'
+                    promotion_discount += discount_amount
+        
+        # Додаємо інформацію про товар
+        items_discounts.append({
+            'product_id': product.id,
+            'product_name': product.name,
+            'quantity': quantity,
+            'base_price': str(base_price),
+            'final_price': str(final_price),
+            'discount_type': discount_type or 'none',
+            'discount_amount': str(discount_amount),
+            'discount_reason': discount_reason or 'Без знижки'
+        })
+    
+    # Формуємо повний breakdown
+    breakdown = {
+        'items_discounts': items_discounts,
+        'summary': {
+            'original_total': str(original_total),
+            'price_gradation_3_discount': str(price_gradation_3_discount),
+            'price_gradation_5_discount': str(price_gradation_5_discount),
+            'wholesale_discount': str(wholesale_discount),
+            'promotion_discount': str(promotion_discount),
+            'promo_code_discount': str(promo_discount),
+            'final_total': str(original_total - price_gradation_3_discount - price_gradation_5_discount - wholesale_discount - promotion_discount - promo_discount)
+        }
+    }
+    
+    # Додаємо інформацію про промокод якщо є
+    if promo_code_obj:
+        breakdown['promo_code'] = {
+            'code': promo_code_obj.code,
+            'discount_type': promo_code_obj.discount_type,
+            'discount_value': str(promo_code_obj.discount_value),
+            'discount_amount': str(promo_discount)
+        }
+    
+    return breakdown
+
+
 def order_create(request):
     """Створення замовлення"""
     cart = Cart(request)
@@ -141,26 +289,41 @@ def order_create(request):
             
             # Застосовуємо знижку промокоду якщо є
             discount = Decimal('0')
+            promo_code_obj = None
+            promo_code_used = ''
+            
             if 'promo_discount' in request.session and 'promo_id' in request.session:
                 from apps.promotions.models import PromoCode
                 try:
-                    promo = PromoCode.objects.get(id=request.session['promo_id'])
-                    is_valid, _ = promo.is_valid()
+                    promo_code_obj = PromoCode.objects.get(id=request.session['promo_id'])
+                    is_valid, _ = promo_code_obj.is_valid()
                     if is_valid:
                         # ВАЖЛИВО: передаємо Decimal, а не float
-                        discount_amount, _ = promo.apply_discount(recalculated_subtotal)
+                        discount_amount, _ = promo_code_obj.apply_discount(recalculated_subtotal)
                         discount = Decimal(str(discount_amount))
+                        promo_code_used = promo_code_obj.code
                         
                         # Збільшуємо лічильник використань
-                        promo.used_count += 1
-                        promo.save(update_fields=['used_count'])
-                        logger.info(f"Promo code {promo.code} applied: {discount}")
+                        promo_code_obj.used_count += 1
+                        promo_code_obj.save(update_fields=['used_count'])
+                        logger.info(f"Promo code {promo_code_obj.code} applied: {discount}")
                 except PromoCode.DoesNotExist:
                     logger.warning(f"Promo code {request.session.get('promo_id')} not found")
                     discount = Decimal('0')
+                    promo_code_obj = None
                 except (ValueError, TypeError) as e:
                     logger.error(f"Promo code calculation error: {e}")
                     discount = Decimal('0')
+                    promo_code_obj = None
+            
+            # Розраховуємо детальну розшифровку знижок
+            current_user = request.user if request.user.is_authenticated else None
+            discount_breakdown = calculate_discount_breakdown(
+                order_items_data,
+                current_user,
+                promo_code_obj,
+                discount
+            )
             
             final_total = recalculated_subtotal - discount
             
@@ -198,7 +361,9 @@ def order_create(request):
                     'total': str(final_total),
                     'notes': notes,
                     'order_items': serializable_items,
-                    'user_id': request.user.id if request.user.is_authenticated else None
+                    'user_id': request.user.id if request.user.is_authenticated else None,
+                    'promo_code_used': promo_code_used,
+                    'discount_breakdown': discount_breakdown
                 }
                 
                 import time
@@ -232,7 +397,9 @@ def order_create(request):
                 subtotal=recalculated_subtotal,
                 discount=discount,
                 total=final_total,
-                notes=notes
+                notes=notes,
+                promo_code_used=promo_code_used,
+                discount_breakdown=discount_breakdown
             )
             
             logger.info(f"Order #{order.order_number} created successfully (ID: {order.id})")
@@ -555,6 +722,8 @@ def liqpay_callback(request):
                     discount=Decimal(order_data['discount']),
                     total=Decimal(order_data['total']),
                     notes=order_data.get('notes', ''),
+                    promo_code_used=order_data.get('promo_code_used', ''),
+                    discount_breakdown=order_data.get('discount_breakdown', {}),
                     is_paid=True,
                     payment_date=timezone.now(),
                     status='confirmed'

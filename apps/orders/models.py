@@ -100,6 +100,21 @@ class Order(models.Model):
     discount = models.DecimalField('Знижка', max_digits=10, decimal_places=2, default=0)
     total = models.DecimalField('Загальна сума', max_digits=10, decimal_places=2)
     
+    # Промокод та детальна розшифровка знижок
+    promo_code_used = models.CharField(
+        'Використаний промокод',
+        max_length=50,
+        blank=True,
+        default='',
+        help_text='Промокод, який був застосований до замовлення'
+    )
+    discount_breakdown = models.JSONField(
+        'Розшифровка знижок',
+        default=dict,
+        blank=True,
+        help_text='Детальна інформація про всі застосовані знижки'
+    )
+    
     # Додаткові поля
     notes = models.TextField('Примітки до замовлення', blank=True)
     admin_notes = models.TextField('Примітки адміна', blank=True)
@@ -143,6 +158,94 @@ class Order(models.Model):
     def can_be_cancelled(self):
         """Чи може бути скасовано замовлення"""
         return self.status in ['pending', 'confirmed']
+    
+    def get_discount_breakdown_display(self):
+        """Повертає форматовану HTML-розшифровку знижок для відображення в адмінці"""
+        from django.utils.safestring import mark_safe
+        
+        if not self.discount_breakdown or not isinstance(self.discount_breakdown, dict):
+            return mark_safe('<p style="color: #718096;">Детальна інформація про знижки відсутня (замовлення створене до впровадження функції)</p>')
+        
+        summary = self.discount_breakdown.get('summary', {})
+        
+        # Перевірка чи є взагалі знижки
+        total_discount = Decimal('0')
+        price_grad_3 = Decimal(str(summary.get('price_gradation_3_discount', 0)))
+        price_grad_5 = Decimal(str(summary.get('price_gradation_5_discount', 0)))
+        wholesale = Decimal(str(summary.get('wholesale_discount', 0)))
+        promotion = Decimal(str(summary.get('promotion_discount', 0)))
+        promo_code = Decimal(str(summary.get('promo_code_discount', 0)))
+        
+        total_discount = price_grad_3 + price_grad_5 + wholesale + promotion + promo_code
+        
+        if total_discount == 0:
+            return mark_safe('<p style="color: #718096;">Знижки не застосовувалися</p>')
+        
+        html = '<div style="background: #f0f9ff; padding: 15px; border-radius: 8px; border-left: 4px solid #0ea5e9;">'
+        html += '<div style="font-weight: 600; color: #0c4a6e; margin-bottom: 12px; font-size: 14px;">📊 Застосовані знижки:</div>'
+        
+        # Градація цін від 3 шт
+        if price_grad_3 > 0:
+            html += f'''
+            <div style="margin-bottom: 8px; display: flex; align-items: center;">
+                <span style="font-size: 18px; margin-right: 8px;">💰</span>
+                <span style="color: #047857; font-weight: 500;">Градація цін від 3 шт:</span>
+                <span style="margin-left: auto; color: #dc2626; font-weight: 600;">-{float(price_grad_3):.2f} ₴</span>
+            </div>
+            '''
+        
+        # Градація цін від 5 шт
+        if price_grad_5 > 0:
+            html += f'''
+            <div style="margin-bottom: 8px; display: flex; align-items: center;">
+                <span style="font-size: 18px; margin-right: 8px;">💰</span>
+                <span style="color: #047857; font-weight: 500;">Градація цін від 5 шт:</span>
+                <span style="margin-left: auto; color: #dc2626; font-weight: 600;">-{float(price_grad_5):.2f} ₴</span>
+            </div>
+            '''
+        
+        # Оптова ціна
+        if wholesale > 0:
+            html += f'''
+            <div style="margin-bottom: 8px; display: flex; align-items: center;">
+                <span style="font-size: 18px; margin-right: 8px;">🏪</span>
+                <span style="color: #1e40af; font-weight: 500;">Оптова ціна:</span>
+                <span style="margin-left: auto; color: #dc2626; font-weight: 600;">-{float(wholesale):.2f} ₴</span>
+            </div>
+            '''
+        
+        # Акційні товари
+        if promotion > 0:
+            html += f'''
+            <div style="margin-bottom: 8px; display: flex; align-items: center;">
+                <span style="font-size: 18px; margin-right: 8px;">🎁</span>
+                <span style="color: #c2410c; font-weight: 500;">Акційні товари:</span>
+                <span style="margin-left: auto; color: #dc2626; font-weight: 600;">-{float(promotion):.2f} ₴</span>
+            </div>
+            '''
+        
+        # Промокод
+        if promo_code > 0:
+            promo_info = self.discount_breakdown.get('promo_code', {})
+            promo_code_name = promo_info.get('code', self.promo_code_used or 'невідомий')
+            html += f'''
+            <div style="margin-bottom: 8px; display: flex; align-items: center;">
+                <span style="font-size: 18px; margin-right: 8px;">🎟️</span>
+                <span style="color: #7c3aed; font-weight: 500;">Промокод "{promo_code_name}":</span>
+                <span style="margin-left: auto; color: #dc2626; font-weight: 600;">-{float(promo_code):.2f} ₴</span>
+            </div>
+            '''
+        
+        # Підсумок
+        html += f'''
+        <div style="margin-top: 12px; padding-top: 12px; border-top: 2px solid #bae6fd; display: flex; align-items: center;">
+            <span style="color: #0c4a6e; font-weight: 600;">Всього знижок:</span>
+            <span style="margin-left: auto; color: #dc2626; font-weight: 700; font-size: 16px;">-{float(total_discount):.2f} ₴</span>
+        </div>
+        '''
+        
+        html += '</div>'
+        return mark_safe(html)
     
     def __str__(self):
         return f"Замовлення #{self.order_number} - {self.get_customer_name()}"

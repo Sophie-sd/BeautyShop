@@ -232,7 +232,13 @@ class OrderAdmin(AdminMediaMixin, admin.ModelAdmin):
             </div>
         '''
         
-        if obj.discount > 0:
+        # Відображаємо детальну розшифровку знижок якщо вона є
+        if obj.discount_breakdown and isinstance(obj.discount_breakdown, dict):
+            html += '<div style="margin-top: 16px; margin-bottom: 16px;">'
+            html += obj.get_discount_breakdown_display()
+            html += '</div>'
+        elif obj.discount > 0:
+            # Для старих замовлень без детальної розшифровки
             html += f'''
             <div style="margin-bottom: 12px;">
                 <strong style="color: #2d3748;">Знижка:</strong> 
