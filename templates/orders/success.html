@@ -15,9 +15,7 @@
     <div class="container">
         <div class="success-content text-center">
             {% if payment_status == 'failed' %}
-            <div class="error-icon">
-                ❌
-            </div>
+            <div class="error-icon">❌</div>
             
             <h1 class="error-title">Оплата не пройшла</h1>
             
@@ -40,9 +38,7 @@
                 <a href="{% url 'core:home' %}" class="btn btn-outline">На головну</a>
             </div>
             {% else %}
-            <div class="success-icon">
-                ✅
-            </div>
+            <div class="success-icon">✅</div>
             
             <h1 class="success-title">Дякуємо за замовлення!</h1>
             

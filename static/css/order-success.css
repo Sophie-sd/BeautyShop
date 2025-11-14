@@ -15,6 +15,7 @@
 .error-icon {
     font-size: 80px;
     margin-bottom: 20px;
+    line-height: 1;
 }
 
 .order-details,
