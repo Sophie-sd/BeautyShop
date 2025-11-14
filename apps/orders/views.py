@@ -457,24 +457,11 @@ def order_create(request):
             }
             return render(request, 'orders/create.html', context)
     
-    # GET-запит: перевіряємо чи є збережені дані після невдалої LiqPay оплати
-    context = {
+    # GET-запит: стандартне відображення форми
+    return render(request, 'orders/create.html', {
         'cart': cart,
         'user': request.user
-    }
-    
-    # Відновлюємо дані форми якщо є
-    if 'liqpay_form_data' in request.session:
-        context['form_data'] = request.session.pop('liqpay_form_data')
-    
-    # Відображаємо повідомлення про невдалу оплату
-    if 'payment_failed' in request.session:
-        context['payment_failed'] = True
-        context['payment_failed_message'] = request.session.pop('payment_failed_message', 
-                                                                  'Оплату не було проведено.')
-        request.session.pop('payment_failed', None)
-    
-    return render(request, 'orders/create.html', context)
+    })
 
 
 def liqpay_return(request):
@@ -495,10 +482,27 @@ def liqpay_return(request):
     
     # Оплата не пройшла або була скасована
     logger.warning(f"LiqPay return: payment failed or cancelled")
-    request.session['payment_failed'] = True
-    request.session['payment_failed_message'] = 'Оплату не було проведено. Будь ласка, спробуйте ще раз або оберіть інший спосіб оплати.'
     
-    return redirect('orders:create')
+    # Отримуємо кошик для рендерингу форми
+    cart = Cart(request)
+    if len(cart) == 0:
+        messages.error(request, 'Ваш кошик порожній')
+        return redirect('cart:detail')
+    
+    # Підготовка контексту з відновленими даними
+    context = {
+        'cart': cart,
+        'user': request.user,
+        'payment_failed': True,
+        'payment_failed_message': 'Оплату не було проведено. Будь ласка, спробуйте ще раз або оберіть інший спосіб оплати.'
+    }
+    
+    # Відновлюємо дані форми якщо є
+    if 'liqpay_form_data' in request.session:
+        context['form_data'] = request.session.pop('liqpay_form_data')
+    
+    # Рендеримо форму напряму (НЕ редірект) щоб CSRF токен був свіжим
+    return render(request, 'orders/create.html', context)
 
 
 def order_success(request):
