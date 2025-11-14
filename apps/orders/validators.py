@@ -9,12 +9,12 @@ from django.core.validators import validate_email
 def validate_ukrainian_phone(phone: str) -> bool:
     """
     Валідує український номер телефону
-    Формат: +380XXXXXXXXX
+    Формат: +38XXXXXXXXXX
     """
     if not phone:
         return False
     
-    pattern = r'^\+380\d{9}$'
+    pattern = r'^\+38\d{10}$'
     return bool(re.match(pattern, phone))
 
 
@@ -54,7 +54,7 @@ def validate_order_data(data: dict) -> tuple[bool, str]:
     
     # Валідація телефону
     if not validate_ukrainian_phone(data['phone']):
-        return False, "Невірний формат телефону. Використовуйте +380XXXXXXXXX"
+        return False, "Невірний формат телефону. Використовуйте +38XXXXXXXXXX"
     
     # Валідація імені (дозволяємо літери, пробіли, дефіс, апостроф та типографічні апострофи)
     # Підтримка як ASCII апострофу ('), так і Unicode апострофів (' ' ʼ)

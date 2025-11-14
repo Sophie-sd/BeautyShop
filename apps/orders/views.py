@@ -17,6 +17,7 @@ import hashlib
 import base64
 import json
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -211,6 +212,13 @@ def order_create(request):
         middle_name = request.POST.get('middle_name', '').strip()
         email = request.POST.get('email', '').strip()
         phone = request.POST.get('phone', '').strip()
+        
+        if phone:
+            phone = re.sub(r'\D', '', phone)
+            if phone.startswith('38') and len(phone) == 12:
+                phone = '+' + phone
+            elif len(phone) == 10:
+                phone = '+38' + phone
         
         delivery_method = request.POST.get('delivery_method', '')
         delivery_city = request.POST.get('delivery_city', '').strip()

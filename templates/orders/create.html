@@ -129,7 +129,7 @@
                             <div class="phone-input-wrapper">
                                 <span class="phone-prefix">+38</span>
                                 <input type="tel" id="phone" name="phone" class="form-control phone-input" 
-                                       value="{% if form_data %}{{ form_data.phone }}{% elif user.is_authenticated and not user.is_staff and not user.is_superuser %}{% if user.phone and user.phone|slice:':3' == '+38' %}{{ user.phone|slice:'3:' }}{% else %}{{ user.phone }}{% endif %}{% endif %}" required 
+                                       value="{% if form_data %}{% if form_data.phone and form_data.phone|slice:':3' == '+38' %}{{ form_data.phone|slice:'3:' }}{% else %}{{ form_data.phone }}{% endif %}{% elif user.is_authenticated and not user.is_staff and not user.is_superuser %}{% if user.phone and user.phone|slice:':3' == '+38' %}{{ user.phone|slice:'3:' }}{% else %}{{ user.phone }}{% endif %}{% endif %}" required 
                                        placeholder="0XX XXX XX XX" pattern="[0-9]{10}" maxlength="10" inputmode="numeric">
                             </div>
                         </div>

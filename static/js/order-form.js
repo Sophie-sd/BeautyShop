@@ -306,5 +306,20 @@ document.addEventListener('DOMContentLoaded', function() {
             paymentFailedToast.classList.remove('cart-toast-show');
         }, 6000);
     }
+    
+    const orderForm = document.querySelector('.order-form');
+    if (orderForm) {
+        orderForm.addEventListener('submit', function(e) {
+            const phoneInput = document.getElementById('phone');
+            if (phoneInput && phoneInput.value) {
+                let phoneValue = phoneInput.value.trim().replace(/\D/g, '');
+                if (phoneValue.startsWith('38') && phoneValue.length === 12) {
+                    phoneInput.value = '+' + phoneValue;
+                } else if (phoneValue.length === 10) {
+                    phoneInput.value = '+38' + phoneValue;
+                }
+            }
+        });
+    }
 });
 
