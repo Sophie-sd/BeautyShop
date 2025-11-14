@@ -100,12 +100,12 @@
                     <div class="price-tiers">
                         <h3>Вигідні ціни при покупці:</h3>
                         <ul>
-                            {% if product.sale_price_3_qty %}
+                            {% if product.is_sale_active and product.sale_price_3_qty %}
                             <li>Від 3 шт - <span class="tier-price-sale">{{ product.sale_price_3_qty }} ₴</span> <span class="tier-price-old">{{ product.price_3_qty }} ₴</span></li>
                             {% elif product.price_3_qty %}
                             <li>Від 3 шт - {{ product.price_3_qty }} ₴</li>
                             {% endif %}
-                            {% if product.sale_price_5_qty %}
+                            {% if product.is_sale_active and product.sale_price_5_qty %}
                             <li>Від 5 шт - <span class="tier-price-sale">{{ product.sale_price_5_qty }} ₴</span> <span class="tier-price-old">{{ product.price_5_qty }} ₴</span></li>
                             {% elif product.price_5_qty %}
                             <li>Від 5 шт - {{ product.price_5_qty }} ₴</li>
