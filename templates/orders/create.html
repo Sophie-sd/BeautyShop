@@ -8,6 +8,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/cart.css' %}">
 <link rel="stylesheet" href="{% static 'css/order-form.css' %}">
+<link rel="stylesheet" href="{% static 'css/toast.css' %}">
 <style>
     .autocomplete-container {
         position: relative;
@@ -89,6 +90,11 @@
 {% endblock %}
 
 {% block content %}
+<div class="cart-toast cart-toast-error" id="paymentFailedToast" data-show="{% if payment_failed %}true{% else %}false{% endif %}">
+    <div class="cart-toast-icon">!</div>
+    <div class="cart-toast-text">{{ payment_failed_message|default:"Оплату не було проведено" }}</div>
+</div>
+
 <section class="order-section section-padding">
     <div class="container">
         <h1 class="section-title">Оформлення замовлення</h1>
@@ -138,25 +144,30 @@
                             <label for="delivery_method">Спосіб доставки *</label>
                             <select id="delivery_method" name="delivery_method" class="form-control" required>
                                 <option value="">Оберіть спосіб доставки</option>
-                                <option value="nova_poshta">Нова Пошта</option>
-                                <option value="ukrposhta">Укрпошта</option>
-                                <option value="pickup">Самовивіз</option>
+                                <option value="nova_poshta" {% if form_data.delivery_method == 'nova_poshta' %}selected{% endif %}>Нова Пошта</option>
+                                <option value="ukrposhta" {% if form_data.delivery_method == 'ukrposhta' %}selected{% endif %}>Укрпошта</option>
+                                <option value="pickup" {% if form_data.delivery_method == 'pickup' %}selected{% endif %}>Самовивіз</option>
                             </select>
                         </div>
                         
                         <div class="form-group autocomplete-container">
                             <label for="delivery_city">Місто *</label>
-                            <input type="text" id="delivery_city" name="delivery_city" class="form-control" autocomplete="off">
+                            <input type="text" id="delivery_city" name="delivery_city" class="form-control" autocomplete="off"
+                                   value="{% if form_data %}{{ form_data.delivery_city }}{% endif %}">
                             <div id="city_results" class="autocomplete-results"></div>
-                            <input type="hidden" id="np_city_ref" name="np_city_ref">
+                            <input type="hidden" id="np_city_ref" name="np_city_ref"
+                                   value="{% if form_data %}{{ form_data.np_city_ref }}{% endif %}">
                         </div>
                         
                         <div class="form-group delivery-address-wrapper warehouse-container">
                             <label for="delivery_address" id="delivery_address_label">Відділення/Поштомат *</label>
-                            <input type="text" id="delivery_address" name="delivery_address" class="form-control" placeholder="Введіть номер або адресу для пошуку, або оберіть зі списку">
+                            <input type="text" id="delivery_address" name="delivery_address" class="form-control" placeholder="Введіть номер або адресу для пошуку, або оберіть зі списку"
+                                   value="{% if form_data %}{{ form_data.delivery_address }}{% endif %}">
                             <div id="warehouse_results" class="warehouse-results"></div>
-                            <input type="hidden" id="np_warehouse_ref" name="np_warehouse_ref">
-                            <input type="hidden" id="delivery_type" name="delivery_type">
+                            <input type="hidden" id="np_warehouse_ref" name="np_warehouse_ref"
+                                   value="{% if form_data %}{{ form_data.np_warehouse_ref }}{% endif %}">
+                            <input type="hidden" id="delivery_type" name="delivery_type"
+                                   value="{% if form_data %}{{ form_data.delivery_type }}{% endif %}">
                             <div id="pickup_info" class="pickup-info">
                                 <p class="pickup-message">Будемо чекати вас за адресою:</p>
                                 <p class="pickup-address">Україна, Черкаська область, м.Монастирище, вул. Соборна 126Д</p>
@@ -168,11 +179,11 @@
                         <h3>Оплата</h3>
                         <div class="payment-methods">
                             <label class="payment-method">
-                                <input type="radio" name="payment_method" value="liqpay" checked>
+                                <input type="radio" name="payment_method" value="liqpay" {% if not form_data or form_data.payment_method == 'liqpay' %}checked{% endif %}>
                                 <span>Онлайн оплата (LiqPay)</span>
                             </label>
                             <label class="payment-method">
-                                <input type="radio" name="payment_method" value="cash">
+                                <input type="radio" name="payment_method" value="cash" {% if form_data.payment_method == 'cash' %}checked{% endif %}>
                                 <span>Оплата при отриманні</span>
                             </label>
                         </div>
@@ -182,7 +193,7 @@
                         <h3>Коментар до замовлення</h3>
                         <div class="form-group">
                             <textarea id="notes" name="notes" class="form-control" rows="4" 
-                                      placeholder="Додайте коментар (необов'язково)"></textarea>
+                                      placeholder="Додайте коментар (необов'язково)">{% if form_data %}{{ form_data.notes }}{% endif %}</textarea>
                         </div>
                     </div>
                     

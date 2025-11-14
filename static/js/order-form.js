@@ -295,5 +295,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     updateDeliveryFields();
+    
+    const paymentFailedToast = document.getElementById('paymentFailedToast');
+    if (paymentFailedToast && paymentFailedToast.dataset.show === 'true') {
+        setTimeout(function() {
+            paymentFailedToast.classList.add('cart-toast-show');
+        }, 100);
+        
+        setTimeout(function() {
+            paymentFailedToast.classList.remove('cart-toast-show');
+        }, 6000);
+    }
 });
 

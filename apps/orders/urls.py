@@ -10,6 +10,7 @@ urlpatterns = [
     path('np/search-cities/', views.np_search_cities, name='np_search_cities'),
     path('np/get-warehouses/', views.np_get_warehouses, name='np_get_warehouses'),
     path('liqpay-pending/', views.liqpay_payment_pending, name='liqpay_payment_pending'),
+    path('liqpay-return/', views.liqpay_return, name='liqpay_return'),
     path('liqpay/<int:order_id>/', views.liqpay_payment, name='liqpay_payment'),
     path('liqpay-callback/', views.liqpay_callback, name='liqpay_callback'),
 ]

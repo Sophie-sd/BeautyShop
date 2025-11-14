@@ -335,6 +335,23 @@ def order_create(request):
             
             # КРИТИЧНА ЗМІНА: Для LiqPay НЕ створюємо замовлення відразу
             if payment_method == 'liqpay':
+                # Зберігаємо дані форми в сесію для можливого повернення
+                request.session['liqpay_form_data'] = {
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'middle_name': middle_name,
+                    'email': email,
+                    'phone': phone,
+                    'delivery_method': delivery_method,
+                    'delivery_city': delivery_city,
+                    'delivery_address': delivery_address,
+                    'np_city_ref': np_city_ref,
+                    'np_warehouse_ref': np_warehouse_ref,
+                    'delivery_type': delivery_type,
+                    'payment_method': payment_method,
+                    'notes': notes
+                }
+                
                 serializable_items = []
                 for item_data in order_items_data:
                     serializable_items.append({
@@ -440,10 +457,48 @@ def order_create(request):
             }
             return render(request, 'orders/create.html', context)
     
-    return render(request, 'orders/create.html', {
+    # GET-запит: перевіряємо чи є збережені дані після невдалої LiqPay оплати
+    context = {
         'cart': cart,
         'user': request.user
-    })
+    }
+    
+    # Відновлюємо дані форми якщо є
+    if 'liqpay_form_data' in request.session:
+        context['form_data'] = request.session.pop('liqpay_form_data')
+    
+    # Відображаємо повідомлення про невдалу оплату
+    if 'payment_failed' in request.session:
+        context['payment_failed'] = True
+        context['payment_failed_message'] = request.session.pop('payment_failed_message', 
+                                                                  'Оплату не було проведено.')
+        request.session.pop('payment_failed', None)
+    
+    return render(request, 'orders/create.html', context)
+
+
+def liqpay_return(request):
+    """Обробка повернення з LiqPay (result_url)"""
+    import time
+    
+    # Даємо час callback'у встигнути обробитися (якщо оплата успішна)
+    time.sleep(2)
+    
+    # Перевіряємо чи callback встиг створити замовлення
+    completed_order_id = request.session.get('completed_order_id')
+    payment_status = request.session.get('payment_status')
+    
+    if completed_order_id and payment_status == 'success':
+        # Оплата пройшла успішно, callback створив замовлення
+        logger.info(f"LiqPay return: payment successful, redirecting to success page")
+        return redirect('orders:success')
+    
+    # Оплата не пройшла або була скасована
+    logger.warning(f"LiqPay return: payment failed or cancelled")
+    request.session['payment_failed'] = True
+    request.session['payment_failed_message'] = 'Оплату не було проведено. Будь ласка, спробуйте ще раз або оберіть інший спосіб оплати.'
+    
+    return redirect('orders:create')
 
 
 def order_success(request):
@@ -527,7 +582,7 @@ def liqpay_payment_pending(request):
     protocol = 'https' if request.is_secure() or 'render.com' in request.get_host() else 'http'
     host = request.get_host()
     callback_url = f'{protocol}://{host}/orders/liqpay-callback/'
-    result_url = f'{protocol}://{host}/orders/success/'
+    result_url = f'{protocol}://{host}/orders/liqpay-return/'
     
     logger.info(f"LiqPay payment initiated for pending order, callback: {callback_url}")
     
@@ -599,7 +654,7 @@ def liqpay_payment(request, order_id):
     protocol = 'https' if request.is_secure() or 'render.com' in request.get_host() else 'http'
     host = request.get_host()
     callback_url = f'{protocol}://{host}/orders/liqpay-callback/'
-    result_url = f'{protocol}://{host}/orders/success/'
+    result_url = f'{protocol}://{host}/orders/liqpay-return/'
     
     logger.info(f"LiqPay payment initiated for order #{order.order_number}, callback: {callback_url}")
     
@@ -748,6 +803,8 @@ def liqpay_callback(request):
                 
                 if 'pending_transaction_ref' in request.session:
                     del request.session['pending_transaction_ref']
+                if 'liqpay_form_data' in request.session:
+                    del request.session['liqpay_form_data']
                 request.session['completed_order_id'] = order.id
                 request.session['payment_status'] = 'success'
                 
@@ -781,6 +838,8 @@ def liqpay_callback(request):
                 cart = Cart(request)
                 cart.clear()
                 
+                if 'liqpay_form_data' in request.session:
+                    del request.session['liqpay_form_data']
                 request.session['completed_order_id'] = order.id
                 request.session['payment_status'] = 'success'
                 
