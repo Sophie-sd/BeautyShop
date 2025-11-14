@@ -9,6 +9,35 @@ from .cart import Cart
 def cart_detail(request):
     """Перегляд кошика"""
     cart = Cart(request)
+    
+    if 'promo_code' in request.session and 'promo_id' in request.session:
+        from apps.promotions.models import PromoCode
+        from django.utils import timezone
+        
+        try:
+            promo = PromoCode.objects.get(id=request.session['promo_id'])
+            now = timezone.now()
+            
+            if now >= promo.start_date and now <= promo.end_date:
+                total = cart.get_total_price()
+                
+                if promo.discount_type == 'percentage':
+                    discount = total * (Decimal(str(promo.discount_value)) / Decimal('100'))
+                else:
+                    discount = Decimal(str(promo.discount_value))
+                
+                discount = min(discount, total)
+                final_price = total - discount
+                
+                request.session['promo_discount'] = round(float(discount), 2)
+                request.session['final_price'] = round(float(final_price), 2)
+            else:
+                for key in ['promo_code', 'promo_discount', 'promo_id', 'final_price']:
+                    request.session.pop(key, None)
+        except PromoCode.DoesNotExist:
+            for key in ['promo_code', 'promo_discount', 'promo_id', 'final_price']:
+                request.session.pop(key, None)
+    
     return render(request, 'cart/detail.html', {'cart': cart})
 
 

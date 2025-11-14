@@ -114,7 +114,7 @@
                         {% if request.session.promo_discount %}
                         <div class="summary-row summary-promo">
                             <span>Промокод ({{ request.session.promo_code }}):</span>
-                            <span class="promo-discount">{{ request.session.promo_discount|floatformat:2 }} ₴</span>
+                            <span class="promo-discount">-{{ request.session.promo_discount|floatformat:2 }} ₴</span>
                         </div>
                         {% endif %}
                         
