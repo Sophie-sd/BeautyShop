@@ -95,6 +95,7 @@ textarea.form-control {
     width: 20px;
     height: 20px;
     cursor: pointer;
+    accent-color: var(--color-primary);
 }
 
 .payment-method input[type="radio"]:checked + span {
@@ -363,8 +364,8 @@ textarea.form-control {
 
 .messages .alert-info {
     background: #fff;
-    border-left: 4px solid #17a2b8;
-    color: #0c5460;
+    border-left: 4px solid var(--color-primary);
+    color: var(--color-primary-dark);
 }
 
 .messages .alert-warning {
@@ -397,19 +398,19 @@ textarea.form-control {
     display: none;
     margin-top: 20px;
     padding: 20px;
-    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-    border: 2px solid #0ea5e9;
+    background: linear-gradient(135deg, #fff0f6 0%, #ffe0f0 100%);
+    border: 2px solid var(--color-primary);
     border-radius: 12px;
 }
 
 .pickup-message {
     font-weight: 600;
-    color: #0369a1;
+    color: var(--color-primary);
     margin-bottom: 8px;
 }
 
 .pickup-address {
-    color: #0c4a6e;
+    color: var(--color-primary-dark);
     font-size: 15px;
 }
 

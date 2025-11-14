@@ -205,8 +205,8 @@
 }
 
 .status-confirmed {
-  background: #d1ecf1;
-  color: #0c5460;
+  background: #ffe0f0;
+  color: var(--color-primary-dark);
 }
 
 .status-processing {

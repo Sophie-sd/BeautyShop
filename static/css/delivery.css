@@ -120,12 +120,12 @@
 }
 
 .delivery-badge.free {
-    background: #17a2b8;
-    box-shadow: 0 4px 15px rgba(23, 162, 184, 0.4);
+    background: var(--color-primary);
+    box-shadow: 0 4px 15px rgba(255, 20, 147, 0.4);
 }
 
 .delivery-badge.free:hover {
-    box-shadow: 0 6px 20px rgba(23, 162, 184, 0.6);
+    box-shadow: 0 6px 20px rgba(255, 20, 147, 0.6);
 }
 
 /* Payment Methods Section */

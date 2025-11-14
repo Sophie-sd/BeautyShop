@@ -875,6 +875,7 @@
     width: 20px;
     height: 20px;
     cursor: pointer;
+    accent-color: var(--color-primary);
 }
 
 .payment-method span {
