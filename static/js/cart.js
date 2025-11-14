@@ -323,20 +323,44 @@ class ShoppingCart {
     updateCartDisplay(cartData) {
         if (!cartData) return;
 
-        const cartBadges = document.querySelectorAll('.cart-badge, .cart-count');
+        const count = cartData.item_count || 0;
+
+        const cartBadges = document.querySelectorAll('.cart-badge, .cart-count, .badge');
         cartBadges.forEach((badge) => {
-            if (cartData.item_count > 0) {
-                badge.textContent = cartData.item_count;
-                badge.style.display = 'flex';
+            if (count > 0) {
+                badge.textContent = count;
+                badge.classList.remove('badge-hidden', 'nav-badge-hidden');
             } else {
-                badge.style.display = 'none';
+                badge.textContent = '';
+                badge.classList.add('badge-hidden');
             }
         });
+
+        const mobileBadge = document.getElementById('mobileCartBadge');
+        if (mobileBadge) {
+            if (count > 0) {
+                mobileBadge.textContent = count;
+                mobileBadge.classList.remove('nav-badge-hidden');
+            } else {
+                mobileBadge.textContent = '';
+                mobileBadge.classList.add('nav-badge-hidden');
+            }
+        }
 
         const cartTotals = document.querySelectorAll('.cart-total, .cart-grand-total');
         cartTotals.forEach((total) => {
             total.textContent = `${cartData.total_price.toFixed(2)} ₴`;
         });
+
+        if (typeof window.updateMobileCartBadge === 'function') {
+            window.updateMobileCartBadge(count);
+        }
+
+        const event = new CustomEvent('cart:updated', { 
+            detail: { count: count, data: cartData },
+            bubbles: true 
+        });
+        document.dispatchEvent(event);
     }
 
     updateItemPrice(productId, itemData) {
