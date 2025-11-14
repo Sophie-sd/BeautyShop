@@ -105,9 +105,14 @@
     
     /* Mobile Layout для iOS Safari */
     @media (max-width: 767.98px) {
-        /* КРИТИЧНО: Заборона transform на body та html для збереження position: fixed */
         html,
         body {
+            transform: none;
+            perspective: none;
+        }
+        
+        .auth-container {
+            background: #f7f9fb;
             transform: none;
             perspective: none;
         }
