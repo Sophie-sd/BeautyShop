@@ -434,6 +434,11 @@ def order_create(request):
             
             # Для готівкової оплати - очищаємо кошик відразу
             cart.clear()
+            
+            # Очищаємо дані форми якщо були збережені (для повторних спроб)
+            if 'liqpay_form_data' in request.session:
+                del request.session['liqpay_form_data']
+            
             request.session['completed_order_id'] = order.id
             logger.info(f"Order #{order.order_number} completed (cash payment)")
             return redirect('orders:success')
