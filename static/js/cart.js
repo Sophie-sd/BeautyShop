@@ -334,6 +334,11 @@ class ShoppingCart {
                 badge.textContent = '';
                 badge.classList.add('badge-hidden');
             }
+            
+            // iOS Safari fix: примусове оновлення DOM
+            badge.style.display = 'none';
+            badge.offsetHeight; // Force reflow
+            badge.style.display = '';
         });
 
         const mobileBadge = document.getElementById('mobileCartBadge');
@@ -345,6 +350,11 @@ class ShoppingCart {
                 mobileBadge.textContent = '';
                 mobileBadge.classList.add('nav-badge-hidden');
             }
+            
+            // iOS Safari fix: примусове оновлення DOM
+            mobileBadge.style.display = 'none';
+            mobileBadge.offsetHeight; // Force reflow
+            mobileBadge.style.display = '';
         }
 
         const cartTotals = document.querySelectorAll('.cart-total, .cart-grand-total');
@@ -355,12 +365,30 @@ class ShoppingCart {
         if (typeof window.updateMobileCartBadge === 'function') {
             window.updateMobileCartBadge(count);
         }
+        
+        // Примусове перемальовування для iOS Safari
+        if (this.isIOSSafari()) {
+            requestAnimationFrame(() => {
+                document.body.style.transform = 'translateZ(0)';
+                setTimeout(() => {
+                    document.body.style.transform = '';
+                }, 0);
+            });
+        }
 
         const event = new CustomEvent('cart:updated', { 
             detail: { count: count, data: cartData },
             bubbles: true 
         });
         document.dispatchEvent(event);
+    }
+    
+    isIOSSafari() {
+        const ua = window.navigator.userAgent;
+        const iOS = !!ua.match(/iPad/i) || !!ua.match(/iPhone/i);
+        const webkit = !!ua.match(/WebKit/i);
+        const iOSSafari = iOS && webkit && !ua.match(/CriOS/i);
+        return iOSSafari;
     }
 
     updateItemPrice(productId, itemData) {

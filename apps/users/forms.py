@@ -31,8 +31,8 @@ class WholesaleRegistrationForm(UserCreationForm):
     )
     middle_name = forms.CharField(
         max_length=100, 
-        required=False, 
-        label="По-батькові (необов'язково)",
+        required=True, 
+        label="По-батькові",
         widget=forms.TextInput(attrs={
             'placeholder': "По-батькові",
             'autocomplete': 'additional-name'
@@ -47,15 +47,17 @@ class WholesaleRegistrationForm(UserCreationForm):
         })
     )
     phone = forms.CharField(
-        max_length=13, 
-        required=False, 
-        label='Телефон (необов\'язково)',
+        max_length=10, 
+        required=True, 
+        label='Телефон',
         widget=forms.TextInput(attrs={
-            'placeholder': '+380991234567',
-            'pattern': r'\+380\d{9}',
-            'autocomplete': 'tel'
+            'placeholder': '0XX XXX XX XX',
+            'pattern': '[0-9]{10}',
+            'maxlength': '10',
+            'autocomplete': 'tel',
+            'inputmode': 'numeric'
         }),
-        help_text='Формат: +380XXXXXXXXX'
+        help_text='Введіть 10 цифр (префікс +38 додається автоматично)'
     )
     
     class Meta:
@@ -80,21 +82,26 @@ class WholesaleRegistrationForm(UserCreationForm):
         """Валідація телефону"""
         phone = self.cleaned_data.get('phone')
         
-        # Якщо телефон не вказано, повертаємо порожнє значення
         if not phone:
-            return ''
+            raise ValidationError('Телефон є обов\'язковим полем')
         
-        # Перевірка формату
-        if not re.match(r'^\+380\d{9}$', phone):
+        # Видаляємо всі пробіли та нецифрові символи
+        phone = re.sub(r'\D', '', phone)
+        
+        # Перевірка формату: має бути 10 цифр, що починаються з 0
+        if not re.match(r'^0\d{9}$', phone):
             raise ValidationError(
-                'Невірний формат телефону. Використовуйте формат +380XXXXXXXXX'
+                'Невірний формат телефону. Введіть 10 цифр, починаючи з 0 (наприклад: 0991234567)'
             )
         
+        # Додаємо префікс +38
+        phone_with_prefix = '+38' + phone
+        
         # Перевірка унікальності
-        if CustomUser.objects.filter(phone=phone).exists():
+        if CustomUser.objects.filter(phone=phone_with_prefix).exists():
             raise ValidationError('Цей номер телефону вже зареєстрований')
         
-        return phone
+        return phone_with_prefix
     
     def clean_email(self):
         """Валідація email"""
@@ -111,8 +118,8 @@ class WholesaleRegistrationForm(UserCreationForm):
         user.email = self.cleaned_data['email']
         user.first_name = self.cleaned_data['first_name']
         user.last_name = self.cleaned_data['last_name']
-        user.middle_name = self.cleaned_data.get('middle_name', '')
-        user.phone = self.cleaned_data.get('phone', '')
+        user.middle_name = self.cleaned_data['middle_name']
+        user.phone = self.cleaned_data['phone']
         
         # Генеруємо унікальний username з email
         if not user.username:
@@ -293,26 +300,28 @@ class ProfileEditForm(forms.ModelForm):
     
     middle_name = forms.CharField(
         max_length=100,
-        required=False,
+        required=True,
         label="По-батькові",
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': "По-батькові (необов'язково)",
+            'placeholder': "По-батькові",
             'autocomplete': 'additional-name'
         })
     )
     
     phone = forms.CharField(
-        max_length=13,
-        required=False,
-        label='Телефон (необов\'язково)',
+        max_length=10,
+        required=True,
+        label='Телефон',
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': '+380991234567',
-            'pattern': r'\+380\d{9}',
-            'autocomplete': 'tel'
+            'placeholder': '0XX XXX XX XX',
+            'pattern': '[0-9]{10}',
+            'maxlength': '10',
+            'autocomplete': 'tel',
+            'inputmode': 'numeric'
         }),
-        help_text='Формат: +380XXXXXXXXX'
+        help_text='Введіть 10 цифр (префікс +38 додається автоматично)'
     )
     
     email = forms.EmailField(
@@ -333,22 +342,37 @@ class ProfileEditForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['email'].widget.attrs['readonly'] = True
+        
+        # Якщо у користувача вже є телефон, показуємо його без префікса +38
+        if self.instance and self.instance.phone:
+            phone_value = self.instance.phone
+            if phone_value.startswith('+38'):
+                # Видаляємо +38 для відображення
+                self.initial['phone'] = phone_value[3:]
+            else:
+                self.initial['phone'] = phone_value
     
     def clean_phone(self):
         """Валідація телефону"""
         phone = self.cleaned_data.get('phone')
         
-        # Якщо телефон не вказано, повертаємо порожнє значення
         if not phone:
-            return ''
+            raise ValidationError('Телефон є обов\'язковим полем')
         
-        if not re.match(r'^\+380\d{9}$', phone):
+        # Видаляємо всі пробіли та нецифрові символи
+        phone = re.sub(r'\D', '', phone)
+        
+        # Перевірка формату: має бути 10 цифр, що починаються з 0
+        if not re.match(r'^0\d{9}$', phone):
             raise ValidationError(
-                'Невірний формат телефону. Використовуйте формат +380XXXXXXXXX'
+                'Невірний формат телефону. Введіть 10 цифр, починаючи з 0 (наприклад: 0991234567)'
             )
         
+        # Додаємо префікс +38
+        phone_with_prefix = '+38' + phone
+        
         # Перевірка унікальності (виключаючи поточного користувача)
-        if CustomUser.objects.filter(phone=phone).exclude(pk=self.instance.pk).exists():
+        if CustomUser.objects.filter(phone=phone_with_prefix).exclude(pk=self.instance.pk).exists():
             raise ValidationError('Цей номер телефону вже зареєстрований')
         
-        return phone
+        return phone_with_prefix

@@ -301,6 +301,11 @@ class WishlistManager {
                 badge.textContent = '';
                 badge.classList.add('badge-hidden');
             }
+            
+            // iOS Safari fix: примусове оновлення DOM
+            badge.style.display = 'none';
+            badge.offsetHeight; // Force reflow
+            badge.style.display = '';
         });
 
         // Оновлюємо mobile navigation badge
@@ -313,8 +318,31 @@ class WishlistManager {
                     badge.textContent = '';
                     badge.classList.add('nav-badge-hidden');
                 }
+                
+                // iOS Safari fix: примусове оновлення DOM
+                badge.style.display = 'none';
+                badge.offsetHeight; // Force reflow
+                badge.style.display = '';
             }
         });
+        
+        // Примусове перемальовування для iOS Safari
+        if (this.isIOSSafari()) {
+            requestAnimationFrame(() => {
+                document.body.style.transform = 'translateZ(0)';
+                setTimeout(() => {
+                    document.body.style.transform = '';
+                }, 0);
+            });
+        }
+    }
+    
+    isIOSSafari() {
+        const ua = window.navigator.userAgent;
+        const iOS = !!ua.match(/iPad/i) || !!ua.match(/iPhone/i);
+        const webkit = !!ua.match(/WebKit/i);
+        const iOSSafari = iOS && webkit && !ua.match(/CriOS/i);
+        return iOSSafari;
     }
 
     showNotification(message, type = 'success') {

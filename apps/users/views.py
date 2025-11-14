@@ -39,10 +39,6 @@ class WholesaleRegisterView(CreateView):
             # Надсилаємо лист з кодом підтвердження
             if send_verification_code_email(user, self.request):
                 logger.info(f"✅ Verification code sent successfully to: {user.email}")
-                messages.success(
-                    self.request, 
-                    'Ви успішно зареєструвалися! Перевірте вашу пошту та введіть код підтвердження.'
-                )
             else:
                 logger.error(f"❌ Failed to send verification code to: {user.email}")
                 messages.warning(

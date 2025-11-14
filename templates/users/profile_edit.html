@@ -48,9 +48,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="{{ form.middle_name.id_for_label }}">По-батькові</label>
+                    <label for="{{ form.middle_name.id_for_label }}">По-батькові *</label>
                     {{ form.middle_name }}
-                    <small class="form-help">Необов'язково</small>
                     {% if form.middle_name.errors %}
                         <div class="error-message">{{ form.middle_name.errors.0 }}</div>
                     {% endif %}
@@ -66,9 +65,12 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="{{ form.phone.id_for_label }}">Телефон</label>
-                    {{ form.phone }}
-                    <small class="form-help">Формат: +380991234567 (необов'язково)</small>
+                    <label for="{{ form.phone.id_for_label }}">Телефон *</label>
+                    <div class="phone-input-wrapper">
+                        <span class="phone-prefix">+38</span>
+                        {{ form.phone }}
+                    </div>
+                    <small class="form-help">Введіть 10 цифр (префікс +38 додається автоматично)</small>
                     {% if form.phone.errors %}
                         <div class="error-message">{{ form.phone.errors.0 }}</div>
                     {% endif %}

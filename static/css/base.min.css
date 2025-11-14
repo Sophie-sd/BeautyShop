@@ -285,12 +285,19 @@ img {
 }
 
 /* Alerts */
+.messages-container {
+    position: relative;
+    z-index: 10001;
+    margin-bottom: var(--spacing-lg);
+}
+
 .alert {
     padding: var(--spacing-md) var(--spacing-lg);
     margin-bottom: var(--spacing-lg);
     border: 1px solid transparent;
     border-radius: var(--border-radius-md);
     position: relative;
+    z-index: 10001;
 }
 
 .alert-success {
