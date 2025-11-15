@@ -44,6 +44,8 @@ class PrivatePagesCacheMiddleware:
         '/cart/',
         '/orders/',
         '/admin/',
+        '/category/',
+        '/products/',
     ]
     
     def __init__(self, get_response):
