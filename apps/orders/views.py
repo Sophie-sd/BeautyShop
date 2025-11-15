@@ -401,6 +401,22 @@ def order_create(request):
                 
                 request.session['pending_transaction_ref'] = transaction_ref
                 
+                # Зберігаємо дані форми для можливості повернення
+                request.session['liqpay_form_data'] = {
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'middle_name': middle_name,
+                    'email': email,
+                    'phone': phone,
+                    'delivery_method': delivery_method,
+                    'delivery_city': delivery_city,
+                    'delivery_address': delivery_address,
+                    'np_city_ref': np_city_ref,
+                    'np_warehouse_ref': np_warehouse_ref,
+                    'delivery_type': delivery_type,
+                    'notes': notes
+                }
+                
                 logger.info(f"Pending LiqPay payment created: {transaction_ref}")
                 return redirect('orders:liqpay_payment_pending')
             
@@ -443,9 +459,13 @@ def order_create(request):
             # Для готівкової оплати - очищаємо кошик відразу
             cart.clear()
             
-            # Очищаємо дані форми якщо були збережені (для повторних спроб)
-            if 'liqpay_form_data' in request.session:
-                del request.session['liqpay_form_data']
+            # Очищаємо дані форми та промокод з сесії
+            session_keys_to_clear = [
+                'liqpay_form_data', 'promo_code', 'promo_discount', 
+                'promo_id', 'final_price'
+            ]
+            for key in session_keys_to_clear:
+                request.session.pop(key, None)
             
             request.session['completed_order_id'] = order.id
             logger.info(f"Order #{order.order_number} completed (cash payment)")
@@ -494,16 +514,13 @@ def liqpay_return(request):
         logger.info(f"LiqPay return: payment successful, redirecting to success page")
         return redirect('orders:success')
     
-    # Оплата не пройшла або була скасована
     logger.warning(f"LiqPay return: payment failed or cancelled")
     
-    # Отримуємо кошик для рендерингу форми
     cart = Cart(request)
     if len(cart) == 0:
         messages.error(request, 'Ваш кошик порожній')
         return redirect('cart:detail')
     
-    # Підготовка контексту з відновленими даними
     context = {
         'cart': cart,
         'user': request.user,
@@ -511,11 +528,16 @@ def liqpay_return(request):
         'payment_failed_message': 'Оплату не було проведено. Будь ласка, спробуйте ще раз або оберіть інший спосіб оплати.'
     }
     
-    # Відновлюємо дані форми якщо є
     if 'liqpay_form_data' in request.session:
-        context['form_data'] = request.session.get('liqpay_form_data')
+        form_data = request.session['liqpay_form_data'].copy()
+        
+        phone = form_data.get('phone', '')
+        if phone.startswith('+38'):
+            phone = phone[3:]
+        form_data['phone'] = phone
+        
+        context['form_data'] = form_data
     
-    # Рендеримо форму напряму (НЕ редірект) щоб CSRF токен був свіжим
     return render(request, 'orders/create.html', context)
 
 
@@ -819,10 +841,13 @@ def liqpay_callback(request):
                 cart = Cart(request)
                 cart.clear()
                 
-                if 'pending_transaction_ref' in request.session:
-                    del request.session['pending_transaction_ref']
-                if 'liqpay_form_data' in request.session:
-                    del request.session['liqpay_form_data']
+                session_keys_to_clear = [
+                    'pending_transaction_ref', 'liqpay_form_data', 
+                    'promo_code', 'promo_discount', 'promo_id', 'final_price'
+                ]
+                for key in session_keys_to_clear:
+                    request.session.pop(key, None)
+                
                 request.session['completed_order_id'] = order.id
                 request.session['payment_status'] = 'success'
                 
