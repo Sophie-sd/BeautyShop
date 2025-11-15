@@ -519,9 +519,8 @@ class NewProductAdmin(AdminMediaMixin, admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         """При збереженні встановлюємо is_new=True для товару"""
         super().save_model(request, obj, form, change)
-        if not obj.product.is_new:
-            obj.product.is_new = True
-            obj.product.save(update_fields=['is_new'])
+        obj.product.is_new = True
+        obj.product.save(update_fields=['is_new'])
         self.message_user(request, f'✅ Товар "{obj.product.name}" додано в новинки і позначено статусом NEW')
     
     def delete_model(self, request, obj):

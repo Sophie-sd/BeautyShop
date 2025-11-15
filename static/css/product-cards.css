@@ -68,11 +68,13 @@
 }
 
 .product-card__image,
-.product-image img {
+.product-image img,
+.cloudinary-responsive {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform var(--transition-normal);
+  display: block;
 }
 
 .product-card:hover .product-card__image,

@@ -1,4 +1,4 @@
-{% load static %}
+{% load static cloudinary_tags %}
 <article class="product-card{% if card_class %} {{ card_class }}{% endif %}" 
          data-product-id="{{ product.id }}"
          {% if product.retail_price %}data-price="{{ product.retail_price }}"{% endif %}
@@ -12,7 +12,7 @@
         <a href="{{ product.get_absolute_url }}" class="product-card__image-link">
             {% if product.images.first %}
                 <img 
-                    src="{{ product.images.first.image.url }}" 
+                    src="{% cloudinary_image product.images.first.image width=300 height=300 %}" 
                     alt="{{ product.name }}" 
                     class="product-card__image"
                     loading="lazy"
@@ -21,7 +21,7 @@
                 >
             {% elif product.main_image %}
                 <img 
-                    src="{{ product.main_image.image.url }}" 
+                    src="{% cloudinary_image product.main_image.image width=300 height=300 %}" 
                     alt="{{ product.name }}" 
                     class="product-card__image"
                     loading="lazy"

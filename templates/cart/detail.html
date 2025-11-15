@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static cloudinary_tags %}
 
 {% block title %}Кошик - Beauty Shop{% endblock %}
 
@@ -26,7 +26,7 @@
                             
                             <a href="{% url 'products:detail' item.product.slug %}" class="cart-item__image">
                                 {% if item.product.images.first %}
-                                    <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}">
+                                    <img src="{% cloudinary_image item.product.images.first.image width=120 height=120 %}" alt="{{ item.product.name }}">
                                 {% else %}
                                     <div class="product-placeholder">
                                         <i class="icon-product">📦</i>

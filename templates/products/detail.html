@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static cloudinary_tags %}
 
 {% block title %}{{ product.name }} - Beauty Shop{% endblock %}
 {% block description %}{{ product.meta_description|default:product.description|truncatewords:30 }}{% endblock %}
@@ -17,7 +17,7 @@
             <div class="product-gallery">
                 <div class="product-main-image" id="mainImage">
                     {% if product.images.all %}
-                        <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" id="currentImage">
+                        <img src="{% cloudinary_image product.images.first.image width=600 height=600 %}" alt="{{ product.name }}" id="currentImage">
                     {% else %}
                         <div class="product-placeholder">
                             <span>📦</span>
@@ -28,8 +28,8 @@
                 {% if product.images.count > 1 %}
                 <div class="product-thumbnails">
                     {% for image in product.images.all %}
-                    <div class="thumbnail {% if forloop.first %}active{% endif %}" data-image="{{ image.image.url }}">
-                        <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}">
+                    <div class="thumbnail {% if forloop.first %}active{% endif %}" data-image="{% cloudinary_image image.image width=600 height=600 %}">
+                        <img src="{% cloudinary_image image.image width=100 height=100 %}" alt="{{ image.alt_text|default:product.name }}">
                     </div>
                     {% endfor %}
                 </div>

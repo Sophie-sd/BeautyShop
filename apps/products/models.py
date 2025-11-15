@@ -517,8 +517,7 @@ class NewProduct(models.Model):
     def save(self, *args, **kwargs):
         """При збереженні автоматично встановлюємо is_new=True для товару"""
         super().save(*args, **kwargs)
-        if not self.product.is_new:
-            Product.objects.filter(pk=self.product.pk).update(is_new=True)
+        Product.objects.filter(pk=self.product.pk).update(is_new=True)
     
     def delete(self, *args, **kwargs):
         """При видаленні знімаємо is_new з товару"""
