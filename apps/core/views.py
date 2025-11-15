@@ -23,12 +23,9 @@ class HomeView(TemplateView):
         banners = Banner.objects.filter(is_active=True).order_by('order', '-created_at')
         
         # Отримуємо новинки
-        # 1. Товари з is_new=True (автоматично)
-        # 2. Товари додані вручну через NewProduct
         new_products = NewProduct.objects.filter(
             is_active=True,
-            product__is_active=True,
-            product__is_new=True
+            product__is_active=True
         ).select_related('product').prefetch_related('product__images')[:12]
         
         # Отримуємо акційні товари з валідними датами або без дат (завжди активні)

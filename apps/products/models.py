@@ -513,17 +513,6 @@ class NewProduct(models.Model):
     
     def __str__(self):
         return f"{self.product.name} (позиція {self.sort_order})"
-    
-    def save(self, *args, **kwargs):
-        """При збереженні автоматично встановлюємо is_new=True для товару"""
-        super().save(*args, **kwargs)
-        Product.objects.filter(pk=self.product.pk).update(is_new=True)
-    
-    def delete(self, *args, **kwargs):
-        """При видаленні знімаємо is_new з товару"""
-        product_id = self.product.pk
-        super().delete(*args, **kwargs)
-        Product.objects.filter(pk=product_id).update(is_new=False)
 
 
 # ============================================

@@ -205,7 +205,6 @@ class ProductAdmin(AdminMediaMixin, admin.ModelAdmin):
         StockFilter,
         'is_sale',
         'is_new',
-        'is_featured',
     ]
     search_fields = ['name', 'sku', 'description']
     prepopulated_fields = {'slug': ('name',)}
@@ -269,7 +268,6 @@ class ProductAdmin(AdminMediaMixin, admin.ModelAdmin):
         ('📦 Склад та наявність', {
             'fields': (
                 ('stock', 'is_active'),
-                'is_featured'
             ),
             'description': 'Кількість товару на складі та статус активності'
         }),
@@ -301,6 +299,7 @@ class ProductAdmin(AdminMediaMixin, admin.ModelAdmin):
         'mark_as_sale',
         'unmark_as_sale',
         'mark_as_new',
+        'unmark_as_new',
         'set_sale_price_bulk',
         'clear_sale_prices',
         'export_to_csv',
@@ -417,9 +416,34 @@ class ProductAdmin(AdminMediaMixin, admin.ModelAdmin):
     
     def mark_as_new(self, request, queryset):
         """Позначити як новинки"""
-        updated = queryset.update(is_new=True)
-        self.message_user(request, f"Позначено як новинки: {updated} товарів", messages.SUCCESS)
+        count = 0
+        for product in queryset:
+            product.is_new = True
+            product.save(update_fields=['is_new'])
+            
+            if not NewProduct.objects.filter(product=product).exists():
+                max_order = NewProduct.objects.aggregate(models.Max('sort_order'))['sort_order__max'] or 0
+                NewProduct.objects.create(
+                    product=product,
+                    sort_order=max_order + 1,
+                    is_active=True
+                )
+            count += 1
+        
+        self.message_user(request, f"Позначено як новинки: {count} товарів", messages.SUCCESS)
     mark_as_new.short_description = "✨ Позначити як НОВИНКИ"
+    
+    def unmark_as_new(self, request, queryset):
+        """Зняти позначку новинка"""
+        count = 0
+        for product in queryset:
+            product.is_new = False
+            product.save(update_fields=['is_new'])
+            NewProduct.objects.filter(product=product).delete()
+            count += 1
+        
+        self.message_user(request, f"Знято позначку новинка: {count} товарів", messages.SUCCESS)
+    unmark_as_new.short_description = "Зняти позначку НОВИНКА"
     
     def clear_sale_prices(self, request, queryset):
         """Очистити акційні ціни"""
@@ -486,6 +510,21 @@ class ProductAdmin(AdminMediaMixin, admin.ModelAdmin):
             preserved_order = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(categories_list)])
             kwargs["queryset"] = kwargs["queryset"].order_by(preserved_order)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    
+    def save_model(self, request, obj, form, change):
+        """Синхронізація is_new з таблицею NewProduct"""
+        super().save_model(request, obj, form, change)
+        
+        if obj.is_new:
+            if not NewProduct.objects.filter(product=obj).exists():
+                max_order = NewProduct.objects.aggregate(models.Max('sort_order'))['sort_order__max'] or 0
+                NewProduct.objects.create(
+                    product=obj,
+                    sort_order=max_order + 1,
+                    is_active=True
+                )
+        else:
+            NewProduct.objects.filter(product=obj).delete()
 
 # ============================================
 #       НОВИНКИ, АКЦІЙНІ ПРОПОЗИЦІЇ
