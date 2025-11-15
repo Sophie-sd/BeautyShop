@@ -105,6 +105,7 @@ class ShoppingCart {
             if (data.success) {
                 this.showSuccessMessage('Товар додано до кошика');
                 this.updateCartDisplay(data.cart);
+                this.updateCartSummary(data.cart);
                 this.animateCartIcon();
             } else {
                 this.showErrorMessage(data.message || 'Помилка додавання товару');
@@ -152,14 +153,17 @@ class ShoppingCart {
             if (data.success) {
                 this.showSuccessMessage(`${productName} видалено з кошика`);
                 this.updateCartDisplay(data.cart);
+                this.updateCartSummary(data.cart);
 
                 const cartRow = button.closest('.cart-item');
                 if (cartRow) {
-                    cartRow.style.opacity = '0';
+                    cartRow.classList.add('cart-item-removing');
                     setTimeout(() => {
                         cartRow.remove();
                         if (data.cart.total_items === 0) {
                             location.reload();
+                        } else {
+                            this.recalculatePromo();
                         }
                     }, 300);
                 }
@@ -253,6 +257,7 @@ class ShoppingCart {
 
             if (data.success) {
                 this.updateCartDisplay(data.cart);
+                this.updateCartSummary(data.cart);
                 this.updateItemPrice(productId, data.item);
             }
         } catch (error) {
@@ -334,11 +339,6 @@ class ShoppingCart {
                 badge.textContent = '';
                 badge.classList.add('badge-hidden');
             }
-            
-            // iOS Safari fix: примусове оновлення DOM
-            badge.style.display = 'none';
-            badge.offsetHeight; // Force reflow
-            badge.style.display = '';
         });
 
         const mobileBadge = document.getElementById('mobileCartBadge');
@@ -350,30 +350,10 @@ class ShoppingCart {
                 mobileBadge.textContent = '';
                 mobileBadge.classList.add('nav-badge-hidden');
             }
-            
-            // iOS Safari fix: примусове оновлення DOM
-            mobileBadge.style.display = 'none';
-            mobileBadge.offsetHeight; // Force reflow
-            mobileBadge.style.display = '';
         }
-
-        const cartTotals = document.querySelectorAll('.cart-total, .cart-grand-total');
-        cartTotals.forEach((total) => {
-            total.textContent = `${cartData.total_price.toFixed(2)} ₴`;
-        });
 
         if (typeof window.updateMobileCartBadge === 'function') {
             window.updateMobileCartBadge(count);
-        }
-        
-        // Примусове перемальовування для iOS Safari
-        if (this.isIOSSafari()) {
-            requestAnimationFrame(() => {
-                document.body.style.transform = 'translateZ(0)';
-                setTimeout(() => {
-                    document.body.style.transform = '';
-                }, 0);
-            });
         }
 
         const event = new CustomEvent('cart:updated', { 
@@ -382,15 +362,46 @@ class ShoppingCart {
         });
         document.dispatchEvent(event);
     }
-    
-    isIOSSafari() {
-        const ua = window.navigator.userAgent;
-        const iOS = !!ua.match(/iPad/i) || !!ua.match(/iPhone/i);
-        const webkit = !!ua.match(/WebKit/i);
-        const iOSSafari = iOS && webkit && !ua.match(/CriOS/i);
-        return iOSSafari;
+
+    updateCartSummary(cartData) {
+        if (!cartData) return;
+
+        const cartSubtotal = document.querySelector('.cart-subtotal');
+        if (cartSubtotal && cartData.total_price !== undefined) {
+            cartSubtotal.textContent = `${cartData.total_price.toFixed(2)} ₴`;
+        }
+
+        const cartGrandTotal = document.querySelector('.cart-grand-total');
+        if (cartGrandTotal && cartData.total_price !== undefined) {
+            cartGrandTotal.textContent = `${cartData.total_price.toFixed(2)} ₴`;
+        }
     }
 
+    async recalculatePromo() {
+        const promoCode = document.getElementById('promo-code');
+        if (promoCode && promoCode.value.trim()) {
+            try {
+                const response = await fetch('/cart/apply-promo/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': this.getCsrfToken(),
+                    },
+                    body: `code=${encodeURIComponent(promoCode.value.trim())}`,
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    location.reload();
+                }
+            } catch (error) {
+                console.error('Помилка перерахунку промокоду:', error);
+            }
+        } else {
+            location.reload();
+        }
+    }
+    
     updateItemPrice(productId, itemData) {
         if (!itemData || !productId) return;
 
@@ -491,10 +502,9 @@ class ShoppingCart {
         const promoMessage = document.querySelector('.promo-message');
         if (promoMessage) {
             promoMessage.textContent = message;
-            promoMessage.className = `promo-message promo-message-${type}`;
-            promoMessage.style.display = 'block';
+            promoMessage.className = `promo-message promo-message-${type} promo-message-visible`;
             setTimeout(() => {
-                promoMessage.style.display = 'none';
+                promoMessage.classList.remove('promo-message-visible');
             }, 5000);
         }
     }
