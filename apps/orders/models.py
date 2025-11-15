@@ -271,23 +271,6 @@ class OrderItem(models.Model):
         return f"{self.product.name} x{self.quantity}"
 
 
-class Newsletter(models.Model):
-    """Підписка на розсилку"""
-    
-    email = models.EmailField('Email', unique=True)
-    name = models.CharField('Ім\'я', max_length=200, blank=True)
-    is_active = models.BooleanField('Активна підписка', default=True)
-    created_at = models.DateTimeField('Дата підписки', auto_now_add=True)
-    
-    class Meta:
-        verbose_name = 'Підписка на розсилку'
-        verbose_name_plural = 'Підписки на розсилку'
-        ordering = ['-created_at']
-    
-    def __str__(self):
-        return self.email
-
-
 class RetailClient(Order):
     """Proxy модель для роздрібних клієнтів (гостьові замовлення)"""
     
@@ -355,6 +338,7 @@ class EmailCampaign(models.Model):
         
         for recipient_type in self.recipients:
             if recipient_type == 'newsletter':
+                from apps.core.models import Newsletter
                 emails.update(
                     Newsletter.objects.filter(
                         is_active=True,

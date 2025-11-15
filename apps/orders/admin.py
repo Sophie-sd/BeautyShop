@@ -9,7 +9,7 @@ from django.shortcuts import redirect
 from django.contrib import messages
 from django.urls import path, reverse
 from datetime import datetime, timedelta
-from .models import Order, OrderItem, RetailClient, EmailCampaign, Newsletter, PendingPayment
+from .models import Order, OrderItem, RetailClient, EmailCampaign, PendingPayment
 from apps.core.admin_utils import AdminMediaMixin
 
 

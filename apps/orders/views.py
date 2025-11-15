@@ -10,7 +10,8 @@ from django.utils import timezone
 from django.conf import settings
 from apps.cart.cart import Cart
 from decimal import Decimal
-from .models import Newsletter, Order, OrderItem, PendingPayment
+from apps.core.models import Newsletter
+from .models import Order, OrderItem, PendingPayment
 from .novaposhta import NovaPoshtaAPI
 from .validators import validate_order_data
 import hashlib

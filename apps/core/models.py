@@ -80,3 +80,21 @@ class Banner(models.Model):
         if not self.alt_text:
             self.alt_text = f"Банер: {self.title}"
         super().save(*args, **kwargs)
+
+
+class Newsletter(models.Model):
+    """Підписка на розсилку"""
+    
+    email = models.EmailField('Email', unique=True)
+    name = models.CharField('Ім\'я', max_length=200, blank=True)
+    is_active = models.BooleanField('Активна підписка', default=True)
+    created_at = models.DateTimeField('Дата підписки', auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'Підписка на розсилку'
+        verbose_name_plural = 'Підписки на розсилку'
+        ordering = ['-created_at']
+        db_table = 'orders_newsletter'
+    
+    def __str__(self):
+        return self.email
