@@ -287,10 +287,12 @@ class BrandAdminTests(TestCase):
         # self.assertEqual(count, 2)
 
 
-class SalePromotionTests(TestCase):
-    """Тести масових акцій"""
+class PromotionTests(TestCase):
+    """Тести системи акцій"""
     
     def setUp(self):
+        from apps.promotions.models import Promotion
+        
         self.admin_user = User.objects.create_superuser(
             username='admin',
             email='admin@test.com',
@@ -305,6 +307,8 @@ class SalePromotionTests(TestCase):
     
     def test_promotion_application_to_category(self):
         """Тест застосування акції до категорії"""
+        from apps.promotions.models import Promotion
+        
         # Створюємо товари в категорії
         product1 = Product.objects.create(
             name='Товар 1',
@@ -320,14 +324,13 @@ class SalePromotionTests(TestCase):
         )
         
         # Створюємо акцію на категорію
-        promotion = SalePromotion.objects.create(
+        promotion = Promotion.objects.create(
             name='Акція на категорію',
-            discount_type='percentage',
-            discount_value=Decimal('15.00'),
+            retail_discount_percent=Decimal('15.00'),
             start_date=timezone.now(),
             end_date=timezone.now() + timedelta(days=10),
             is_active=True,
-            created_by=self.admin_user
+            priority=0
         )
         promotion.categories.add(self.category)
         
@@ -343,4 +346,135 @@ class SalePromotionTests(TestCase):
         self.assertTrue(product2.is_sale)
         self.assertEqual(product1.sale_price, Decimal('85.00'))  # 100 - 15%
         self.assertEqual(product2.sale_price, Decimal('170.00'))  # 200 - 15%
+        self.assertEqual(product1.current_promotion, promotion)
+        self.assertEqual(product2.current_promotion, promotion)
+    
+    def test_promotion_priority_conflict(self):
+        """Тест конфлікту акцій з різними пріоритетами"""
+        from apps.promotions.models import Promotion
+        
+        product = Product.objects.create(
+            name='Тестовий товар',
+            category=self.category,
+            retail_price=Decimal('100.00'),
+            is_active=True
+        )
+        
+        # Створюємо акцію з низьким пріоритетом
+        promo_low = Promotion.objects.create(
+            name='Акція низький пріоритет',
+            retail_discount_percent=Decimal('10.00'),
+            start_date=timezone.now(),
+            end_date=timezone.now() + timedelta(days=10),
+            is_active=True,
+            priority=1
+        )
+        promo_low.products.add(product)
+        promo_low.apply_to_products()
+        
+        product.refresh_from_db()
+        self.assertEqual(product.sale_price, Decimal('90.00'))
+        self.assertEqual(product.current_promotion, promo_low)
+        
+        # Створюємо акцію з високим пріоритетом
+        promo_high = Promotion.objects.create(
+            name='Акція високий пріоритет',
+            retail_discount_percent=Decimal('20.00'),
+            start_date=timezone.now(),
+            end_date=timezone.now() + timedelta(days=10),
+            is_active=True,
+            priority=5
+        )
+        promo_high.products.add(product)
+        promo_high.apply_to_products()
+        
+        product.refresh_from_db()
+        self.assertEqual(product.sale_price, Decimal('80.00'))
+        self.assertEqual(product.current_promotion, promo_high)
+        
+        # Пробуємо застосувати акцію з ще нижчим пріоритетом
+        promo_lowest = Promotion.objects.create(
+            name='Акція найнижчий пріоритет',
+            retail_discount_percent=Decimal('5.00'),
+            start_date=timezone.now(),
+            end_date=timezone.now() + timedelta(days=10),
+            is_active=True,
+            priority=0
+        )
+        promo_lowest.products.add(product)
+        promo_lowest.apply_to_products()
+        
+        product.refresh_from_db()
+        # Ціна не повинна змінитися - висока акція залишається
+        self.assertEqual(product.sale_price, Decimal('80.00'))
+        self.assertEqual(product.current_promotion, promo_high)
+    
+    def test_promotion_validation(self):
+        """Тест валідації акції"""
+        from apps.promotions.models import Promotion
+        from django.core.exceptions import ValidationError
+        
+        # Тест: знижка більше 100%
+        promotion = Promotion(
+            name='Тест',
+            retail_discount_percent=Decimal('150.00'),
+            start_date=timezone.now(),
+            end_date=timezone.now() + timedelta(days=10),
+        )
+        with self.assertRaises(ValidationError):
+            promotion.clean()
+        
+        # Тест: дата закінчення раніше за початок
+        promotion = Promotion(
+            name='Тест',
+            retail_discount_percent=Decimal('10.00'),
+            start_date=timezone.now() + timedelta(days=10),
+            end_date=timezone.now(),
+        )
+        with self.assertRaises(ValidationError):
+            promotion.clean()
+        
+        # Тест: жодної знижки не вказано
+        promotion = Promotion(
+            name='Тест',
+            start_date=timezone.now(),
+            end_date=timezone.now() + timedelta(days=10),
+        )
+        with self.assertRaises(ValidationError):
+            promotion.clean()
+    
+    def test_promotion_remove_with_tracking(self):
+        """Тест зняття акції з перевіркою current_promotion"""
+        from apps.promotions.models import Promotion
+        
+        product = Product.objects.create(
+            name='Тестовий товар',
+            category=self.category,
+            retail_price=Decimal('100.00'),
+            is_active=True
+        )
+        
+        promotion = Promotion.objects.create(
+            name='Тестова акція',
+            retail_discount_percent=Decimal('20.00'),
+            start_date=timezone.now(),
+            end_date=timezone.now() + timedelta(days=10),
+            is_active=True,
+            priority=1
+        )
+        promotion.products.add(product)
+        promotion.apply_to_products()
+        
+        product.refresh_from_db()
+        self.assertTrue(product.is_sale)
+        self.assertEqual(product.current_promotion, promotion)
+        
+        # Знімаємо акцію
+        promotion.remove_from_products()
+        
+        product.refresh_from_db()
+        self.assertFalse(product.is_sale)
+        self.assertIsNone(product.current_promotion)
+        self.assertIsNone(product.sale_price)
+
 

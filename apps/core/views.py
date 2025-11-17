@@ -29,17 +29,8 @@ class HomeView(TemplateView):
         ).select_related('product').prefetch_related('product__images')[:12]
         
         # Отримуємо акційні товари з валідними датами або без дат (завжди активні)
-        from django.utils import timezone
-        now = timezone.now()
         promotion_products = Product.objects.filter(
-            Q(is_active=True) &
-            Q(is_sale=True) &
-            (
-                Q(sale_start_date__isnull=True, sale_end_date__isnull=True) |
-                Q(sale_start_date__isnull=True, sale_end_date__gte=now) |
-                Q(sale_start_date__lte=now, sale_end_date__isnull=True) |
-                Q(sale_start_date__lte=now, sale_end_date__gte=now)
-            )
+            Product.get_active_sale_filter()
         ).select_related('category').prefetch_related('images')[:20]
         
         context.update({

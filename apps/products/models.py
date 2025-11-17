@@ -137,6 +137,15 @@ class Product(models.Model):
         blank=True,
         help_text='Назва акції для відображення на бейджі'
     )
+    current_promotion = models.ForeignKey(
+        'promotions.Promotion',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='current_products',
+        verbose_name='Поточна акція',
+        help_text='Акція яка зараз застосована до цього товару'
+    )
     
     # Градація цін
     price_3_qty = models.DecimalField(
@@ -195,6 +204,24 @@ class Product(models.Model):
     # SEO поля
     meta_title = models.CharField('SEO заголовок', max_length=200, blank=True)
     meta_description = models.TextField('SEO опис', max_length=300, blank=True)
+    
+    @staticmethod
+    def get_active_sale_filter():
+        """Централізована логіка перевірки активних акцій"""
+        from django.utils import timezone
+        from django.db.models import Q
+        
+        now = timezone.now()
+        return (
+            Q(is_active=True) &
+            Q(is_sale=True) &
+            (
+                Q(sale_start_date__isnull=True, sale_end_date__isnull=True) |
+                Q(sale_start_date__isnull=True, sale_end_date__gte=now) |
+                Q(sale_start_date__lte=now, sale_end_date__isnull=True) |
+                Q(sale_start_date__lte=now, sale_end_date__gte=now)
+            )
+        )
     
     class Meta:
         verbose_name = 'Товар'

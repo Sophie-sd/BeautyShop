@@ -4,13 +4,42 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django.utils import timezone
+from django import forms
 from .models import Promotion, PromoCode
 from apps.core.admin_utils import AdminMediaMixin
+
+
+class PromotionAdminForm(forms.ModelForm):
+    """Форма для валідації акцій"""
+    
+    class Meta:
+        model = Promotion
+        fields = '__all__'
+    
+    def clean(self):
+        """Викликаємо валідацію моделі"""
+        cleaned_data = super().clean()
+        
+        # Створюємо тимчасовий об'єкт для валідації
+        instance = self.instance
+        for field, value in cleaned_data.items():
+            setattr(instance, field, value)
+        
+        # Викликаємо clean() моделі для валідації
+        try:
+            instance.clean()
+        except Exception as e:
+            # ValidationError буде автоматично оброблений Django
+            raise
+        
+        return cleaned_data
 
 
 @admin.register(Promotion)
 class PromotionAdmin(AdminMediaMixin, admin.ModelAdmin):
     """Адміністрування акцій"""
+    
+    form = PromotionAdminForm
     
     list_display = [
         'name', 'get_period', 'get_time_left', 'get_discounts', 
@@ -106,17 +135,62 @@ class PromotionAdmin(AdminMediaMixin, admin.ModelAdmin):
     get_products_count.short_description = 'Товарів'
     
     def save_model(self, request, obj, form, change):
-        """Зберігає акцію як неактивну за замовчуванням"""
-        if not change:
-            obj.is_active = False
+        """Зберігає акцію і автоматично застосовує якщо активна"""
+        from django.contrib import messages
+        from django.utils import timezone
+        
+        # Зберігаємо old_is_active для порівняння
+        old_is_active = None
+        if change:
+            # Отримуємо старий стан з БД
+            old_obj = Promotion.objects.get(pk=obj.pk)
+            old_is_active = old_obj.is_active
+        
+        # Зберігаємо об'єкт
         super().save_model(request, obj, form, change)
         
-        from django.contrib import messages
-        self.message_user(
-            request, 
-            '✅ Акцію збережено. Використайте дію "Активувати акції" щоб застосувати її до товарів.', 
-            messages.SUCCESS
-        )
+        # Перевіряємо чи потрібно автоматично застосувати/зняти акцію
+        now = timezone.now()
+        is_in_period = obj.start_date <= now <= obj.end_date
+        
+        if obj.is_active and is_in_period:
+            # Акція активна і в межах періоду - застосовуємо
+            if not change or (change and old_is_active is False):
+                # Новa акція або щойно активована - застосовуємо
+                count = obj.apply_to_products()
+                self.message_user(
+                    request, 
+                    f'✅ Акцію "{obj.name}" збережено і автоматично застосовано до {count} товарів', 
+                    messages.SUCCESS
+                )
+            else:
+                self.message_user(
+                    request, 
+                    f'✅ Акцію "{obj.name}" оновлено. Якщо потрібно перезастосувати - використайте дію "Активувати акції"', 
+                    messages.SUCCESS
+                )
+        elif change and old_is_active is True and obj.is_active is False:
+            # Акція була деактивована - знімаємо з товарів
+            count = obj.remove_from_products()
+            self.message_user(
+                request, 
+                f'✅ Акцію "{obj.name}" деактивовано і знято з {count} товарів', 
+                messages.SUCCESS
+            )
+        else:
+            # Просто збереження без змін активності
+            if not is_in_period and obj.is_active:
+                self.message_user(
+                    request, 
+                    f'⚠️ Акція "{obj.name}" збережена, але не в періоді дії. Вона буде застосована автоматично коли почнеться', 
+                    messages.WARNING
+                )
+            else:
+                self.message_user(
+                    request, 
+                    f'✅ Акцію "{obj.name}" збережено', 
+                    messages.SUCCESS
+                )
     
     actions = ['activate_promotions', 'deactivate_promotions', 'delete_promotions']
     

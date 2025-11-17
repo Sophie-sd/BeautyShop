@@ -56,21 +56,11 @@ class CategoryView(ListView):
         # Фільтр по типу товару
         product_types = self.request.GET.getlist('type')
         if product_types:
-            from django.utils import timezone
-            now = timezone.now()
             type_filter = Q()
             if 'new' in product_types:
                 type_filter |= Q(is_new=True)
             if 'sale' in product_types:
-                type_filter |= (
-                    Q(is_sale=True) &
-                    (
-                        Q(sale_start_date__isnull=True, sale_end_date__isnull=True) |
-                        Q(sale_start_date__isnull=True, sale_end_date__gte=now) |
-                        Q(sale_start_date__lte=now, sale_end_date__isnull=True) |
-                        Q(sale_start_date__lte=now, sale_end_date__gte=now)
-                    )
-                )
+                type_filter |= Product.get_active_sale_filter()
             if type_filter:
                 queryset = queryset.filter(type_filter)
         
@@ -159,14 +149,7 @@ class SaleProductsView(ListView):
         from django.utils import timezone
         now = timezone.now()
         queryset = Product.objects.filter(
-            Q(is_active=True) &
-            Q(is_sale=True) &
-            (
-                Q(sale_start_date__isnull=True, sale_end_date__isnull=True) |
-                Q(sale_start_date__isnull=True, sale_end_date__gte=now) |
-                Q(sale_start_date__lte=now, sale_end_date__isnull=True) |
-                Q(sale_start_date__lte=now, sale_end_date__gte=now)
-            )
+            Product.get_active_sale_filter()
         ).select_related('category').prefetch_related('images')
         
         sort = self.request.GET.get('sort', 'default')
