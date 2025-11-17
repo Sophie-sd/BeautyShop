@@ -23,7 +23,9 @@ class PromotionAdminForm(forms.ModelForm):
         # Створюємо тимчасовий об'єкт для валідації
         instance = self.instance
         for field, value in cleaned_data.items():
-            setattr(instance, field, value)
+            # Пропускаємо ManyToMany поля - вони встановлюються після save()
+            if field not in ('products', 'categories'):
+                setattr(instance, field, value)
         
         # Викликаємо clean() моделі для валідації
         try:
