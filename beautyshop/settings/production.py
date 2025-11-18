@@ -80,6 +80,10 @@ WHITENOISE_IMMUTABLE_FILE_TEST = lambda path, url: True  # Всі файли з 
 # Додаємо Whitenoise middleware після SecurityMiddleware
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
+# Додаємо діагностичний middleware для адмінки (ПЕРЕД authentication middleware)
+# Це допомагає діагностувати проблеми з входом
+MIDDLEWARE.insert(6, 'apps.users.admin_login_middleware.AdminLoginDebugMiddleware')
+
 # Додаємо security headers middleware
 MIDDLEWARE.append('apps.core.middleware.SecurityHeadersMiddleware')
 MIDDLEWARE.append('apps.core.middleware.PrivatePagesCacheMiddleware')
@@ -193,6 +197,12 @@ LOGGING = {
         },
         # ДЕТАЛЬНЕ ЛОГУВАННЯ EMAIL
         'django.core.mail': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        # ДЕТАЛЬНЕ ЛОГУВАННЯ AUTHENTICATION
+        'django.contrib.auth': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': False,
