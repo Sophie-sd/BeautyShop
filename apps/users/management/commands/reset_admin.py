@@ -12,7 +12,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # Новий пароль
-        new_password = 'BeautyShop2024!'
+        new_password = os.getenv('DJANGO_SUPERUSER_PASSWORD', 'BeautyShop2024!')
         
         self.stdout.write('\n' + '='*70)
         self.stdout.write(self.style.WARNING('🔄 СКИДАННЯ ПАРОЛЮ АДМІНІСТРАТОРА'))
