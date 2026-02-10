@@ -54,6 +54,11 @@ class AdminOnlyBackend(ModelBackend):
     """
     
     def authenticate(self, request, username=None, password=None, **kwargs):
+        # #region agent log
+        import json; import time
+        with open('/Users/sofiadmitrenko/Sites/beautyshop/.cursor/debug.log', 'a') as f: f.write(json.dumps({'location':'backends.py:56','message':'AdminOnlyBackend authenticate called','data':{'username':username,'password_length':len(password) if password else 0,'has_request':request is not None},'timestamp':int(time.time()*1000),'hypothesisId':'A,B,C,D,E'})+'\n')
+        # #endregion
+        
         if username is None or password is None:
             logger.debug(f"AdminOnlyBackend: username або password відсутні")
             return None
@@ -66,6 +71,10 @@ class AdminOnlyBackend(ModelBackend):
         try:
             user = CustomUser.objects.get(username=username)
             logger.info(f"✅ Користувач знайдений за username: {user.username}")
+            # #region agent log
+            import json; import time
+            with open('/Users/sofiadmitrenko/Sites/beautyshop/.cursor/debug.log', 'a') as f: f.write(json.dumps({'location':'backends.py:67','message':'User found by username','data':{'username':user.username,'is_staff':user.is_staff,'is_superuser':user.is_superuser,'is_active':user.is_active,'email':user.email,'has_usable_password':user.has_usable_password()},'timestamp':int(time.time()*1000),'hypothesisId':'C,D'})+'\n')
+            # #endregion
         except CustomUser.DoesNotExist:
             logger.debug(f"Користувач НЕ знайдений за username: {username}")
             pass
@@ -75,6 +84,10 @@ class AdminOnlyBackend(ModelBackend):
             try:
                 user = CustomUser.objects.get(email=username)
                 logger.info(f"✅ Користувач знайдений за email: {user.email}")
+                # #region agent log
+                import json; import time
+                with open('/Users/sofiadmitrenko/Sites/beautyshop/.cursor/debug.log', 'a') as f: f.write(json.dumps({'location':'backends.py:80','message':'User found by email','data':{'username':user.username,'is_staff':user.is_staff,'is_superuser':user.is_superuser,'is_active':user.is_active,'has_usable_password':user.has_usable_password()},'timestamp':int(time.time()*1000),'hypothesisId':'C,D'})+'\n')
+                # #endregion
             except CustomUser.DoesNotExist:
                 logger.debug(f"Користувач НЕ знайдений за email: {username}")
                 pass
@@ -84,24 +97,47 @@ class AdminOnlyBackend(ModelBackend):
             try:
                 user = CustomUser.objects.get(phone=username)
                 logger.info(f"✅ Користувач знайдений за phone: {user.phone}")
+                # #region agent log
+                import json; import time
+                with open('/Users/sofiadmitrenko/Sites/beautyshop/.cursor/debug.log', 'a') as f: f.write(json.dumps({'location':'backends.py:93','message':'User found by phone','data':{'username':user.username,'is_staff':user.is_staff,'is_superuser':user.is_superuser,'is_active':user.is_active,'has_usable_password':user.has_usable_password()},'timestamp':int(time.time()*1000),'hypothesisId':'C,D'})+'\n')
+                # #endregion
             except CustomUser.DoesNotExist:
                 logger.warning(f"❌ Користувач НЕ знайдений за username/email/phone: {username}")
+                # #region agent log
+                import json; import time
+                with open('/Users/sofiadmitrenko/Sites/beautyshop/.cursor/debug.log', 'a') as f: f.write(json.dumps({'location':'backends.py:99','message':'User not found at all','data':{'search_term':username},'timestamp':int(time.time()*1000),'hypothesisId':'E'})+'\n')
+                # #endregion
                 return None
         
         # ВАЖЛИВО: Перевіряємо що це адміністратор
         if not (user.is_staff or user.is_superuser):
             logger.warning(f"❌ Користувач {user.username} НЕ є адміністратором (is_staff={user.is_staff}, is_superuser={user.is_superuser})")
+            # #region agent log
+            import json; import time
+            with open('/Users/sofiadmitrenko/Sites/beautyshop/.cursor/debug.log', 'a') as f: f.write(json.dumps({'location':'backends.py:107','message':'User is not admin','data':{'username':user.username,'is_staff':user.is_staff,'is_superuser':user.is_superuser},'timestamp':int(time.time()*1000),'hypothesisId':'D'})+'\n')
+            # #endregion
             # Звичайні користувачі НЕ можуть заходити через адмінку
             return None
         
         logger.info(f"✅ Користувач {user.username} є адміністратором")
         
         # Перевіряємо пароль
-        if user.check_password(password) and self.user_can_authenticate(user):
+        password_valid = user.check_password(password)
+        can_authenticate = self.user_can_authenticate(user)
+        # #region agent log
+        import json; import time
+        with open('/Users/sofiadmitrenko/Sites/beautyshop/.cursor/debug.log', 'a') as f: f.write(json.dumps({'location':'backends.py:119','message':'Password check result','data':{'username':user.username,'password_valid':password_valid,'can_authenticate':can_authenticate,'is_active':user.is_active,'password_hash_prefix':user.password[:20]},'timestamp':int(time.time()*1000),'hypothesisId':'A,B,C'})+'\n')
+        # #endregion
+        
+        if password_valid and can_authenticate:
             logger.info(f"✅ Пароль валідний для {user.username}")
             return user
         else:
             logger.warning(f"❌ Пароль НЕ валідний для {user.username}")
+            # #region agent log
+            import json; import time
+            with open('/Users/sofiadmitrenko/Sites/beautyshop/.cursor/debug.log', 'a') as f: f.write(json.dumps({'location':'backends.py:129','message':'Authentication failed','data':{'username':user.username,'password_valid':password_valid,'can_authenticate':can_authenticate},'timestamp':int(time.time()*1000),'hypothesisId':'A,B,C'})+'\n')
+            # #endregion
         
         return None
 
