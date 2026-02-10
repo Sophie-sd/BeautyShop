@@ -4,25 +4,13 @@ Django management command для перевірки стану адмініст�
 """
 from django.core.management.base import BaseCommand
 from apps.users.models import CustomUser
-import json
-import time
+import os
 
 
 class Command(BaseCommand):
     help = 'Перевіряє стан адміністратора в базі даних'
 
     def handle(self, *args, **options):
-        # #region agent log
-        with open('/Users/sofiadmitrenko/Sites/beautyshop/.cursor/debug.log', 'a') as f:
-            f.write(json.dumps({
-                'location': 'check_admin.py:18',
-                'message': 'check_admin command started',
-                'data': {},
-                'timestamp': int(time.time() * 1000),
-                'hypothesisId': 'D,E'
-            }) + '\n')
-        # #endregion
-        
         self.stdout.write('\n' + '='*70)
         self.stdout.write(self.style.WARNING('🔍 ПЕРЕВІРКА АДМІНІСТРАТОРА'))
         self.stdout.write('='*70 + '\n')
@@ -32,21 +20,16 @@ class Command(BaseCommand):
         
         if not superusers.exists():
             self.stdout.write(self.style.ERROR('❌ СУПЕРЮЗЕРИ НЕ ЗНАЙДЕНІ!'))
-            # #region agent log
-            with open('/Users/sofiadmitrenko/Sites/beautyshop/.cursor/debug.log', 'a') as f:
-                f.write(json.dumps({
-                    'location': 'check_admin.py:38',
-                    'message': 'No superusers found',
-                    'data': {},
-                    'timestamp': int(time.time() * 1000),
-                    'hypothesisId': 'D,E'
-                }) + '\n')
-            # #endregion
+            
+            # Також перевіримо чи є користувачі взагалі
+            total_users = CustomUser.objects.count()
+            self.stdout.write(f'\n   Всього користувачів в БД: {total_users}')
             return
         
+        self.stdout.write(self.style.SUCCESS(f'✅ Знайдено {superusers.count()} суперюзер(ів)\n'))
+        
         for user in superusers:
-            self.stdout.write(self.style.SUCCESS(f'\n✅ Суперюзер знайдений:'))
-            self.stdout.write(f'   ID: {user.id}')
+            self.stdout.write(self.style.SUCCESS(f'✅ Суперюзер #{user.id}:'))
             self.stdout.write(f'   Username: {user.username}')
             self.stdout.write(f'   Email: {user.email}')
             self.stdout.write(f'   Phone: {user.phone or "не встановлено"}')
@@ -56,86 +39,32 @@ class Command(BaseCommand):
             self.stdout.write(f'   is_staff: {user.is_staff}')
             self.stdout.write(f'   is_superuser: {user.is_superuser}')
             self.stdout.write(f'   has_usable_password: {user.has_usable_password()}')
+            self.stdout.write(f'   password (algorithm): {user.password.split("$")[0] if "$" in user.password else "unknown"}')
             self.stdout.write(f'   password (перші 30 символів): {user.password[:30]}')
             self.stdout.write(f'   date_joined: {user.date_joined}')
             self.stdout.write(f'   last_login: {user.last_login or "ніколи"}')
             
-            # #region agent log
-            with open('/Users/sofiadmitrenko/Sites/beautyshop/.cursor/debug.log', 'a') as f:
-                f.write(json.dumps({
-                    'location': 'check_admin.py:68',
-                    'message': 'Superuser details',
-                    'data': {
-                        'id': user.id,
-                        'username': user.username,
-                        'email': user.email,
-                        'phone': user.phone,
-                        'is_active': user.is_active,
-                        'is_staff': user.is_staff,
-                        'is_superuser': user.is_superuser,
-                        'has_usable_password': user.has_usable_password(),
-                        'password_prefix': user.password[:30],
-                        'password_algorithm': user.password.split('$')[0] if '$' in user.password else 'unknown',
-                    },
-                    'timestamp': int(time.time() * 1000),
-                    'hypothesisId': 'A,C,D'
-                }) + '\n')
-            # #endregion
-            
             # Тест паролю з ENV
-            import os
             test_password = os.getenv('DJANGO_SUPERUSER_PASSWORD', 'BeautyShop2024!')
             password_check = user.check_password(test_password)
             
             self.stdout.write(f'\n   🔐 Тест паролю з ENV:')
-            self.stdout.write(f'   Пароль: {test_password}')
-            self.stdout.write(f'   Результат: {"✅ ВАЛІДНИЙ" if password_check else "❌ НЕВАЛІДНИЙ"}')
-            
-            # #region agent log
-            with open('/Users/sofiadmitrenko/Sites/beautyshop/.cursor/debug.log', 'a') as f:
-                f.write(json.dumps({
-                    'location': 'check_admin.py:100',
-                    'message': 'Password test result',
-                    'data': {
-                        'username': user.username,
-                        'test_password_length': len(test_password),
-                        'password_check': password_check,
-                    },
-                    'timestamp': int(time.time() * 1000),
-                    'hypothesisId': 'A,B'
-                }) + '\n')
-            # #endregion
+            self.stdout.write(f'   Пароль для тесту: {test_password}')
+            self.stdout.write(f'   Результат check_password(): {"✅ ВАЛІДНИЙ" if password_check else "❌ НЕВАЛІДНИЙ"}')
             
             self.stdout.write('-' * 70)
         
         # Шукаємо користувача "beautyshop_admin" окремо
+        self.stdout.write('\n' + self.style.WARNING('🔍 Пошук конкретного користувача "beautyshop_admin":'))
         try:
             specific_user = CustomUser.objects.get(username='beautyshop_admin')
-            self.stdout.write(self.style.SUCCESS(f'\n✅ Користувач "beautyshop_admin" знайдений'))
-            # #region agent log
-            with open('/Users/sofiadmitrenko/Sites/beautyshop/.cursor/debug.log', 'a') as f:
-                f.write(json.dumps({
-                    'location': 'check_admin.py:123',
-                    'message': 'beautyshop_admin found',
-                    'data': {
-                        'exists': True,
-                        'is_superuser': specific_user.is_superuser,
-                    },
-                    'timestamp': int(time.time() * 1000),
-                    'hypothesisId': 'E'
-                }) + '\n')
-            # #endregion
+            self.stdout.write(self.style.SUCCESS('   ✅ Знайдений'))
+            if not specific_user.is_superuser:
+                self.stdout.write(self.style.ERROR('   ⚠️  НЕ є суперюзером!'))
         except CustomUser.DoesNotExist:
-            self.stdout.write(self.style.ERROR('\n❌ Користувач "beautyshop_admin" НЕ знайдений'))
-            # #region agent log
-            with open('/Users/sofiadmitrenko/Sites/beautyshop/.cursor/debug.log', 'a') as f:
-                f.write(json.dumps({
-                    'location': 'check_admin.py:137',
-                    'message': 'beautyshop_admin not found',
-                    'data': {'exists': False},
-                    'timestamp': int(time.time() * 1000),
-                    'hypothesisId': 'E'
-                }) + '\n')
-            # #endregion
+            self.stdout.write(self.style.ERROR('   ❌ НЕ знайдений'))
         
         self.stdout.write('\n' + '='*70)
+        self.stdout.write('💡 Підказка: Якщо пароль невалідний, запустіть: python manage.py reset_admin')
+        self.stdout.write('='*70 + '\n')
+
