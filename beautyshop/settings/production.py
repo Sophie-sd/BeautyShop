@@ -139,18 +139,7 @@ EMAIL_TIMEOUT = 30  # 30 секунд таймаут
 LIQPAY_PUBLIC_KEY = os.getenv('LIQPAY_PUBLIC_KEY', '')
 LIQPAY_PRIVATE_KEY = os.getenv('LIQPAY_PRIVATE_KEY', '')
 
-# Виводимо налаштування email для діагностики (без паролю!)
-import logging
-email_logger = logging.getLogger('django.core.mail')
-email_logger.info(f"📧 Email settings loaded:")
-email_logger.info(f"   EMAIL_HOST: {EMAIL_HOST}")
-email_logger.info(f"   EMAIL_PORT: {EMAIL_PORT}")
-email_logger.info(f"   EMAIL_USE_TLS: {EMAIL_USE_TLS}")
-email_logger.info(f"   EMAIL_HOST_USER: {EMAIL_HOST_USER}")
-email_logger.info(f"   DEFAULT_FROM_EMAIL: {DEFAULT_FROM_EMAIL}")
-email_logger.info(f"   EMAIL_HOST_PASSWORD: {'SET' if EMAIL_HOST_PASSWORD else 'NOT SET'}")
-
-# Логування для продакшну - з детальною діагностикою
+# Логування для продакшну
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -195,21 +184,21 @@ LOGGING = {
             'level': 'WARNING',
             'propagate': False,
         },
-        # ДЕТАЛЬНЕ ЛОГУВАННЯ EMAIL
+        # Email логування (тільки помилки)
         'django.core.mail': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'WARNING',
             'propagate': False,
         },
-        # ДЕТАЛЬНЕ ЛОГУВАННЯ AUTHENTICATION
+        # Authentication логування (тільки попередження)
         'django.contrib.auth': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'WARNING',
             'propagate': False,
         },
         'apps.users': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': False,
         },
     },

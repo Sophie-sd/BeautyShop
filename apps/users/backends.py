@@ -55,60 +55,43 @@ class AdminOnlyBackend(ModelBackend):
     
     def authenticate(self, request, username=None, password=None, **kwargs):
         if username is None or password is None:
-            logger.debug(f"AdminOnlyBackend: username або password відсутні")
             return None
-        
-        logger.info(f"🔐 AdminOnlyBackend: Спроба входу для '{username}'")
         
         user = None
         
         # Спробуємо знайти користувача за username (для адмінів)
         try:
             user = CustomUser.objects.get(username=username)
-            logger.info(f"✅ Користувач знайдений за username: {user.username}")
-            logger.info(f"   User details: is_staff={user.is_staff}, is_superuser={user.is_superuser}, is_active={user.is_active}, has_usable_password={user.has_usable_password()}")
         except CustomUser.DoesNotExist:
-            logger.debug(f"Користувач НЕ знайдений за username: {username}")
             pass
         
         # Якщо не username, спробуємо email
         if not user:
             try:
                 user = CustomUser.objects.get(email=username)
-                logger.info(f"✅ Користувач знайдений за email: {user.email}")
-                logger.info(f"   User details: is_staff={user.is_staff}, is_superuser={user.is_superuser}, is_active={user.is_active}, has_usable_password={user.has_usable_password()}")
             except CustomUser.DoesNotExist:
-                logger.debug(f"Користувач НЕ знайдений за email: {username}")
                 pass
         
         # Якщо не email, спробуємо телефон
         if not user:
             try:
                 user = CustomUser.objects.get(phone=username)
-                logger.info(f"✅ Користувач знайдений за phone: {user.phone}")
-                logger.info(f"   User details: is_staff={user.is_staff}, is_superuser={user.is_superuser}, is_active={user.is_active}, has_usable_password={user.has_usable_password()}")
             except CustomUser.DoesNotExist:
-                logger.warning(f"❌ Користувач НЕ знайдений за username/email/phone: {username}")
+                # Логуємо тільки невдалі спроби входу (для безпеки)
+                logger.warning(f"Невдала спроба входу в адмінку з невідомим обліковим записом")
                 return None
         
         # ВАЖЛИВО: Перевіряємо що це адміністратор
         if not (user.is_staff or user.is_superuser):
-            logger.warning(f"❌ Користувач {user.username} НЕ є адміністратором (is_staff={user.is_staff}, is_superuser={user.is_superuser})")
-            # Звичайні користувачі НЕ можуть заходити через адмінку
+            logger.warning(f"Спроба входу в адмінку неадміністраторським обліковим записом")
             return None
         
-        logger.info(f"✅ Користувач {user.username} є адміністратором")
-        
         # Перевіряємо пароль
-        password_valid = user.check_password(password)
-        can_authenticate = self.user_can_authenticate(user)
-        logger.info(f"   Password check: valid={password_valid}, can_authenticate={can_authenticate}, password_hash={user.password[:30]}")
-        
-        if password_valid and can_authenticate:
-            logger.info(f"✅ Пароль валідний для {user.username}")
+        if user.check_password(password) and self.user_can_authenticate(user):
+            logger.info(f"Успішний вхід адміністратора в систему")
             return user
         else:
-            logger.warning(f"❌ Пароль НЕ валідний для {user.username} (valid={password_valid}, can_auth={can_authenticate})")
+            logger.warning(f"Невдала спроба входу адміністратора (невірний пароль)")
         
         return None
 
